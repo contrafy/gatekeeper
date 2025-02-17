@@ -1,0 +1,542 @@
+Request Text,Response Policy
+"“Generate a policy binding that will grant my companies service account (service@cloud.google.com) with the Project Creator role, as well as any internal resources/services needed through the AI Platform User role”","""""bindings"": [
+{
+""role"": ""roles/resourcemanager.projectCreator"", // Project Creator role
+""members"": [
+""serviceAccount:service@cloud.google.com""
+]
+},
+{
+""role"": ""roles/aiplatform.user"", // Role for access to company resources
+""members"": [
+""serviceAccount:service@cloud.google.com""
+]
+}
+]"""
+"""Generate a policy, such that I grant my user account (service@cloud.google.com"") owner access over all services and resources needed""","""{
+  ""bindings"": [
+    {
+      ""members"": [
+        ""user:service@cloud.google.com""
+      ],
+      ""role"": ""roles/owner""
+    }
+  ],
+}"""
+"""Create a policy, where the user account with the email ""service@cloud.google.com"" has the Organization Admin role. Similarly, this person, as well as the account ""service2@cloud.google.com"" should be able to create projects","""{
+  ""bindings"": [
+    {
+      ""members"": [
+        ""user:service@cloud.google.com""
+      ],
+      ""role"": ""roles/resourcemanager.organizationAdmin""
+    },
+    {
+      ""members"": [
+        ""user:service2@cloud.google.com"",
+        ""user:service@cloud.google.com""
+      ],
+      ""role"": ""roles/resourcemanager.projectCreator""
+    }
+  ],
+}"""
+"""I want a policy such that the group with the email ""prod-dev@cloud.google.com"" and the service account ""prod-dev-service@cloud.google.com"" have the role appengine.deployer. However, I want this access to expire on July 1st, 2025, as that is when the project ends","""{
+  ""bindings"": [
+    {
+      ""members"": [
+        ""group:prod-dev@cloud.google.com"",
+        ""serviceAccount:prod-dev-service@cloud.google.com""
+      ],
+      ""role"": ""roles/appengine.deployer"",
+      ""condition"": {
+          ""title"": ""Expires_July_1_2025"",
+          ""description"": ""Expires on July 1, 2025"",
+          ""expression"":
+            ""request.time < timestamp('2025-07-01T00:00:00.000Z')""
+      }
+    }
+  ],
+}"""
+"""This new policy should give the service account ""prod-dev-service@cloud.google.com"" access to the role appengine.deployer, or something adjacent. Next, the group with the email ""prod-dev@cloud.google.com"" and the same service account should be given the same role. This second role binding should expire on July 1st, 2025.","""{
+  ""bindings"": [
+    {
+      ""members"": [
+        ""serviceAccount:prod-dev-service@cloud.google.com""
+       ],
+       ""role"": ""roles/appengine.deployer""
+    },
+    {
+      ""members"": [
+        ""group:prod-dev@example.com"",
+        ""serviceAccount:prod-dev-service@cloud.google.com""
+      ],
+      ""role"": ""roles/appengine.deployer"",
+      ""condition"": {
+        ""title"": ""Expires_July_1_2025"",
+        ""description"": ""Expires on July 1, 2025"",
+        ""expression"":
+          ""request.time < timestamp('2025-07-01T00:00:00.000Z')""
+      }
+    }
+  ],
+}"""
+"""Give the service account data-processor@my-project.iam.gserviceaccount.com the Storage Object Creator role (roles/storage.objectCreator) so it can upload files to my bucket my-bucket-name."" (Focus on bucket-specific permissions)","""{
+  ""bindings"": [
+    {
+      ""role"": ""roles/storage.objectCreator"",
+      ""members"": [
+        ""serviceAccount:data-processor@my-project.iam.gserviceaccount.com""
+      ]
+    }
+  ]
+}"""
+"""Grant the group network-admins@my-org.com the Compute Network Admin role (roles/compute.networkAdmin) so they can manage VPC networks in my project my-project."" (Focus on network administration)","""{
+  ""bindings"": [
+    {
+      ""role"": ""roles/compute.networkAdmin"",
+      ""members"": [
+        ""group:network-admins@my-org.com""
+      ]
+    }
+  ]
+}"""
+"""I need a policy that allows the user developer@example.com to deploy Cloud Functions (roles/cloudfunctions.developer) in the project my-function-project."" (Focus on Cloud Functions deployment)","""{
+  ""bindings"": [
+    {
+      ""role"": ""roles/cloudfunctions.developer"",
+      ""members"": [
+        ""user:developer@example.com""
+      ]
+    }
+  ]
+}"""
+"""The service account bigquery-agent@my-project.iam.gserviceaccount.com needs the BigQuery Data Editor role (roles/bigquery.dataEditor) to process data in my BigQuery dataset my_dataset."" (Focus on BigQuery data access)","""{
+  ""bindings"": [
+    {
+      ""role"": ""roles/bigquery.dataEditor"",
+      ""members"": [
+        ""serviceAccount:bigquery-agent@my-project.iam.gserviceaccount.com""
+      ]
+    }
+  ]
+}"""
+"""Give the group security-team@my-org.com the Cloud KMS CryptoKey Encrypter/Decrypter role (roles/cloudkms.cryptoKeyEncrypterDecrypter) for the key ring my-keyring in the location us-central1."" (Focus on key management)","""{
+  ""bindings"": [
+    {
+      ""role"": ""roles/cloudkms.cryptoKeyEncrypterDecrypter"",
+      ""members"": [
+        ""group:security-team@my-org.com""
+      ]
+    }
+  ]
+}"""
+"Grant user dev-user@example.com the Compute Instance Admin role (roles/compute.instanceAdmin) for project dev-project, expiring on 2024-12-31.","""{
+  ""bindings"": [
+    {
+      ""role"": ""roles/compute.instanceAdmin"",
+      ""members"": [""user:dev-user@example.com""],
+      ""condition"": {
+        ""title"": ""Expiration Condition"",
+        ""description"": ""Expires on 2024-12-31"",
+        ""expression"": ""request.time < timestamp('2025-01-01T00:00:00.000Z')"" 
+      }
+    }
+  ]
+}"""
+"Allow service account gcs-writer@my-project.iam.gserviceaccount.com to create objects in storage bucket my-bucket and list objects, expiring on 2024-07-15.","""{
+  ""bindings"": [
+    {
+      ""role"": ""roles/storage.objectCreator"",
+      ""members"": [""serviceAccount:gcs-writer@my-project.iam.gserviceaccount.com""]
+    },
+    {
+       ""role"": ""roles/storage.objectViewer"",
+       ""members"": [""serviceAccount:gcs-writer@my-project.iam.gserviceaccount.com""],
+       ""condition"": {
+         ""title"": ""Expiration Condition"",
+         ""description"": ""Expires on 2024-07-15"",
+         ""expression"": ""request.time < timestamp('2024-07-16T00:00:00.000Z')""
+       }
+     }
+  ]
+}"""
+"Give logs-reader@example.com the Logging Viewer role (roles/logging.viewer) and Logs Writer role (roles/logging.logWriter), expiring on 2024-10-31.","""{
+  ""bindings"": [
+    {
+      ""role"": ""roles/logging.viewer"",
+      ""members"": [""user:logs-reader@example.com""]
+    },
+    {
+      ""role"": ""roles/logging.logWriter"",
+      ""members"": [""user:logs-reader@example.com""],
+      ""condition"": {
+        ""title"": ""Expiration Condition"",
+        ""description"": ""Expires on 2024-10-31"",
+        ""expression"": ""request.time < timestamp('2024-11-01T00:00:00.000Z')""
+      }
+    }
+  ]
+}"""
+"Grant group ai-developers@example.com the AI Platform User role (roles/aiplatform.user) and AI Platform Admin (roles/aiplatform.admin), expiring on 2025-03-15.","""{
+  ""bindings"": [
+    {
+      ""role"": ""roles/aiplatform.user"",
+      ""members"": [""group:ai-developers@example.com""]
+    },
+    {
+      ""role"": ""roles/aiplatform.admin"",
+      ""members"": [""group:ai-developers@example.com""],
+      ""condition"": {
+        ""title"": ""Expiration Condition"",
+        ""description"": ""Expires on 2025-03-15"",
+        ""expression"": ""request.time < timestamp('2025-03-16T00:00:00.000Z')""
+      }
+    }
+  ]
+}"""
+"""Our security team, global-security@my-org.com, needs the following permissions across all projects: Organization Admin, Security Admin, and IAM Security Reviewer. Additionally, user incident-response@example.com should have the Security Reviewer role. This access should expire on December 31,","""{
+  ""bindings"": [
+    {
+      ""role"": [
+        ""roles/resourcemanager.organizationAdmin"",
+        ""roles/iam.securityAdmin"",
+        ""roles/iam.securityReviewer""
+      ],
+      ""members"": [
+        ""group:global-security@my-org.com""
+      ],
+      ""condition"": {
+        ""title"": ""Expiration Condition"",
+        ""description"": ""Expires on December 31, 2026"",
+        ""expression"": ""request.time < timestamp('2027-01-01T00:00:00.000Z')""
+      }
+    },
+    {
+      ""role"": [
+        ""roles/iam.securityReviewer""
+      ],
+      ""members"": [
+        ""user:incident-response@example.com""
+      ],
+      ""condition"": {
+        ""title"": ""Expiration Condition"",
+        ""description"": ""Expires on December 31, 2026"",
+        ""expression"": ""request.time < timestamp('2027-01-01T00:00:00.000Z')""
+      }
+    }
+  ]
+}"""
+"The service account data-pipeline@data-project.iam.gserviceaccount.com requires access to BigQuery (Data Editor and Job User), Cloud Storage (Object Creator and Viewer), and Dataflow (Worker). Group data-scientists@my-org.com needs BigQuery Data Viewer and Job User. The data pipeline access expires on September 15, 2025, and the data scientists' access on June 30, 2025.","""{
+  ""bindings"": [
+    {
+      ""role"": [
+        ""roles/bigquery.dataEditor"",
+        ""roles/bigquery.jobUser"",
+        ""roles/storage.objectCreator"",
+        ""roles/storage.objectViewer"",
+        ""roles/dataflow.worker""
+      ],
+      ""members"": [
+        ""serviceAccount:data-pipeline@data-project.iam.gserviceaccount.com""
+      ],
+      ""condition"": {
+        ""title"": ""Expiration Condition"",
+        ""description"": ""Expires on September 15, 2025"",
+        ""expression"": ""request.time < timestamp('2025-09-16T00:00:00.000Z')""
+      }
+    },
+    {
+      ""role"": [
+        ""roles/bigquery.dataViewer"",
+        ""roles/bigquery.jobUser""
+      ],
+      ""members"": [
+        ""group:data-scientists@my-org.com""
+      ],
+      ""condition"": {
+        ""title"": ""Expiration Condition"",
+        ""description"": ""Expires on June 30, 2025"",
+        ""expression"": ""request.time < timestamp('2025-07-01T00:00:00.000Z')""
+      }
+    }
+  ]
+}"""
+"I need a policy that grants user dev-manager@example.com Compute Instance Admin, Network Admin, and Cloud SQL Admin roles. Service account deployment-sa@dev-project.iam.gserviceaccount.com requires Compute Instance Admin and App Engine Deployer. This access should expire on March 1, 2024.","""{
+  ""bindings"": [
+    {
+      ""role"": [
+        ""roles/compute.instanceAdmin"",
+        ""roles/compute.networkAdmin"",
+        ""roles/cloudsql.admin""
+      ],
+      ""members"": [
+        ""user:dev-manager@example.com""
+      ],
+      ""condition"": {
+        ""title"": ""Expiration Condition"",
+        ""description"": ""Expires on March 1, 2024"",
+        ""expression"": ""request.time < timestamp('2024-03-02T00:00:00.000Z')""
+      }
+    },
+    {
+      ""role"": [
+        ""roles/compute.instanceAdmin"",
+        ""roles/appengine.deployer""
+      ],
+      ""members"": [
+        ""serviceAccount:deployment-sa@dev-project.iam.gserviceaccount.com""
+      ],
+      ""condition"": {
+        ""title"": ""Expiration Condition"",
+        ""description"": ""Expires on March 1, 2024"",
+        ""expression"": ""request.time < timestamp('2024-03-02T00:00:00.000Z')""
+      }
+    }
+  ]
+}"""
+"Our monitoring system, represented by service account monitoring-sa@monitoring-project.iam.gserviceaccount.com, needs Monitoring Viewer, Metric Writer, and Logging Viewer roles. User alerting-admin@example.com should have the Monitoring Admin role. The monitoring system access should be permanent, but the alerting admin's access expires on November 15, 2024.","""{
+  ""bindings"": [
+    {
+      ""role"": [
+        ""roles/monitoring.viewer"",
+        ""roles/monitoring.metricWriter"",
+        ""roles/logging.viewer""
+      ],
+      ""members"": [
+        ""serviceAccount:monitoring-sa@monitoring-project.iam.gserviceaccount.com""
+      ]
+    },
+    {
+      ""role"": [
+        ""roles/monitoring.admin""
+      ],
+      ""members"": [
+        ""user:alerting-admin@example.com""
+      ],
+      ""condition"": {
+        ""title"": ""Expiration Condition"",
+        ""description"": ""Expires on November 15, 2024"",
+        ""expression"": ""request.time < timestamp('2024-11-16T00:00:00.000Z')""
+      }
+    }
+  ]
+}"""
+"For our AI platform, the service account ai-trainer@ai-project.iam.gserviceaccount.com needs AI Platform User, AI Platform Trainer, and Cloud ML Engine Developer roles. Group ai-researchers@my-org.com requires AI Platform User and AI Platform Model User. This access should expire on February 28, 2025.","""{
+  ""bindings"": [
+    {
+      ""role"": [
+        ""roles/aiplatform.user"",
+        ""roles/aiplatform.trainer"",
+        ""roles/ml.developer""
+      ],
+      ""members"": [
+        ""serviceAccount:ai-trainer@ai-project.iam.gserviceaccount.com""
+      ],
+      ""condition"": {
+        ""title"": ""Expiration Condition"",
+        ""description"": ""Expires on February 28, 2025"",
+        ""expression"": ""request.time < timestamp('2025-03-01T00:00:00.000Z')""
+      }
+    },
+    {
+      ""role"": [
+        ""roles/aiplatform.user"",
+        ""roles/aiplatform.modelUser""
+      ],
+      ""members"": [
+        ""group:ai-researchers@my-org.com""
+      ],
+      ""condition"": {
+        ""title"": ""Expiration Condition"",
+        ""description"": ""Expires on February 28, 2025"",
+        ""expression"": ""request.time < timestamp('2025-03-01T00:00:00.000Z')""
+      }
+    }
+  ]
+}"""
+I need a policy that grants user network-engineer@example.com Compute Network Admin and Firewall Admin roles. Group network-operations@my-org.com requires Compute Network Viewer. This access should be permanent.,"""{
+  ""bindings"": [
+    {
+      ""role"": [
+        ""roles/compute.networkAdmin"",
+        ""roles/compute.firewallAdmin""
+      ],
+      ""members"": [
+        ""user:network-engineer@example.com""
+      ]
+    },
+    {
+      ""role"": [
+        ""roles/compute.networkViewer""
+      ],
+      ""members"": [
+        ""group:network-operations@my-org.com""
+      ]
+    }
+  ]
+}"""
+"Our App Engine deployment service account, app-deploy@app-project.iam.gserviceaccount.com, needs App Engine Deployer, Service Admin, and Cloud Run Admin roles. User app-developer@example.com should have the App Engine Developer role. The deployment service account access expires on July 31, 2024, and the developer's access on August 31, 2024.","""{
+  ""bindings"": [
+    {
+      ""role"": [
+        ""roles/appengine.deployer"",
+        ""roles/appengine.serviceAdmin"",
+        ""roles/run.admin""
+      ],
+      ""members"": [
+        ""serviceAccount:app-deploy@app-project.iam.gserviceaccount.com""
+      ],
+      ""condition"": {
+        ""title"": ""Expiration Condition"",
+        ""description"": ""Expires on July 31, 2024"",
+        ""expression"": ""request.time < timestamp('2024-08-01T00:00:00.000Z')""
+      }
+    },
+    {
+      ""role"": [
+        ""roles/appengine.developer""
+      ],
+      ""members"": [
+        ""user:app-developer@example.com""
+      ],
+      ""condition"": {
+        ""title"": ""Expiration Condition"",
+        ""description"": ""Expires on August 31, 2024"",
+        ""expression"": ""request.time < timestamp('2024-09-01T00:00:00.000Z')""
+      }
+    }
+  ]
+}"""
+"For our Kubernetes cluster, the service account gke-admin@gke-project.iam.gserviceaccount.com needs the Kubernetes Engine Admin role. Group gke-developers@my-org.com requires the Kubernetes Engine Developer role. This access should expire on May 31, 2024.","""{
+  ""bindings"": [
+    {
+      ""role"": [
+        ""roles/container.admin""
+      ],
+      ""members"": [
+        ""serviceAccount:gke-admin@gke-project.iam.gserviceaccount.com""
+      ]
+    },
+    {
+      ""role"": [
+        ""roles/container.developer""
+      ],
+      ""members"": [
+        ""group:gke-developers@my-org.com""
+      ],
+      ""condition"": {
+        ""title"": ""Expiration Condition"",
+        ""description"": ""Expires on May 31, 2024"",
+        ""expression"": ""request.time < timestamp('2024-06-01T00:00:00.000Z')""
+      }
+    }
+  ]
+}"""
+"Our global cloud infrastructure requires a highly granular access control policy. The core infrastructure team, represented by the group core-infra-admins@my-org.com, needs full administrative privileges across all projects within the organization. This includes the ability to create, modify, and delete any resource, manage IAM policies, and configure networking. However, this access should be temporary, expiring on December 31, 2027, to comply with our security auditing procedures. Separately, our application development teams, divided into dev-team-a@my-org.com and dev-team-b@my-org.com, require different levels of access. dev-team-a needs the Compute Instance Admin role, App Engine Deployer role, and Cloud SQL Client role for projects tagged ""team-a-dev"". dev-team-b should have the Compute Network Admin role, Cloud Run Admin role, and Secret Manager Secret Accessor role for projects tagged ""team-b-dev"". These development team permissions should expire on September 15, 2025. Finally, our security auditing team, security-auditors@my-org.com, needs read-only access to all logs and metrics across the organization, with this access being permanent.","""{
+  ""bindings"": [
+    {
+      ""role"": [
+        ""roles/resourcemanager.organizationAdmin"",
+        ""roles/iam.securityAdmin"",
+        ""roles/compute.networkAdmin"",
+        ""roles/cloudsql.admin"",
+        ""roles/appengine.serviceAdmin"",
+        ""roles/run.admin"",
+        ""roles/secretmanager.admin"",
+        ""roles/monitoring.admin"",
+        ""roles/logging.admin""
+      ],
+      ""members"": [
+        ""group:core-infra-admins@my-org.com""
+      ],
+      ""condition"": {
+        ""title"": ""Core Infra Admin Expiration"",
+        ""description"": ""Access expires on December 31, 2027"",
+        ""expression"": ""request.time < timestamp('2028-01-01T00:00:00.000Z')""
+      }
+    },
+    {
+      ""role"": [
+        ""roles/compute.instanceAdmin"",
+        ""roles/appengine.deployer"",
+        ""roles/cloudsql.client""
+      ],
+      ""members"": [
+        ""group:dev-team-a@my-org.com""
+      ],
+      ""condition"": {
+        ""title"": ""Dev Team A Expiration"",
+        ""description"": ""Access expires on September 15, 2025"",
+        ""expression"": ""request.time < timestamp('2025-09-16T00:00:00.000Z')""
+      }
+    },
+    {
+      ""role"": [
+        ""roles/compute.networkAdmin"",
+        ""roles/run.admin"",
+        ""roles/secretmanager.secretAccessor""
+      ],
+      ""members"": [
+        ""group:dev-team-b@my-org.com""
+      ],
+      ""condition"": {
+        ""title"": ""Dev Team B Expiration"",
+        ""description"": ""Access expires on September 15, 2025"",
+        ""expression"": ""request.time < timestamp('2025-09-16T00:00:00.000Z')""
+      }
+    },
+    {
+      ""role"": [
+        ""roles/logging.viewer"",
+        ""roles/monitoring.viewer""
+      ],
+      ""members"": [
+        ""group:security-auditors@my-org.com""
+      ]
+    }
+  ]
+}"""
+"Our data analytics platform relies on a complex set of permissions. The primary data ingestion service account, data-ingest-sa@data-project.iam.gserviceaccount.com, needs to write data to our BigQuery datasets (raw_data, processed_data, analytics_data), and also upload files to Cloud Storage buckets designated for data staging (data-staging-a, data-staging-b). They also need to trigger Dataflow jobs for ETL processing. Our data science team, data-science-team@my-org.com, needs read access to all BigQuery datasets and storage buckets, and they should be able to run BigQuery queries and Dataflow jobs. Furthermore, a separate team, report-generators@my-org.com, requires read-only access to the analytics_data dataset for reporting purposes. The data ingestion service account's permissions should expire on March 31, 2026. The data science team's access should expire on December 31, 2025. The reporting team's access should be permanent.","""{
+  ""bindings"": [
+    {
+      ""role"": [
+        ""roles/bigquery.dataEditor"",
+        ""roles/storage.objectCreator"",
+        ""roles/storage.objectViewer"",
+        ""roles/dataflow.worker""
+      ],
+      ""members"": [
+        ""serviceAccount:data-ingest-sa@data-project.iam.gserviceaccount.com""
+      ],
+      ""condition"": {
+        ""title"": ""Data Ingestion Expiration"",
+        ""description"": ""Access expires on March 31, 2026"",
+        ""expression"": ""request.time < timestamp('2026-04-01T00:00:00.000Z')""
+      }
+    },
+    {
+      ""role"": [
+        ""roles/bigquery.dataViewer"",
+        ""roles/storage.objectViewer"",
+        ""roles/bigquery.jobUser"",
+        ""roles/dataflow.developer""
+      ],
+      ""members"": [
+        ""group:data-science-team@my-org.com""
+      ],
+      ""condition"": {
+        ""title"": ""Data Science Expiration"",
+        ""description"": ""Access expires on December 31, 2025"",
+        ""expression"": ""request.time < timestamp('2026-01-01T00:00:00.000Z')""
+      }
+    },
+    {
+      ""role"": [
+        ""roles/bigquery.dataViewer""
+      ],
+      ""members"": [
+        ""group:report-generators@my-org.com""
+      ]
+    }
+  ]
+}"""
