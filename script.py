@@ -5,7 +5,7 @@ import argparse
 import time
 from openai import OpenAI
 
-client = OpenAI()
+client = OpenAI(api_key='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')
 
 # Ensure your API key is set in your environment variables
 # if not openai.api_key:
@@ -17,17 +17,17 @@ VERIFICATION_MODEL = "gpt-4o-mini"  # Model used for verification; can be change
 GENERATION_TEMPERATURE = 0.7
 VERIFICATION_TEMPERATURE = 0.0
 
+# has to match: https://platform.openai.com/docs/guides/fine-tuning#preparing-your-dataset
+
 # Prompts
 GENERATION_PROMPT = (
     "You are an expert in Google Cloud IAM policies. "
     "Generate a plain-English request for a policy binding and the corresponding JSON snippet for the policy. "
-    "Your response must be valid JSON with exactly two keys: 'query' and 'policy'.\n\n"
-    "For example, your output should look like:\n"
-    '{\n'
-    '  "query": "Generate a policy binding that will grant my companies service account '
-    '(service@cloud.google.com) the Project Creator role, as well as any internal resources/services needed through the AI Platform User role.",\n'
-    '  "policy": "\\"bindings\\": [\\n  {\\n    \\"role\\": \\"roles/resourcemanager.projectCreator\\",\\n    \\"members\\": [\\n      \\"serviceAccount:service@cloud.google.com\\"\\n    ]\\n  },\\n  {\\n    \\"role\\": \\"roles/aiplatform.user\\",\\n    \\"members\\": [\\n      \\"serviceAccount:service@cloud.google.com\\"\\n    ]\\n  }\\n]"\n'
-    '}'
+    "Your response must be valid JSON with exactly two values: 'user' with the request content and 'system' with the response policy.\n\n"
+    'Your response should be in the format: {"messages": [{"role": "user", "content":"request"}, {"role":"system", "content":"response"}:]}\n'
+    'where the request and response are generated.\n\n'
+    'For example, a generated snippet would be: {"messages": [{"role": "user", "content":"Generate a policy binding that will grant my companies service account (service@cloud.google.com) the Project Creator role, as well as any internal resources/services needed through the AI Platform User role"}, {"role":"system", "content":"\\"bindings\\": [\\n  {\\n    \\"role\\": \\"roles/resourcemanager.projectCreator\\",\\n    \\"members\\": [\\n      \\"serviceAccount:service@cloud.google.com\\"\\n    ]\\n  },\\n  {\\n    \\"role\\": \\"roles/aiplatform.user\\",\\n    \\"members\\": [\\n      \\"serviceAccount:service@cloud.google.com\\"\\n    ]\\n  }\\n]"}:]}'
+
 )
 
 # Verification prompt template: takes the generated example as input
@@ -57,8 +57,9 @@ def generate_example():
         # Parse the generated text as JSON
         example = json.loads(generated_text)
         # Basic schema check
-        if "query" in example and "policy" in example:
-            return example
+        return example
+        # if "query" in example and "policy" in example:
+        #     return example
     except Exception as e:
         print(f"Error during generation: {e}")
     return None
@@ -95,23 +96,24 @@ def main(num_points, output_file):
             continue
 
         # First verification pass
-        print("Running first verification pass...")
-        if not verify_example(example):
-            print("First verification failed; discarding example.")
-            continue
+        # print("Running first verification pass...")
+        # if not verify_example(example):
+        #     print("First verification failed; discarding example.")
+        #     continue
 
-        # Second verification pass
-        print("Running second verification pass...")
-        if not verify_example(example):
-            print("Second verification failed; discarding example.")
-            continue
+        # # Second verification pass
+        # print("Running second verification pass...")
+        # if not verify_example(example):
+        #     print("Second verification failed; discarding example.")
+        #     continue
 
         # If passed both verifications, add to the valid examples list
         print("Example verified successfully!")
-        valid_examples.append({
-            "prompt": example["query"],
-            "completion": example["policy"]
-        })
+        # valid_examples.append({
+        #     "prompt": example["query"],
+        #     "completion": example["policy"]
+        # })
+        valid_examples.append(example)
 
         # Be kind to the API
         time.sleep(1)
