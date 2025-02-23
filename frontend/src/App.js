@@ -35,38 +35,48 @@ function App() {
     }
   };
 
+  // copy generated policy if it exists
+  // TODO: validation
+  const handleCopy = () => {
+    navigator.clipboard.writeText(policy);
+  };
+
   return (
     <div className="App">
       <h1>Google Cloud IAM Policy Generator</h1>
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} className="prompt-form">
         <textarea
           placeholder="Enter your plain English prompt"
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
           rows="6"
-          cols="60"
+          className="prompt-input"
         />
         <br />
-        <button type="submit" disabled={loading}>
+        <button type="submit" disabled={loading} className="submit-btn">
           {loading ? "Generating..." : "Generate Policy"}
         </button>
       </form>
+
+      {/* TODO: more action buttons for additional functionality */}
+      {policy && (
+          <div className="action-buttons">
+            <button onClick={handleCopy} className="action-btn">
+              Copy Policy
+            </button>
+          </div>
+        )}
       
       {error && (
-        <div style={{ color: 'red', margin: '1rem 0' }}>
+        <div className="error-message">
           {error}
         </div>
       )}
       
       {policy && (
-        <div>
+        <div className="policy-output">
           <h2>Generated Policy:</h2>
-          <pre style={{ 
-            backgroundColor: '#f5f5f5', 
-            padding: '1rem', 
-            borderRadius: '4px',
-            overflow: 'auto' 
-          }}>
+          <pre className="policy-pre">
             {policy}
           </pre>
         </div>
