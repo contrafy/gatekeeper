@@ -56,16 +56,18 @@ Example Response:
 }
 """
 
-# Load environment variables from a .env file if available
+# load env vars
 load_dotenv()
 
 app = FastAPI(title="Google Cloud IAM Policy Generator")
-
-# Set your OpenAI API key (ensure this is in your .env file as OPENAI_API_KEY)
 client = OpenAI(api_key = os.getenv("OPENAI_API_KEY"))
 
+# request body struct
+# TODO: add context from users GCloud IAM project/organization data
 class PolicyRequest(BaseModel):
     prompt: str
+
+# TODO: response body struct
 
 @app.post("/generate_policy")
 async def generate_policy(request: PolicyRequest):
@@ -76,13 +78,12 @@ async def generate_policy(request: PolicyRequest):
         response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
-                {
-                    "role": "user",
-                    "content": todo,
-                }
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": request.prompt}
             ],
+            temperature=0.1
         )
-        policy = response.choices[0].text.strip()
+        policy = response.choices[0].message.content
         return {"policy": policy}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error generating policy: {e}")
