@@ -5,10 +5,12 @@ import argparse
 import time
 from openai import OpenAI
 
-client = OpenAI()
+
+
+client = OpenAI(api_key = os.getenv("OPENAI_API_KEY"))
 
 # Ensure your API key is set in your environment variables
-# if not openai.api_key:
+# if not OpenAI.api_key:
 #    raise ValueError("Please set the OPENAI_API_KEY environment variable.")
 
 # Configurable parameters
@@ -20,14 +22,15 @@ VERIFICATION_TEMPERATURE = 0.0
 # Prompts
 GENERATION_PROMPT = (
     "You are an expert in Google Cloud IAM policies. "
-    "Generate a plain-English request for a policy binding and the corresponding JSON snippet for the policy. "
-    "Your response must be valid JSON with exactly two keys: 'query' and 'policy'.\n\n"
+    "Generate a plain-English request for a policy binding and the corresponding CSV snippet for the policy. "
+    "Your response must be valid CSV with exactly two values: a request and a response'.\n\n"
+    'The response should be in the format "request","response".\n\n'
+    'The request should be a plain-English description of the policy binding to generate, '
+    'including the role(s) and member(s) to include. '
+    'The response should be a JSON snippet that correctly implements the policy described in the request.\n\n'
+    'Make the requests with varying complexity and specificity, and include multiple roles and members as needed. SOME requests will specify the roles, but ALL requests will specificy the emails of the user/groups.\n\n'
     "For example, your output should look like:\n"
-    '{\n'
-    '  "query": "Generate a policy binding that will grant my companies service account '
-    '(service@cloud.google.com) the Project Creator role, as well as any internal resources/services needed through the AI Platform User role.",\n'
-    '  "policy": "\\"bindings\\": [\\n  {\\n    \\"role\\": \\"roles/resourcemanager.projectCreator\\",\\n    \\"members\\": [\\n      \\"serviceAccount:service@cloud.google.com\\"\\n    ]\\n  },\\n  {\\n    \\"role\\": \\"roles/aiplatform.user\\",\\n    \\"members\\": [\\n      \\"serviceAccount:service@cloud.google.com\\"\\n    ]\\n  }\\n]"\n'
-    '}'
+    '"Generate a policy binding that will grant my companies service account", "\\"bindings\\": [\\n  {\\n    \\"role\\": \\"roles/resourcemanager.projectCreator\\",\\n    \\"members\\": [\\n      \\"serviceAccount:service@cloud.google.com\\"\\n    ]\\n  },\\n  {\\n    \\"role\\": \\"roles/aiplatform.user\\",\\n    \\"members\\": [\\n      \\"serviceAccount:service@cloud.google.com\\"\\n    ]\\n  }\\n]"'
 )
 
 # Verification prompt template: takes the generated example as input
@@ -56,11 +59,12 @@ def generate_example():
             messages=[{"role": "user", "content": GENERATION_PROMPT}]
         )
         generated_text = response.choices[0].message.content.strip()
+        
+        print(generated_text)
         # Parse the generated text as JSON
-        example = json.loads(generated_text)
         # Basic schema check
-        if "query" in example and "policy" in example:
-            return example
+        if "bindings" in generated_text:
+            return generated_text
     except Exception as e:
         print(f"Error during generation: {e}")
     return None
@@ -95,27 +99,24 @@ def main(num_points, output_file):
         print(f"\nAttempt {attempts}: Generating example...")
         example = generate_example()
         if not example:
-            print("Failed to generate a valid JSON example; retrying...")
+            print("Failed to generate a valid CSV example; retrying...")
             continue
 
         # First verification pass
-        print("Running first verification pass...")
-        if not verify_example(example):
-            print("First verification failed; discarding example.")
-            continue
+        # print("Running first verification pass...")
+        # if not verify_example(example):
+        #     print("First verification failed; discarding example.")
+        #     continue
 
-        # Second verification pass
-        print("Running second verification pass...")
-        if not verify_example(example):
-            print("Second verification failed; discarding example.")
-            continue
+        # # Second verification pass
+        # print("Running second verification pass...")
+        # if not verify_example(example):
+        #     print("Second verification failed; discarding example.")
+        #     continue
 
         # If passed both verifications, add to the valid examples list
         print("Example verified successfully!")
-        valid_examples.append({
-            "prompt": example["query"],
-            "completion": example["policy"]
-        })
+        valid_examples.append(example)
 
         # Be kind to the API
         time.sleep(1)
@@ -124,7 +125,8 @@ def main(num_points, output_file):
     # Save the examples in JSONL format
     with open(output_file, "w") as f:
         for example in valid_examples:
-            f.write(json.dumps(example) + "\n")
+            f.write(example)
+            f.write('\n')
     print(f"Saved valid examples to {output_file}")
 
 if __name__ == "__main__":
@@ -138,7 +140,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--output-file",
         type=str,
-        default="synthetic_data.jsonl",
+        default="synthetic_data.csv",
         help="Output file to write the JSONL data."
     )
     args = parser.parse_args()
