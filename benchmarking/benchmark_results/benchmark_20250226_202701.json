@@ -1,0 +1,678 @@
+{
+  "benchmark_id": "20250226_202701",
+  "timestamp": "2025-02-26T20:27:01.652669",
+  "config": {
+    "results_dir": "benchmark_results"
+  },
+  "model_results": {
+    "gpt-4o-mini": {
+      "model_config": {
+        "name": "gpt-4o-mini",
+        "type": "openai",
+        "temperature": 0.2,
+        "request_delay": 0.5
+      },
+      "metrics": {
+        "total_tests": 50,
+        "successful_tests": 0,
+        "success_rate": 0.0,
+        "valid_json_rate": 1.0,
+        "correct_format_rate": 0.0,
+        "avg_similarity": 0.0,
+        "avg_latency": 1.9599583959579467
+      },
+      "test_results": [
+        {
+          "test_id": "5bf503dcd9e0718bc4878afb0182c4db",
+          "request": "The group security-team@example.com needs Dataflow Worker to perform Dataflow Worker operations. This access should expire on 2027-09-20",
+          "expected": "{\n  \"\"bindings\"\": [\n    {\n      \"\"role\"\": \"\"roles/dataflow.worker\"\",\n      \"\"members\"\": [\n        \"\"group:security-team@example.com\"\"\n      ],\n      \"\"condition\"\": {\n        \"\"title\"\": \"\"Expiration Condition\"\",\n        \"\"description\"\": \"\"Expires on 2027-09-20\"\",\n        \"\"expression\"\": \"\"request.time < timestamp('2027-09-21T00:00:00.000Z')\"\"\n      }\n    }\n  ]\n}",
+          "generated": "{\n  \"bindings\": [\n    {\n      \"role\": \"roles/dataflow.worker\",\n      \"members\": [\n        \"group:security-team@example.com\"\n      ],\n      \"condition\": {\n        \"title\": \"Expire access for security team\",\n        \"description\": \"Access expires on 2027-09-20\",\n        \"expression\": \"request.time < timestamp('2027-09-20T00:00:00Z')\"\n      }\n    }\n  ]\n}",
+          "latency": 2.7838990688323975,
+          "evaluation": {
+            "valid_json": true,
+            "correct_format": false,
+            "similarity": 0.0,
+            "passed": false
+          }
+        },
+        {
+          "test_id": "8e5cfefe4ed7df9cfc881de83744f3fd",
+          "request": "For our AI testing platform, service account cloud-agent@data-project.iam.gserviceaccount.com needs Cloudfunctions Viewer, and group admin-team@example.com needs Custom Role. Both should expire on {expiration_date}",
+          "expected": "{\n  \"\"bindings\"\": [\n    {\n      \"\"role\"\": \"\"roles/cloudfunctions.viewer\"\",\n      \"\"members\"\": [\n        \"\"service_account:cloud-agent@data-project.iam.gserviceaccount.com\"\",\n        \"\"group:admin-team@example.com\"\",\n        \"\"service_account:cloud-service@monitoring-project.iam.gserviceaccount.com\"\"\n      ]\n    }\n  ]\n}",
+          "generated": "{\n  \"bindings\": [\n    {\n      \"role\": \"roles/cloudfunctions.viewer\",\n      \"members\": [\n        \"serviceAccount:cloud-agent@data-project.iam.gserviceaccount.com\"\n      ],\n      \"condition\": {\n        \"title\": \"Expiration Condition\",\n        \"description\": \"Temporary access for AI testing platform\",\n        \"expression\": \"request.time < timestamp('{expiration_date}')\"\n      }\n    },\n    {\n      \"role\": \"roles/your_custom_role_name\",\n      \"members\": [\n        \"group:admin-team@example.com\"\n      ],\n      \"condition\": {\n        \"title\": \"Expiration Condition\",\n        \"description\": \"Temporary access for admin team\",\n        \"expression\": \"request.time < timestamp('{expiration_date}')\"\n      }\n    }\n  ]\n}",
+          "latency": 4.110716104507446,
+          "evaluation": {
+            "valid_json": true,
+            "correct_format": false,
+            "similarity": 0.0,
+            "passed": false
+          }
+        },
+        {
+          "test_id": "f0a93431f7adee848da6a6984b5c3e71",
+          "request": "The service account admin-sa@my-project.iam.gserviceaccount.com needs Dataflow Admin to perform Dataflow Admin operations. This access should expire on 2025-07-22",
+          "expected": "{\n  \"\"bindings\"\": [\n    {\n      \"\"role\"\": \"\"roles/dataflow.admin\"\",\n      \"\"members\"\": [\n        \"\"service_account:admin-sa@my-project.iam.gserviceaccount.com\"\"\n      ],\n      \"\"condition\"\": {\n        \"\"title\"\": \"\"Expiration Condition\"\",\n        \"\"description\"\": \"\"Expires on 2025-07-22\"\",\n        \"\"expression\"\": \"\"request.time < timestamp('2025-07-23T00:00:00.000Z')\"\"\n      }\n    }\n  ]\n}",
+          "generated": "{\n  \"bindings\": [\n    {\n      \"role\": \"roles/dataflow.admin\",\n      \"members\": [\n        \"serviceAccount:admin-sa@my-project.iam.gserviceaccount.com\"\n      ],\n      \"condition\": {\n        \"title\": \"Expire Dataflow Admin Access\",\n        \"description\": \"Access expires on 2025-07-22\",\n        \"expression\": \"request.time < timestamp('2025-07-22T00:00:00Z')\"\n      }\n    }\n  ]\n}",
+          "latency": 1.4217629432678223,
+          "evaluation": {
+            "valid_json": true,
+            "correct_format": false,
+            "similarity": 0.0,
+            "passed": false
+          }
+        },
+        {
+          "test_id": "09e22d6274cef20b739b6a21d793689a",
+          "request": "I need a policy for group monitoring-team@cloud.google.com to have Run Viewer access, with expiration on 2027-08-14",
+          "expected": "{\n  \"\"bindings\"\": [\n    {\n      \"\"role\"\": \"\"roles/run.viewer\"\",\n      \"\"members\"\": [\n        \"\"group:monitoring-team@cloud.google.com\"\"\n      ],\n      \"\"condition\"\": {\n        \"\"title\"\": \"\"Expiration Condition\"\",\n        \"\"description\"\": \"\"Expires on 2027-08-14\"\",\n        \"\"expression\"\": \"\"request.time < timestamp('2027-08-15T00:00:00.000Z')\"\"\n      }\n    }\n  ]\n}",
+          "generated": "{\n  \"bindings\": [\n    {\n      \"role\": \"roles/run.viewer\",\n      \"members\": [\n        \"group:monitoring-team@cloud.google.com\"\n      ],\n      \"condition\": {\n        \"title\": \"Expiration\",\n        \"description\": \"Access expires on 2027-08-14\",\n        \"expression\": \"request.time < timestamp('2027-08-14T00:00:00Z')\"\n      }\n    }\n  ]\n}",
+          "latency": 1.441457986831665,
+          "evaluation": {
+            "valid_json": true,
+            "correct_format": false,
+            "similarity": 0.0,
+            "passed": false
+          }
+        },
+        {
+          "test_id": "8ab14cd634b48ad360c0504fe4b15a46",
+          "request": "Give service account admin-sa@gke-project.iam.gserviceaccount.com the Monitoring Viewer role (roles/monitoring.viewer) so they can perform Monitoring Viewer operations",
+          "expected": "{\n  \"\"bindings\"\": [\n    {\n      \"\"role\"\": \"\"roles/monitoring.viewer\"\",\n      \"\"members\"\": [\n        \"\"service_account:admin-sa@gke-project.iam.gserviceaccount.com\"\"\n      ]\n    }\n  ]\n}",
+          "generated": "{\n  \"bindings\": [\n    {\n      \"role\": \"roles/monitoring.viewer\",\n      \"members\": [\n        \"serviceAccount:admin-sa@gke-project.iam.gserviceaccount.com\"\n      ]\n    }\n  ]\n}",
+          "latency": 1.235260248184204,
+          "evaluation": {
+            "valid_json": true,
+            "correct_format": false,
+            "similarity": 0.0,
+            "passed": false
+          }
+        },
+        {
+          "test_id": "60dda6861737ea66f4a501a84a33b24f",
+          "request": "I need a policy that allows service account app-service@ai-project.iam.gserviceaccount.com to use AI Platform services in the project analytics-project",
+          "expected": "{\n  \"\"bindings\"\": [\n    {\n      \"\"role\"\": \"\"roles/aiplatform.user\"\",\n      \"\"members\"\": [\n        \"\"service_account:app-service@ai-project.iam.gserviceaccount.com\"\"\n      ]\n    }\n  ]\n}",
+          "generated": "{\n  \"bindings\": [\n    {\n      \"role\": \"roles/aiplatform.admin\",\n      \"members\": [\n        \"serviceAccount:app-service@ai-project.iam.gserviceaccount.com\"\n      ]\n    }\n  ],\n  \"etag\": \"BwW1yD8s8Zg=\"\n}",
+          "latency": 1.030714988708496,
+          "evaluation": {
+            "valid_json": true,
+            "correct_format": false,
+            "similarity": 0.0,
+            "passed": false
+          }
+        },
+        {
+          "test_id": "a83a8dfe93d6be1dfe74625b854346f1",
+          "request": "I want a policy such that service account ml-sa@my-project.iam.gserviceaccount.com has the role roles/logging.logWriter. Make this access expire on 2025-09-10",
+          "expected": "{\n  \"\"bindings\"\": [\n    {\n      \"\"role\"\": \"\"roles/logging.logWriter\"\",\n      \"\"members\"\": [\n        \"\"service_account:ml-sa@my-project.iam.gserviceaccount.com\"\"\n      ],\n      \"\"condition\"\": {\n        \"\"title\"\": \"\"Expiration Condition\"\",\n        \"\"description\"\": \"\"Expires on 2025-09-10\"\",\n        \"\"expression\"\": \"\"request.time < timestamp('2025-09-11T00:00:00.000Z')\"\"\n      }\n    }\n  ]\n}",
+          "generated": "{\n  \"bindings\": [\n    {\n      \"role\": \"roles/logging.logWriter\",\n      \"members\": [\n        \"serviceAccount:ml-sa@my-project.iam.gserviceaccount.com\"\n      ],\n      \"condition\": {\n        \"title\": \"Expire access on 2025-09-10\",\n        \"description\": \"Access expires on 2025-09-10\",\n        \"expression\": \"request.time < timestamp('2025-09-10T00:00:00Z')\"\n      }\n    }\n  ]\n}",
+          "latency": 1.7464487552642822,
+          "evaluation": {
+            "valid_json": true,
+            "correct_format": false,
+            "similarity": 0.0,
+            "passed": false
+          }
+        },
+        {
+          "test_id": "06e0e88e5ea53d8fe7b3eb8e2cd85b63",
+          "request": "I need a policy for group security-team@example.com to have Resourcemanager Projectcreator and group monitoring-team@cloud.google.com to have Custom Role. The first role should expire on {expiration_date1}, and the second on {expiration_date2}",
+          "expected": "{\n  \"\"bindings\"\": [\n    {\n      \"\"role\"\": \"\"roles/resourcemanager.projectCreator\"\",\n      \"\"members\"\": [\n        \"\"group:security-team@example.com\"\",\n        \"\"group:monitoring-team@cloud.google.com\"\",\n        \"\"service_account:cloud-service@data-project.iam.gserviceaccount.com\"\"\n      ]\n    }\n  ]\n}",
+          "generated": "{\n  \"bindings\": [\n    {\n      \"role\": \"roles/resourcemanager.projectCreator\",\n      \"members\": [\n        \"group:security-team@example.com\"\n      ],\n      \"condition\": {\n        \"title\": \"Expire Project Creator Role\",\n        \"description\": \"This role expires on a specific date\",\n        \"expression\": \"request.time < timestamp('{expiration_date1}')\"\n      }\n    },\n    {\n      \"role\": \"roles/customRole\",\n      \"members\": [\n        \"group:monitoring-team@cloud.google.com\"\n      ],\n      \"condition\": {\n        \"title\": \"Expire Custom Role\",\n        \"description\": \"This role expires on a specific date\",\n        \"expression\": \"request.time < timestamp('{expiration_date2}')\"\n      }\n    }\n  ]\n}",
+          "latency": 1.7065858840942383,
+          "evaluation": {
+            "valid_json": true,
+            "correct_format": false,
+            "similarity": 0.0,
+            "passed": false
+          }
+        },
+        {
+          "test_id": "520ca4bc0fcc6e6c90bc5759596891e9",
+          "request": "Our infrastructure team needs a policy that gives user app-dev@cloud.google.com the following permissions: roles/container.admin",
+          "expected": "{\n  \"\"bindings\"\": [\n    {\n      \"\"role\"\": \"\"roles/container.admin\"\",\n      \"\"members\"\": [\n        \"\"user:app-dev@cloud.google.com\"\"\n      ],\n      \"\"condition\"\": {\n        \"\"title\"\": \"\"Expiration Condition\"\",\n        \"\"description\"\": \"\"Expires on 2025-07-28\"\",\n        \"\"expression\"\": \"\"request.time < timestamp('2025-07-29T00:00:00.000Z')\"\"\n      }\n    }\n  ]\n}",
+          "generated": "{\n  \"bindings\": [\n    {\n      \"role\": \"roles/container.admin\",\n      \"members\": [\n        \"user:app-dev@cloud.google.com\"\n      ]\n    }\n  ]\n}",
+          "latency": 1.2790532112121582,
+          "evaluation": {
+            "valid_json": true,
+            "correct_format": false,
+            "similarity": 0.0,
+            "passed": false
+          }
+        },
+        {
+          "test_id": "182892823d89a0d72adf2ec6785cae6a",
+          "request": "Give service account data-agent@monitoring-project.iam.gserviceaccount.com the Dataflow Developer role (roles/dataflow.developer) so they can develop Dataflow jobs",
+          "expected": "{\n  \"\"bindings\"\": [\n    {\n      \"\"role\"\": \"\"roles/dataflow.developer\"\",\n      \"\"members\"\": [\n        \"\"service_account:data-agent@monitoring-project.iam.gserviceaccount.com\"\"\n      ]\n    }\n  ]\n}",
+          "generated": "{\n  \"bindings\": [\n    {\n      \"role\": \"roles/dataflow.developer\",\n      \"members\": [\n        \"serviceAccount:data-agent@monitoring-project.iam.gserviceaccount.com\"\n      ]\n    }\n  ]\n}",
+          "latency": 0.8597409725189209,
+          "evaluation": {
+            "valid_json": true,
+            "correct_format": false,
+            "similarity": 0.0,
+            "passed": false
+          }
+        },
+        {
+          "test_id": "6371031215b268c81c81a5a142f0088b",
+          "request": "The group network-team@example.com requires access to {role_name1}, {role_name2}, and {role_name3}. This access should expire on {expiration_date}",
+          "expected": "{\n  \"\"bindings\"\": [\n    {\n      \"\"role\"\": \"\"roles/compute.instanceAdmin\"\",\n      \"\"members\"\": [\n        \"\"group:network-team@example.com\"\"\n      ]\n    },\n    {\n      \"\"role\"\": \"\"roles/owner\"\",\n      \"\"members\"\": [\n        \"\"group:network-team@example.com\"\"\n      ]\n    },\n    {\n      \"\"role\"\": \"\"roles/iam.securityReviewer\"\",\n      \"\"members\"\": [\n        \"\"group:network-team@example.com\"\"\n      ]\n    }\n  ]\n}",
+          "generated": "{\n  \"bindings\": [\n    {\n      \"role\": \"roles/{role_name1}\",\n      \"members\": [\n        \"group:network-team@example.com\"\n      ],\n      \"condition\": {\n        \"title\": \"AccessExpiration\",\n        \"description\": \"Access expires on specified date\",\n        \"expression\": \"request.time < timestamp('{expiration_date}')\"\n      }\n    },\n    {\n      \"role\": \"roles/{role_name2}\",\n      \"members\": [\n        \"group:network-team@example.com\"\n      ],\n      \"condition\": {\n        \"title\": \"AccessExpiration\",\n        \"description\": \"Access expires on specified date\",\n        \"expression\": \"request.time < timestamp('{expiration_date}')\"\n      }\n    },\n    {\n      \"role\": \"roles/{role_name3}\",\n      \"members\": [\n        \"group:network-team@example.com\"\n      ],\n      \"condition\": {\n        \"title\": \"AccessExpiration\",\n        \"description\": \"Access expires on specified date\",\n        \"expression\": \"request.time < timestamp('{expiration_date}')\"\n      }\n    }\n  ]\n}",
+          "latency": 2.852593183517456,
+          "evaluation": {
+            "valid_json": true,
+            "correct_format": false,
+            "similarity": 0.0,
+            "passed": false
+          }
+        },
+        {
+          "test_id": "3dcbf73099619ccd1878aa711b7efe6b",
+          "request": "Create a policy where user network-team@cloud.google.com has the Dataflow Viewer role",
+          "expected": "{\n  \"\"bindings\"\": [\n    {\n      \"\"role\"\": \"\"roles/dataflow.viewer\"\",\n      \"\"members\"\": [\n        \"\"user:network-team@cloud.google.com\"\"\n      ]\n    }\n  ]\n}",
+          "generated": "{\n  \"bindings\": [\n    {\n      \"role\": \"roles/dataflow.viewer\",\n      \"members\": [\n        \"user:network-team@cloud.google.com\"\n      ]\n    }\n  ]\n}",
+          "latency": 1.231755018234253,
+          "evaluation": {
+            "valid_json": true,
+            "correct_format": false,
+            "similarity": 0.0,
+            "passed": false
+          }
+        },
+        {
+          "test_id": "0bd9eafd46882ce0a1063929e265d137",
+          "request": "I need a policy that allows service account data-service@dev-project.iam.gserviceaccount.com to have both {role_name1} and {role_name2} roles",
+          "expected": "{\n  \"\"bindings\"\": [\n    {\n      \"\"role\"\": \"\"roles/cloudkms.cryptoKeyEncrypterDecrypter\"\",\n      \"\"members\"\": [\n        \"\"service_account:data-service@dev-project.iam.gserviceaccount.com\"\"\n      ],\n      \"\"condition\"\": {\n        \"\"title\"\": \"\"Expiration Condition\"\",\n        \"\"description\"\": \"\"Expires on 2025-11-22\"\",\n        \"\"expression\"\": \"\"request.time < timestamp('2025-11-23T00:00:00.000Z')\"\"\n      }\n    }\n  ]\n}",
+          "generated": "{\n  \"bindings\": [\n    {\n      \"role\": \"roles/{role_name1}\",\n      \"members\": [\n        \"serviceAccount:data-service@dev-project.iam.gserviceaccount.com\"\n      ]\n    },\n    {\n      \"role\": \"roles/{role_name2}\",\n      \"members\": [\n        \"serviceAccount:data-service@dev-project.iam.gserviceaccount.com\"\n      ]\n    }\n  ]\n}",
+          "latency": 1.1328129768371582,
+          "evaluation": {
+            "valid_json": true,
+            "correct_format": false,
+            "similarity": 0.0,
+            "passed": false
+          }
+        },
+        {
+          "test_id": "cdb4cd29401d28c0234f1cbbd214d030",
+          "request": "I need a policy for user database-operator@example.com to have Appengine Deployer access, with expiration on 2027-02-17",
+          "expected": "{\n  \"\"bindings\"\": [\n    {\n      \"\"role\"\": \"\"roles/appengine.deployer\"\",\n      \"\"members\"\": [\n        \"\"user:database-operator@example.com\"\"\n      ],\n      \"\"condition\"\": {\n        \"\"title\"\": \"\"Expiration Condition\"\",\n        \"\"description\"\": \"\"Expires on 2027-02-17\"\",\n        \"\"expression\"\": \"\"request.time < timestamp('2027-02-18T00:00:00.000Z')\"\"\n      }\n    }\n  ]\n}",
+          "generated": "{\n  \"bindings\": [\n    {\n      \"role\": \"roles/appengine.deployer\",\n      \"members\": [\n        \"user:database-operator@example.com\"\n      ],\n      \"condition\": {\n        \"title\": \"Expiration\",\n        \"description\": \"Access expires on 2027-02-17\",\n        \"expression\": \"request.time < timestamp('2027-02-17T00:00:00Z')\"\n      }\n    }\n  ]\n}",
+          "latency": 1.251819133758545,
+          "evaluation": {
+            "valid_json": true,
+            "correct_format": false,
+            "similarity": 0.0,
+            "passed": false
+          }
+        },
+        {
+          "test_id": "8b0591d5d9476c2fea15ecccc55b40e4",
+          "request": "Our monitoring team needs a policy that gives user ops-team@my-org.com the following permissions: roles/cloudsql.viewer",
+          "expected": "{\n  \"\"bindings\"\": [\n    {\n      \"\"role\"\": \"\"roles/cloudsql.viewer\"\",\n      \"\"members\"\": [\n        \"\"user:ops-team@my-org.com\"\"\n      ],\n      \"\"condition\"\": {\n        \"\"title\"\": \"\"Expiration Condition\"\",\n        \"\"description\"\": \"\"Expires on 2026-09-28\"\",\n        \"\"expression\"\": \"\"request.time < timestamp('2026-09-29T00:00:00.000Z')\"\"\n      }\n    }\n  ]\n}",
+          "generated": "{\n  \"bindings\": [\n    {\n      \"role\": \"roles/cloudsql.viewer\",\n      \"members\": [\n        \"user:ops-team@my-org.com\"\n      ]\n    }\n  ]\n}",
+          "latency": 1.1222710609436035,
+          "evaluation": {
+            "valid_json": true,
+            "correct_format": false,
+            "similarity": 0.0,
+            "passed": false
+          }
+        },
+        {
+          "test_id": "797244e475a6bfe9243e4cb8b64a3bcb",
+          "request": "Generate a policy binding that will grant service account (keyring-admin@prod-project.iam.gserviceaccount.com) with the Cloudfunctions Developer role",
+          "expected": "{\n  \"\"bindings\"\": [\n    {\n      \"\"role\"\": \"\"roles/cloudfunctions.developer\"\",\n      \"\"members\"\": [\n        \"\"service_account:keyring-admin@prod-project.iam.gserviceaccount.com\"\"\n      ]\n    }\n  ]\n}",
+          "generated": "{\n  \"bindings\": [\n    {\n      \"role\": \"roles/cloudfunctions.developer\",\n      \"members\": [\n        \"serviceAccount:keyring-admin@prod-project.iam.gserviceaccount.com\"\n      ]\n    }\n  ]\n}",
+          "latency": 1.453296184539795,
+          "evaluation": {
+            "valid_json": true,
+            "correct_format": false,
+            "similarity": 0.0,
+            "passed": false
+          }
+        },
+        {
+          "test_id": "1fe2570b2db9d1c8314cbe8339943205",
+          "request": "I need a policy for user ml-team@my-org.com to have Iam Securityreviewer access, with expiration on 2027-05-22",
+          "expected": "{\n  \"\"bindings\"\": [\n    {\n      \"\"role\"\": \"\"roles/iam.securityReviewer\"\",\n      \"\"members\"\": [\n        \"\"user:ml-team@my-org.com\"\"\n      ],\n      \"\"condition\"\": {\n        \"\"title\"\": \"\"Expiration Condition\"\",\n        \"\"description\"\": \"\"Expires on 2027-05-22\"\",\n        \"\"expression\"\": \"\"request.time < timestamp('2027-05-23T00:00:00.000Z')\"\"\n      }\n    }\n  ]\n}",
+          "generated": "{\n  \"bindings\": [\n    {\n      \"role\": \"roles/iam.securityReviewer\",\n      \"members\": [\n        \"user:ml-team@my-org.com\"\n      ],\n      \"condition\": {\n        \"title\": \"Expiration\",\n        \"description\": \"Access expires on 2027-05-22\",\n        \"expression\": \"request.time < timestamp('2027-05-22T00:00:00Z')\"\n      }\n    }\n  ]\n}",
+          "latency": 1.7861812114715576,
+          "evaluation": {
+            "valid_json": true,
+            "correct_format": false,
+            "similarity": 0.0,
+            "passed": false
+          }
+        },
+        {
+          "test_id": "d46f366c513c474b1225f964fda75011",
+          "request": "Grant {member_type1} {member1} the {role_name1} role, and also give {member_type2} {member2} the {role_name2} role",
+          "expected": "{\n  \"\"bindings\"\": [\n    {\n      \"\"role\"\": \"\"roles/dataflow.worker\"\",\n      \"\"members\"\": [\n        \"\"user:app-dev@my-org.com\"\"\n      ]\n    }\n  ]\n}",
+          "generated": "{\n  \"bindings\": [\n    {\n      \"role\": \"{role_name1}\",\n      \"members\": [\n        \"{member_type1} {member1}\"\n      ]\n    },\n    {\n      \"role\": \"{role_name2}\",\n      \"members\": [\n        \"{member_type2} {member2}\"\n      ]\n    }\n  ]\n}",
+          "latency": 1.2354278564453125,
+          "evaluation": {
+            "valid_json": true,
+            "correct_format": false,
+            "similarity": 0.0,
+            "passed": false
+          }
+        },
+        {
+          "test_id": "d46f366c513c474b1225f964fda75011",
+          "request": "Grant {member_type1} {member1} the {role_name1} role, and also give {member_type2} {member2} the {role_name2} role",
+          "expected": "{\n  \"\"bindings\"\": [\n    {\n      \"\"role\"\": \"\"roles/appengine.deployer\"\",\n      \"\"members\"\": [\n        \"\"service_account:job-operator@analytics-project.iam.gserviceaccount.com\"\"\n      ]\n    },\n    {\n      \"\"role\"\": \"\"roles/appengine.deployer\"\",\n      \"\"members\"\": [\n        \"\"service_account:job-operator@analytics-project.iam.gserviceaccount.com\"\"\n      ]\n    },\n    {\n      \"\"role\"\": \"\"roles/dataflow.viewer\"\",\n      \"\"members\"\": [\n        \"\"service_account:job-operator@analytics-project.iam.gserviceaccount.com\"\"\n      ]\n    }\n  ]\n}",
+          "generated": "{\n  \"bindings\": [\n    {\n      \"role\": \"{role_name1}\",\n      \"members\": [\n        \"{member_type1} {member1}\"\n      ]\n    },\n    {\n      \"role\": \"{role_name2}\",\n      \"members\": [\n        \"{member_type2} {member2}\"\n      ]\n    }\n  ]\n}",
+          "latency": 1.4247159957885742,
+          "evaluation": {
+            "valid_json": true,
+            "correct_format": false,
+            "similarity": 0.0,
+            "passed": false
+          }
+        },
+        {
+          "test_id": "f9f122ad8be5bbebf0dd460afc79f218",
+          "request": "I want a policy such that service account keyring-manager@prod-project.iam.gserviceaccount.com has the role roles/viewer. Make this access expire on 2026-11-13",
+          "expected": "{\n  \"\"bindings\"\": [\n    {\n      \"\"role\"\": \"\"roles/viewer\"\",\n      \"\"members\"\": [\n        \"\"service_account:keyring-manager@prod-project.iam.gserviceaccount.com\"\"\n      ],\n      \"\"condition\"\": {\n        \"\"title\"\": \"\"Expiration Condition\"\",\n        \"\"description\"\": \"\"Expires on 2026-11-13\"\",\n        \"\"expression\"\": \"\"request.time < timestamp('2026-11-14T00:00:00.000Z')\"\"\n      }\n    }\n  ]\n}",
+          "generated": "{\n  \"bindings\": [\n    {\n      \"role\": \"roles/viewer\",\n      \"members\": [\n        \"serviceAccount:keyring-manager@prod-project.iam.gserviceaccount.com\"\n      ],\n      \"condition\": {\n        \"title\": \"Expire access on 2026-11-13\",\n        \"description\": \"Access to the viewer role expires on this date\",\n        \"expression\": \"request.time < timestamp('2026-11-13T00:00:00Z')\"\n      }\n    }\n  ]\n}",
+          "latency": 1.718545913696289,
+          "evaluation": {
+            "valid_json": true,
+            "correct_format": false,
+            "similarity": 0.0,
+            "passed": false
+          }
+        },
+        {
+          "test_id": "1e58c3615fa3aa569fdfd0056aa558db",
+          "request": "Generate a policy binding that will grant service account (app-agent@ai-project.iam.gserviceaccount.com) with the Aiplatform User role",
+          "expected": "{\n  \"\"bindings\"\": [\n    {\n      \"\"role\"\": \"\"roles/aiplatform.user\"\",\n      \"\"members\"\": [\n        \"\"service_account:app-agent@ai-project.iam.gserviceaccount.com\"\"\n      ]\n    }\n  ]\n}",
+          "generated": "{\n  \"bindings\": [\n    {\n      \"role\": \"roles/aiplatform.user\",\n      \"members\": [\n        \"serviceAccount:app-agent@ai-project.iam.gserviceaccount.com\"\n      ]\n    }\n  ]\n}",
+          "latency": 0.9692940711975098,
+          "evaluation": {
+            "valid_json": true,
+            "correct_format": false,
+            "similarity": 0.0,
+            "passed": false
+          }
+        },
+        {
+          "test_id": "15c95b6d44a2887401c4884fe7d9bd1e",
+          "request": "The group dev-team@cloud.google.com needs Dataflow Admin to perform Dataflow Admin operations. This access should expire on 2027-01-04",
+          "expected": "{\n  \"\"bindings\"\": [\n    {\n      \"\"role\"\": \"\"roles/dataflow.admin\"\",\n      \"\"members\"\": [\n        \"\"group:dev-team@cloud.google.com\"\"\n      ],\n      \"\"condition\"\": {\n        \"\"title\"\": \"\"Expiration Condition\"\",\n        \"\"description\"\": \"\"Expires on 2027-01-04\"\",\n        \"\"expression\"\": \"\"request.time < timestamp('2027-01-05T00:00:00.000Z')\"\"\n      }\n    }\n  ]\n}",
+          "generated": "{\n  \"bindings\": [\n    {\n      \"role\": \"roles/dataflow.admin\",\n      \"members\": [\n        \"group:dev-team@cloud.google.com\"\n      ],\n      \"condition\": {\n        \"title\": \"Expire access for dev team\",\n        \"description\": \"Access expires on 2027-01-04\",\n        \"expression\": \"request.time < timestamp('2027-01-04T00:00:00Z')\"\n      }\n    }\n  ]\n}",
+          "latency": 1.5014359951019287,
+          "evaluation": {
+            "valid_json": true,
+            "correct_format": false,
+            "similarity": 0.0,
+            "passed": false
+          }
+        },
+        {
+          "test_id": "3a6343e6d6508ccaca5eb45783b21112",
+          "request": "Our data science team needs a policy that gives user dev-manager@my-org.com the following permissions: roles/cloudsql.viewer",
+          "expected": "{\n  \"\"bindings\"\": [\n    {\n      \"\"role\"\": \"\"roles/cloudsql.viewer\"\",\n      \"\"members\"\": [\n        \"\"user:dev-manager@my-org.com\"\"\n      ],\n      \"\"condition\"\": {\n        \"\"title\"\": \"\"Expiration Condition\"\",\n        \"\"description\"\": \"\"Expires on 2025-10-18\"\",\n        \"\"expression\"\": \"\"request.time < timestamp('2025-10-19T00:00:00.000Z')\"\"\n      }\n    }\n  ]\n}",
+          "generated": "{\n  \"bindings\": [\n    {\n      \"role\": \"roles/cloudsql.viewer\",\n      \"members\": [\n        \"user:dev-manager@my-org.com\"\n      ]\n    }\n  ]\n}",
+          "latency": 0.594649076461792,
+          "evaluation": {
+            "valid_json": true,
+            "correct_format": false,
+            "similarity": 0.0,
+            "passed": false
+          }
+        },
+        {
+          "test_id": "4e052e80cbd450fc68ea5c7bcbe71ec3",
+          "request": "Our cloud architecture team, represented by user monitoring-team@my-org.com, needs {role_name1} and {role_name2} roles across all projects within the organization",
+          "expected": "{\n  \"\"bindings\"\": [\n    {\n      \"\"role\"\": \"\"roles/iam.securityReviewer\"\",\n      \"\"members\"\": [\n        \"\"user:monitoring-team@my-org.com\"\"\n      ]\n    },\n    {\n      \"\"role\"\": \"\"roles/aiplatform.modelUser\"\",\n      \"\"members\"\": [\n        \"\"user:monitoring-team@my-org.com\"\"\n      ]\n    },\n    {\n      \"\"role\"\": \"\"roles/run.invoker\"\",\n      \"\"members\"\": [\n        \"\"user:monitoring-team@my-org.com\"\"\n      ]\n    }\n  ]\n}",
+          "generated": "{\n  \"bindings\": [\n    {\n      \"role\": \"roles/role_name1\",\n      \"members\": [\n        \"user:monitoring-team@my-org.com\"\n      ]\n    },\n    {\n      \"role\": \"roles/role_name2\",\n      \"members\": [\n        \"user:monitoring-team@my-org.com\"\n      ]\n    }\n  ],\n  \"etag\": \"BwWjZ3aQ\"\n}",
+          "latency": 1.1935451030731201,
+          "evaluation": {
+            "valid_json": true,
+            "correct_format": false,
+            "similarity": 0.0,
+            "passed": false
+          }
+        },
+        {
+          "test_id": "78520950cb355926538ced0f15268022",
+          "request": "I want a policy such that service account app-service@monitoring-project.iam.gserviceaccount.com has the role roles/resourcemanager.folderAdmin. Make this access expire on 2027-07-02",
+          "expected": "{\n  \"\"bindings\"\": [\n    {\n      \"\"role\"\": \"\"roles/resourcemanager.folderAdmin\"\",\n      \"\"members\"\": [\n        \"\"service_account:app-service@monitoring-project.iam.gserviceaccount.com\"\"\n      ],\n      \"\"condition\"\": {\n        \"\"title\"\": \"\"Expiration Condition\"\",\n        \"\"description\"\": \"\"Expires on 2027-07-02\"\",\n        \"\"expression\"\": \"\"request.time < timestamp('2027-07-03T00:00:00.000Z')\"\"\n      }\n    }\n  ]\n}",
+          "generated": "{\n  \"bindings\": [\n    {\n      \"role\": \"roles/resourcemanager.folderAdmin\",\n      \"members\": [\n        \"serviceAccount:app-service@monitoring-project.iam.gserviceaccount.com\"\n      ],\n      \"condition\": {\n        \"title\": \"Expire access on 2027-07-02\",\n        \"description\": \"Access expires on July 2, 2027\",\n        \"expression\": \"request.time < timestamp('2027-07-02T00:00:00Z')\"\n      }\n    }\n  ]\n}",
+          "latency": 1.514035940170288,
+          "evaluation": {
+            "valid_json": true,
+            "correct_format": false,
+            "similarity": 0.0,
+            "passed": false
+          }
+        },
+        {
+          "test_id": "f8e2f4dd892fa9a8ab5a903383342b33",
+          "request": "I need a policy that allows service account cluster-operator@dev-project.iam.gserviceaccount.com to have both {role_name1} and {role_name2} roles",
+          "expected": "{\n  \"\"bindings\"\": [\n    {\n      \"\"role\"\": \"\"roles/run.admin\"\",\n      \"\"members\"\": [\n        \"\"service_account:cluster-operator@dev-project.iam.gserviceaccount.com\"\"\n      ]\n    },\n    {\n      \"\"role\"\": \"\"roles/aiplatform.modelUser\"\",\n      \"\"members\"\": [\n        \"\"service_account:cluster-operator@dev-project.iam.gserviceaccount.com\"\"\n      ]\n    },\n    {\n      \"\"role\"\": \"\"roles/resourcemanager.projectCreator\"\",\n      \"\"members\"\": [\n        \"\"service_account:cluster-operator@dev-project.iam.gserviceaccount.com\"\"\n      ]\n    }\n  ]\n}",
+          "generated": "{\n  \"bindings\": [\n    {\n      \"role\": \"roles/{role_name1}\",\n      \"members\": [\n        \"serviceAccount:cluster-operator@dev-project.iam.gserviceaccount.com\"\n      ]\n    },\n    {\n      \"role\": \"roles/{role_name2}\",\n      \"members\": [\n        \"serviceAccount:cluster-operator@dev-project.iam.gserviceaccount.com\"\n      ]\n    }\n  ]\n}",
+          "latency": 1.6460769176483154,
+          "evaluation": {
+            "valid_json": true,
+            "correct_format": false,
+            "similarity": 0.0,
+            "passed": false
+          }
+        },
+        {
+          "test_id": "8349e4d71be2e356ee92ebb55e0f3dad",
+          "request": "Generate a policy binding that will grant service account (job-admin@prod-project.iam.gserviceaccount.com) with the Resourcemanager Projectcreator role",
+          "expected": "{\n  \"\"bindings\"\": [\n    {\n      \"\"role\"\": \"\"roles/resourcemanager.projectCreator\"\",\n      \"\"members\"\": [\n        \"\"service_account:job-admin@prod-project.iam.gserviceaccount.com\"\"\n      ]\n    }\n  ]\n}",
+          "generated": "{\n  \"bindings\": [\n    {\n      \"role\": \"roles/resourcemanager.projectCreator\",\n      \"members\": [\n        \"serviceAccount:job-admin@prod-project.iam.gserviceaccount.com\"\n      ]\n    }\n  ]\n}",
+          "latency": 1.0373358726501465,
+          "evaluation": {
+            "valid_json": true,
+            "correct_format": false,
+            "similarity": 0.0,
+            "passed": false
+          }
+        },
+        {
+          "test_id": "a220c2d574b5aa252db7097ec0c1cf26",
+          "request": "Generate a policy binding that will grant group (security-team@example.com) with the Storage Objectadmin role",
+          "expected": "{\n  \"\"bindings\"\": [\n    {\n      \"\"role\"\": \"\"roles/storage.objectAdmin\"\",\n      \"\"members\"\": [\n        \"\"group:security-team@example.com\"\"\n      ]\n    }\n  ]\n}",
+          "generated": "{\n  \"bindings\": [\n    {\n      \"role\": \"roles/storage.objectAdmin\",\n      \"members\": [\n        \"group:security-team@example.com\"\n      ]\n    }\n  ]\n}",
+          "latency": 1.6485860347747803,
+          "evaluation": {
+            "valid_json": true,
+            "correct_format": false,
+            "similarity": 0.0,
+            "passed": false
+          }
+        },
+        {
+          "test_id": "de4bcbd78a7962060963074249f5dd8b",
+          "request": "Create a policy where group network-team@example.com and user cluster-operator@example.com both have the Monitoring Viewer role",
+          "expected": "{\n  \"\"bindings\"\": [\n    {\n      \"\"role\"\": \"\"roles/monitoring.viewer\"\",\n      \"\"members\"\": [\n        \"\"group:network-team@example.com\"\",\n        \"\"user:cluster-operator@example.com\"\",\n        \"\"service_account:cloud-agent@data-project.iam.gserviceaccount.com\"\"\n      ]\n    }\n  ]\n}",
+          "generated": "{\n  \"bindings\": [\n    {\n      \"role\": \"roles/monitoring.viewer\",\n      \"members\": [\n        \"group:network-team@example.com\",\n        \"user:cluster-operator@example.com\"\n      ]\n    }\n  ]\n}",
+          "latency": 0.8454861640930176,
+          "evaluation": {
+            "valid_json": true,
+            "correct_format": false,
+            "similarity": 0.0,
+            "passed": false
+          }
+        },
+        {
+          "test_id": "3b2ba0111f2a299dd5718d3c12272b65",
+          "request": "For our data analytics platform, {member_type1} {member1} needs {role_name1}, and {member_type2} {member2} needs {role_name2}. Both should expire on {expiration_date}",
+          "expected": "{\n  \"\"bindings\"\": [\n    {\n      \"\"role\"\": \"\"roles/container.admin\"\",\n      \"\"members\"\": [\n        \"\"service_account:network-sa@ai-project.iam.gserviceaccount.com\"\"\n      ]\n    },\n    {\n      \"\"role\"\": \"\"roles/owner\"\",\n      \"\"members\"\": [\n        \"\"service_account:network-sa@ai-project.iam.gserviceaccount.com\"\"\n      ]\n    }\n  ]\n}",
+          "generated": "{\n  \"bindings\": [\n    {\n      \"role\": \"roles/{role_name1}\",\n      \"members\": [\n        \"{member_type1} {member1}\"\n      ],\n      \"condition\": {\n        \"title\": \"Expiration\",\n        \"description\": \"This role will expire on the specified date.\",\n        \"expression\": \"request.time < timestamp('{expiration_date}')\"\n      }\n    },\n    {\n      \"role\": \"roles/{role_name2}\",\n      \"members\": [\n        \"{member_type2} {member2}\"\n      ],\n      \"condition\": {\n        \"title\": \"Expiration\",\n        \"description\": \"This role will expire on the specified date.\",\n        \"expression\": \"request.time < timestamp('{expiration_date}')\"\n      }\n    }\n  ]\n}",
+          "latency": 5.412034273147583,
+          "evaluation": {
+            "valid_json": true,
+            "correct_format": false,
+            "similarity": 0.0,
+            "passed": false
+          }
+        },
+        {
+          "test_id": "33d4086449f0d927969f3fb668f96bbb",
+          "request": "I need a policy for service account monitoring-sa@data-project.iam.gserviceaccount.com to have Storage Objectadmin access, with expiration on 2027-03-01",
+          "expected": "{\n  \"\"bindings\"\": [\n    {\n      \"\"role\"\": \"\"roles/storage.objectAdmin\"\",\n      \"\"members\"\": [\n        \"\"service_account:monitoring-sa@data-project.iam.gserviceaccount.com\"\"\n      ],\n      \"\"condition\"\": {\n        \"\"title\"\": \"\"Expiration Condition\"\",\n        \"\"description\"\": \"\"Expires on 2027-03-01\"\",\n        \"\"expression\"\": \"\"request.time < timestamp('2027-03-02T00:00:00.000Z')\"\"\n      }\n    }\n  ]\n}",
+          "generated": "{\n  \"bindings\": [\n    {\n      \"role\": \"roles/storage.objectAdmin\",\n      \"members\": [\n        \"serviceAccount:monitoring-sa@data-project.iam.gserviceaccount.com\"\n      ],\n      \"condition\": {\n        \"title\": \"Expiration\",\n        \"description\": \"Access expires on 2027-03-01\",\n        \"expression\": \"request.time < timestamp('2027-03-01T00:00:00Z')\"\n      }\n    }\n  ]\n}",
+          "latency": 4.413236141204834,
+          "evaluation": {
+            "valid_json": true,
+            "correct_format": false,
+            "similarity": 0.0,
+            "passed": false
+          }
+        },
+        {
+          "test_id": "cef0051d41b01803fb6bad3cdf0c93bb",
+          "request": "I need a policy that allows service account app-processor@monitoring-project.iam.gserviceaccount.com to administer Kubernetes clusters in the project my-project",
+          "expected": "{\n  \"\"bindings\"\": [\n    {\n      \"\"role\"\": \"\"roles/container.admin\"\",\n      \"\"members\"\": [\n        \"\"service_account:app-processor@monitoring-project.iam.gserviceaccount.com\"\"\n      ]\n    }\n  ]\n}",
+          "generated": "{\n  \"bindings\": [\n    {\n      \"role\": \"roles/container.admin\",\n      \"members\": [\n        \"serviceAccount:app-processor@monitoring-project.iam.gserviceaccount.com\"\n      ]\n    }\n  ],\n  \"etag\": \"BwW5Dg==\"\n}",
+          "latency": 0.9327218532562256,
+          "evaluation": {
+            "valid_json": true,
+            "correct_format": false,
+            "similarity": 0.0,
+            "passed": false
+          }
+        },
+        {
+          "test_id": "08716ca7be06c06fac7c589a3b7603cd",
+          "request": "The user ml-team@my-org.com requires access to {role_name1}, {role_name2}, and {role_name3}. This access should expire on {expiration_date}",
+          "expected": "{\n  \"\"bindings\"\": [\n    {\n      \"\"role\"\": \"\"roles/iam.securityReviewer\"\",\n      \"\"members\"\": [\n        \"\"user:ml-team@my-org.com\"\",\n        \"\"user:security-admin@example.com\"\",\n        \"\"service_account:ml-sa@dev-project.iam.gserviceaccount.com\"\"\n      ]\n    }\n  ]\n}",
+          "generated": "{\n  \"bindings\": [\n    {\n      \"role\": \"roles/{role_name1}\",\n      \"members\": [\n        \"user:ml-team@my-org.com\"\n      ],\n      \"condition\": {\n        \"title\": \"AccessExpiration\",\n        \"description\": \"Access expires on specified date\",\n        \"expression\": \"request.time < timestamp('{expiration_date}')\"\n      }\n    },\n    {\n      \"role\": \"roles/{role_name2}\",\n      \"members\": [\n        \"user:ml-team@my-org.com\"\n      ],\n      \"condition\": {\n        \"title\": \"AccessExpiration\",\n        \"description\": \"Access expires on specified date\",\n        \"expression\": \"request.time < timestamp('{expiration_date}')\"\n      }\n    },\n    {\n      \"role\": \"roles/{role_name3}\",\n      \"members\": [\n        \"user:ml-team@my-org.com\"\n      ],\n      \"condition\": {\n        \"title\": \"AccessExpiration\",\n        \"description\": \"Access expires on specified date\",\n        \"expression\": \"request.time < timestamp('{expiration_date}')\"\n      }\n    }\n  ]\n}",
+          "latency": 2.5651206970214844,
+          "evaluation": {
+            "valid_json": true,
+            "correct_format": false,
+            "similarity": 0.0,
+            "passed": false
+          }
+        },
+        {
+          "test_id": "69c774d20726890bae2338a2d3689b8a",
+          "request": "For our AI testing platform, user cloud-admin@my-org.com needs Dataflow Viewer, and user database-admin@cloud.google.com needs Custom Role. Both should expire on {expiration_date}",
+          "expected": "{\n  \"\"bindings\"\": [\n    {\n      \"\"role\"\": \"\"roles/dataflow.viewer\"\",\n      \"\"members\"\": [\n        \"\"user:cloud-admin@my-org.com\"\",\n        \"\"user:database-admin@cloud.google.com\"\",\n        \"\"group:security-team@cloud.google.com\"\"\n      ]\n    }\n  ]\n}",
+          "generated": "{\n  \"bindings\": [\n    {\n      \"role\": \"roles/dataflow.viewer\",\n      \"members\": [\n        \"user:cloud-admin@my-org.com\"\n      ],\n      \"condition\": {\n        \"title\": \"Expiration\",\n        \"description\": \"Temporary access for AI testing platform\",\n        \"expression\": \"request.time < timestamp('{expiration_date}')\"\n      }\n    },\n    {\n      \"role\": \"roles/your_custom_role\",\n      \"members\": [\n        \"user:database-admin@cloud.google.com\"\n      ],\n      \"condition\": {\n        \"title\": \"Expiration\",\n        \"description\": \"Temporary access for AI testing platform\",\n        \"expression\": \"request.time < timestamp('{expiration_date}')\"\n      }\n    }\n  ]\n}",
+          "latency": 1.6923699378967285,
+          "evaluation": {
+            "valid_json": true,
+            "correct_format": false,
+            "similarity": 0.0,
+            "passed": false
+          }
+        },
+        {
+          "test_id": "fab39c322c58a336e3fb4a2283b341a3",
+          "request": "I need a policy for group ml-team@my-org.com to have Editor and group admin-team@cloud.google.com to have Custom Role. The first role should expire on {expiration_date1}, and the second on {expiration_date2}",
+          "expected": "{\n  \"\"bindings\"\": [\n    {\n      \"\"role\"\": \"\"roles/editor\"\",\n      \"\"members\"\": [\n        \"\"group:ml-team@my-org.com\"\",\n        \"\"group:admin-team@cloud.google.com\"\"\n      ]\n    }\n  ]\n}",
+          "generated": "{\n  \"bindings\": [\n    {\n      \"role\": \"roles/editor\",\n      \"members\": [\n        \"group:ml-team@my-org.com\"\n      ],\n      \"condition\": {\n        \"title\": \"Expiration for ml-team\",\n        \"description\": \"Expires on {expiration_date1}\",\n        \"expression\": \"request.time < timestamp('{expiration_date1}')\"\n      }\n    },\n    {\n      \"role\": \"roles/customRole\",\n      \"members\": [\n        \"group:admin-team@cloud.google.com\"\n      ],\n      \"condition\": {\n        \"title\": \"Expiration for admin-team\",\n        \"description\": \"Expires on {expiration_date2}\",\n        \"expression\": \"request.time < timestamp('{expiration_date2}')\"\n      }\n    }\n  ]\n}",
+          "latency": 1.9420368671417236,
+          "evaluation": {
+            "valid_json": true,
+            "correct_format": false,
+            "similarity": 0.0,
+            "passed": false
+          }
+        },
+        {
+          "test_id": "d46f366c513c474b1225f964fda75011",
+          "request": "Grant {member_type1} {member1} the {role_name1} role, and also give {member_type2} {member2} the {role_name2} role",
+          "expected": "{\n  \"\"bindings\"\": [\n    {\n      \"\"role\"\": \"\"roles/cloudkms.cryptoKeyEncrypterDecrypter\"\",\n      \"\"members\"\": [\n        \"\"group:data-team@example.com\"\"\n      ]\n    }\n  ]\n}",
+          "generated": "{\n  \"bindings\": [\n    {\n      \"role\": \"{role_name1}\",\n      \"members\": [\n        \"{member_type1} {member1}\"\n      ]\n    },\n    {\n      \"role\": \"{role_name2}\",\n      \"members\": [\n        \"{member_type2} {member2}\"\n      ]\n    }\n  ]\n}",
+          "latency": 1.2063360214233398,
+          "evaluation": {
+            "valid_json": true,
+            "correct_format": false,
+            "similarity": 0.0,
+            "passed": false
+          }
+        },
+        {
+          "test_id": "8d4546bd163675e69840681937a6f364",
+          "request": "Create a policy where user dev-team@example.com and user app-admin@example.com both have the Compute Storageadmin role",
+          "expected": "{\n  \"\"bindings\"\": [\n    {\n      \"\"role\"\": \"\"roles/compute.storageAdmin\"\",\n      \"\"members\"\": [\n        \"\"user:dev-team@example.com\"\",\n        \"\"user:app-admin@example.com\"\",\n        \"\"service_account:job-manager@data-project.iam.gserviceaccount.com\"\"\n      ]\n    }\n  ]\n}",
+          "generated": "{\n  \"bindings\": [\n    {\n      \"role\": \"roles/compute.storageAdmin\",\n      \"members\": [\n        \"user:dev-team@example.com\",\n        \"user:app-admin@example.com\"\n      ]\n    }\n  ]\n}",
+          "latency": 0.9236969947814941,
+          "evaluation": {
+            "valid_json": true,
+            "correct_format": false,
+            "similarity": 0.0,
+            "passed": false
+          }
+        },
+        {
+          "test_id": "512a868fc60e7346966720378d1a8e7b",
+          "request": "Our application development team, represented by service account dev-sa@analytics-project.iam.gserviceaccount.com, needs {role_name1} and {role_name2} roles across all projects within the organization",
+          "expected": "{\n  \"\"bindings\"\": [\n    {\n      \"\"role\"\": \"\"roles/cloudsql.viewer\"\",\n      \"\"members\"\": [\n        \"\"service_account:dev-sa@analytics-project.iam.gserviceaccount.com\"\"\n      ]\n    },\n    {\n      \"\"role\"\": \"\"roles/aiplatform.modelUser\"\",\n      \"\"members\"\": [\n        \"\"service_account:dev-sa@analytics-project.iam.gserviceaccount.com\"\"\n      ]\n    },\n    {\n      \"\"role\"\": \"\"roles/monitoring.viewer\"\",\n      \"\"members\"\": [\n        \"\"service_account:dev-sa@analytics-project.iam.gserviceaccount.com\"\"\n      ]\n    }\n  ]\n}",
+          "generated": "{\n  \"bindings\": [\n    {\n      \"role\": \"roles/{role_name1}\",\n      \"members\": [\n        \"serviceAccount:dev-sa@analytics-project.iam.gserviceaccount.com\"\n      ]\n    },\n    {\n      \"role\": \"roles/{role_name2}\",\n      \"members\": [\n        \"serviceAccount:dev-sa@analytics-project.iam.gserviceaccount.com\"\n      ]\n    }\n  ],\n  \"etag\": \"BwW8j1Q0c5s=\"\n}",
+          "latency": 1.031609058380127,
+          "evaluation": {
+            "valid_json": true,
+            "correct_format": false,
+            "similarity": 0.0,
+            "passed": false
+          }
+        },
+        {
+          "test_id": "0975694fed861e5a061d1fb8b031a915",
+          "request": "I want a policy such that user database-admin@my-org.com has the role roles/resourcemanager.organizationAdmin. Make this access expire on 2027-10-13",
+          "expected": "{\n  \"\"bindings\"\": [\n    {\n      \"\"role\"\": \"\"roles/resourcemanager.organizationAdmin\"\",\n      \"\"members\"\": [\n        \"\"user:database-admin@my-org.com\"\"\n      ],\n      \"\"condition\"\": {\n        \"\"title\"\": \"\"Expiration Condition\"\",\n        \"\"description\"\": \"\"Expires on 2027-10-13\"\",\n        \"\"expression\"\": \"\"request.time < timestamp('2027-10-14T00:00:00.000Z')\"\"\n      }\n    }\n  ]\n}",
+          "generated": "{\n  \"bindings\": [\n    {\n      \"role\": \"roles/resourcemanager.organizationAdmin\",\n      \"members\": [\n        \"user:database-admin@my-org.com\"\n      ],\n      \"condition\": {\n        \"title\": \"Expiration\",\n        \"description\": \"Access expires on 2027-10-13\",\n        \"expression\": \"request.time < timestamp('2027-10-13T00:00:00Z')\"\n      }\n    }\n  ]\n}",
+          "latency": 1.7480061054229736,
+          "evaluation": {
+            "valid_json": true,
+            "correct_format": false,
+            "similarity": 0.0,
+            "passed": false
+          }
+        },
+        {
+          "test_id": "696e76c25b5f2ea9eaa4bed88bfc3d73",
+          "request": "For our security monitoring system, {member_type1} {member1} needs {role_name1}, and {member_type2} {member2} needs {role_name2}. Both should expire on {expiration_date}",
+          "expected": "{\n  \"\"bindings\"\": [\n    {\n      \"\"role\"\": \"\"roles/logging.viewer\"\",\n      \"\"members\"\": [\n        \"\"service_account:ops-sa@my-project.iam.gserviceaccount.com\"\"\n      ]\n    },\n    {\n      \"\"role\"\": \"\"roles/bigquery.jobUser\"\",\n      \"\"members\"\": [\n        \"\"service_account:ops-sa@my-project.iam.gserviceaccount.com\"\"\n      ]\n    },\n    {\n      \"\"role\"\": \"\"roles/dataflow.developer\"\",\n      \"\"members\"\": [\n        \"\"service_account:ops-sa@my-project.iam.gserviceaccount.com\"\"\n      ]\n    }\n  ]\n}",
+          "generated": "{\n  \"bindings\": [\n    {\n      \"role\": \"roles/securityMonitoring.viewer\",\n      \"members\": [\n        \"{member_type1} {member1}\"\n      ],\n      \"condition\": {\n        \"title\": \"ExpirationCondition1\",\n        \"description\": \"This role expires on the specified date.\",\n        \"expression\": \"request.time < timestamp('{expiration_date}')\"\n      }\n    },\n    {\n      \"role\": \"roles/securityMonitoring.admin\",\n      \"members\": [\n        \"{member_type2} {member2}\"\n      ],\n      \"condition\": {\n        \"title\": \"ExpirationCondition2\",\n        \"description\": \"This role expires on the specified date.\",\n        \"expression\": \"request.time < timestamp('{expiration_date}')\"\n      }\n    }\n  ]\n}",
+          "latency": 13.53356409072876,
+          "evaluation": {
+            "valid_json": true,
+            "correct_format": false,
+            "similarity": 0.0,
+            "passed": false
+          }
+        },
+        {
+          "test_id": "f31fb348302a4b0807333568eb67c69b",
+          "request": "Our analytics team needs a policy that gives user app-dev@cloud.google.com the following permissions: roles/bigquery.admin",
+          "expected": "{\n  \"\"bindings\"\": [\n    {\n      \"\"role\"\": \"\"roles/bigquery.admin\"\",\n      \"\"members\"\": [\n        \"\"user:app-dev@cloud.google.com\"\"\n      ],\n      \"\"condition\"\": {\n        \"\"title\"\": \"\"Expiration Condition\"\",\n        \"\"description\"\": \"\"Expires on 2027-09-24\"\",\n        \"\"expression\"\": \"\"request.time < timestamp('2027-09-25T00:00:00.000Z')\"\"\n      }\n    }\n  ]\n}",
+          "generated": "{\n  \"bindings\": [\n    {\n      \"role\": \"roles/bigquery.admin\",\n      \"members\": [\n        \"user:app-dev@cloud.google.com\"\n      ]\n    }\n  ]\n}",
+          "latency": 1.0296943187713623,
+          "evaluation": {
+            "valid_json": true,
+            "correct_format": false,
+            "similarity": 0.0,
+            "passed": false
+          }
+        },
+        {
+          "test_id": "32e201c0c760cd03e6d4c151a44574c7",
+          "request": "I need a policy that allows service account app-processor@dev-project.iam.gserviceaccount.com to have both {role_name1} and {role_name2} roles",
+          "expected": "{\n  \"\"bindings\"\": [\n    {\n      \"\"role\"\": \"\"roles/bigquery.jobUser\"\",\n      \"\"members\"\": [\n        \"\"service_account:app-processor@dev-project.iam.gserviceaccount.com\"\",\n        \"\"user:monitoring-user@example.com\"\",\n        \"\"group:dev-team@example.com\"\"\n      ]\n    }\n  ]\n}",
+          "generated": "{\n  \"bindings\": [\n    {\n      \"role\": \"roles/{role_name1}\",\n      \"members\": [\n        \"serviceAccount:app-processor@dev-project.iam.gserviceaccount.com\"\n      ]\n    },\n    {\n      \"role\": \"roles/{role_name2}\",\n      \"members\": [\n        \"serviceAccount:app-processor@dev-project.iam.gserviceaccount.com\"\n      ]\n    }\n  ]\n}",
+          "latency": 4.034247875213623,
+          "evaluation": {
+            "valid_json": true,
+            "correct_format": false,
+            "similarity": 0.0,
+            "passed": false
+          }
+        },
+        {
+          "test_id": "172949595543510ae5a7998031bf7a1b",
+          "request": "Our cloud architecture team, represented by user network-team@example.com, needs {role_name1} and {role_name2} roles across all projects within the organization",
+          "expected": "{\n  \"\"bindings\"\": [\n    {\n      \"\"role\"\": \"\"roles/resourcemanager.projectCreator\"\",\n      \"\"members\"\": [\n        \"\"user:network-team@example.com\"\"\n      ]\n    },\n    {\n      \"\"role\"\": \"\"roles/monitoring.viewer\"\",\n      \"\"members\"\": [\n        \"\"user:network-team@example.com\"\"\n      ]\n    }\n  ]\n}",
+          "generated": "{\n  \"bindings\": [\n    {\n      \"role\": \"roles/{role_name1}\",\n      \"members\": [\n        \"user:network-team@example.com\"\n      ]\n    },\n    {\n      \"role\": \"roles/{role_name2}\",\n      \"members\": [\n        \"user:network-team@example.com\"\n      ]\n    }\n  ],\n  \"etag\": \"BwWWja0=\"\n}",
+          "latency": 0.8715929985046387,
+          "evaluation": {
+            "valid_json": true,
+            "correct_format": false,
+            "similarity": 0.0,
+            "passed": false
+          }
+        },
+        {
+          "test_id": "a75451be27c51a04511b62c53fae5692",
+          "request": "I need a policy that allows user ops-team@my-org.com to configure monitoring in the project data-project",
+          "expected": "{\n  \"\"bindings\"\": [\n    {\n      \"\"role\"\": \"\"roles/monitoring.admin\"\",\n      \"\"members\"\": [\n        \"\"user:ops-team@my-org.com\"\"\n      ]\n    }\n  ]\n}",
+          "generated": "{\n  \"bindings\": [\n    {\n      \"role\": \"roles/monitoring.editor\",\n      \"members\": [\n        \"user:ops-team@my-org.com\"\n      ]\n    }\n  ],\n  \"etag\": \"BwWj5W8l5xY=\"\n}",
+          "latency": 1.0593369007110596,
+          "evaluation": {
+            "valid_json": true,
+            "correct_format": false,
+            "similarity": 0.0,
+            "passed": false
+          }
+        },
+        {
+          "test_id": "ebcd16b052f7dd07fc1b69e6fc2fcf4a",
+          "request": "For our AI testing platform, {member_type1} {member1} needs {role_name1}, and {member_type2} {member2} needs {role_name2}. Both should expire on {expiration_date}",
+          "expected": "{\n  \"\"bindings\"\": [\n    {\n      \"\"role\"\": \"\"roles/resourcemanager.folderAdmin\"\",\n      \"\"members\"\": [\n        \"\"group:network-team@cloud.google.com\"\"\n      ]\n    },\n    {\n      \"\"role\"\": \"\"roles/aiplatform.modelUser\"\",\n      \"\"members\"\": [\n        \"\"group:network-team@cloud.google.com\"\"\n      ]\n    },\n    {\n      \"\"role\"\": \"\"roles/resourcemanager.folderAdmin\"\",\n      \"\"members\"\": [\n        \"\"group:network-team@cloud.google.com\"\"\n      ]\n    }\n  ]\n}",
+          "generated": "{\n  \"bindings\": [\n    {\n      \"role\": \"roles/{role_name1}\",\n      \"members\": [\n        \"{member_type1} {member1}\"\n      ],\n      \"condition\": {\n        \"title\": \"ExpirationCondition1\",\n        \"description\": \"Expires on {expiration_date}\",\n        \"expression\": \"request.time < timestamp('{expiration_date}')\"\n      }\n    },\n    {\n      \"role\": \"roles/{role_name2}\",\n      \"members\": [\n        \"{member_type2} {member2}\"\n      ],\n      \"condition\": {\n        \"title\": \"ExpirationCondition2\",\n        \"description\": \"Expires on {expiration_date}\",\n        \"expression\": \"request.time < timestamp('{expiration_date}')\"\n      }\n    }\n  ]\n}",
+          "latency": 2.3594138622283936,
+          "evaluation": {
+            "valid_json": true,
+            "correct_format": false,
+            "similarity": 0.0,
+            "passed": false
+          }
+        },
+        {
+          "test_id": "d15853a29dab25200887365cc90b7dc9",
+          "request": "Create a policy where service account monitoring-sa@gke-project.iam.gserviceaccount.com has the Cloudfunctions Viewer role",
+          "expected": "{\n  \"\"bindings\"\": [\n    {\n      \"\"role\"\": \"\"roles/cloudfunctions.viewer\"\",\n      \"\"members\"\": [\n        \"\"service_account:monitoring-sa@gke-project.iam.gserviceaccount.com\"\"\n      ]\n    }\n  ]\n}",
+          "generated": "{\n  \"bindings\": [\n    {\n      \"role\": \"roles/cloudfunctions.viewer\",\n      \"members\": [\n        \"serviceAccount:monitoring-sa@gke-project.iam.gserviceaccount.com\"\n      ]\n    }\n  ]\n}",
+          "latency": 0.7369341850280762,
+          "evaluation": {
+            "valid_json": true,
+            "correct_format": false,
+            "similarity": 0.0,
+            "passed": false
+          }
+        },
+        {
+          "test_id": "d46f366c513c474b1225f964fda75011",
+          "request": "Grant {member_type1} {member1} the {role_name1} role, and also give {member_type2} {member2} the {role_name2} role",
+          "expected": "{\n  \"\"bindings\"\": [\n    {\n      \"\"role\"\": \"\"roles/aiplatform.admin\"\",\n      \"\"members\"\": [\n        \"\"user:ops-user@example.com\"\"\n      ]\n    },\n    {\n      \"\"role\"\": \"\"roles/viewer\"\",\n      \"\"members\"\": [\n        \"\"user:ops-user@example.com\"\"\n      ]\n    },\n    {\n      \"\"role\"\": \"\"roles/appengine.serviceAdmin\"\",\n      \"\"members\"\": [\n        \"\"user:ops-user@example.com\"\"\n      ]\n    }\n  ]\n}",
+          "generated": "{\n  \"bindings\": [\n    {\n      \"role\": \"roles/{role_name1}\",\n      \"members\": [\n        \"{member_type1}:{member1}\"\n      ]\n    },\n    {\n      \"role\": \"roles/{role_name2}\",\n      \"members\": [\n        \"{member_type2}:{member2}\"\n      ]\n    }\n  ]\n}",
+          "latency": 1.0221898555755615,
+          "evaluation": {
+            "valid_json": true,
+            "correct_format": false,
+            "similarity": 0.0,
+            "passed": false
+          }
+        },
+        {
+          "test_id": "1b299d7f090abd7dfbec7824c55eed06",
+          "request": "The service account keyring-manager@ai-project.iam.gserviceaccount.com requires access to {role_name1}, {role_name2}, and {role_name3}. This access should expire on {expiration_date}",
+          "expected": "{\n  \"\"bindings\"\": [\n    {\n      \"\"role\"\": \"\"roles/cloudsql.admin\"\",\n      \"\"members\"\": [\n        \"\"service_account:keyring-manager@ai-project.iam.gserviceaccount.com\"\",\n        \"\"user:dev-user@cloud.google.com\"\",\n        \"\"group:ops-team@example.com\"\"\n      ]\n    }\n  ]\n}",
+          "generated": "{\n  \"bindings\": [\n    {\n      \"role\": \"roles/{role_name1}\",\n      \"members\": [\n        \"serviceAccount:keyring-manager@ai-project.iam.gserviceaccount.com\"\n      ],\n      \"condition\": {\n        \"title\": \"AccessExpiration\",\n        \"description\": \"Access expires on specified date\",\n        \"expression\": \"request.time < timestamp('{expiration_date}')\"\n      }\n    },\n    {\n      \"role\": \"roles/{role_name2}\",\n      \"members\": [\n        \"serviceAccount:keyring-manager@ai-project.iam.gserviceaccount.com\"\n      ],\n      \"condition\": {\n        \"title\": \"AccessExpiration\",\n        \"description\": \"Access expires on specified date\",\n        \"expression\": \"request.time < timestamp('{expiration_date}')\"\n      }\n    },\n    {\n      \"role\": \"roles/{role_name3}\",\n      \"members\": [\n        \"serviceAccount:keyring-manager@ai-project.iam.gserviceaccount.com\"\n      ],\n      \"condition\": {\n        \"title\": \"AccessExpiration\",\n        \"description\": \"Access expires on specified date\",\n        \"expression\": \"request.time < timestamp('{expiration_date}')\"\n      }\n    }\n  ]\n}",
+          "latency": 5.631201982498169,
+          "evaluation": {
+            "valid_json": true,
+            "correct_format": false,
+            "similarity": 0.0,
+            "passed": false
+          }
+        },
+        {
+          "test_id": "b4e44fb96cc18b443d14039c357bb9ab",
+          "request": "I need a policy for user job-admin@my-org.com to have Compute Viewer access, with expiration on 2026-10-21",
+          "expected": "{\n  \"\"bindings\"\": [\n    {\n      \"\"role\"\": \"\"roles/compute.viewer\"\",\n      \"\"members\"\": [\n        \"\"user:job-admin@my-org.com\"\"\n      ],\n      \"\"condition\"\": {\n        \"\"title\"\": \"\"Expiration Condition\"\",\n        \"\"description\"\": \"\"Expires on 2026-10-21\"\",\n        \"\"expression\"\": \"\"request.time < timestamp('2026-10-22T00:00:00.000Z')\"\"\n      }\n    }\n  ]\n}",
+          "generated": "{\n  \"bindings\": [\n    {\n      \"role\": \"roles/compute.viewer\",\n      \"members\": [\n        \"user:job-admin@my-org.com\"\n      ],\n      \"condition\": {\n        \"title\": \"Expiration\",\n        \"description\": \"Access expires on 2026-10-21\",\n        \"expression\": \"request.time < timestamp('2026-10-21T00:00:00Z')\"\n      }\n    }\n  ]\n}",
+          "latency": 1.4530539512634277,
+          "evaluation": {
+            "valid_json": true,
+            "correct_format": false,
+            "similarity": 0.0,
+            "passed": false
+          }
+        },
+        {
+          "test_id": "dda5bbcd29f90950e41e086cdc68d0a0",
+          "request": "Give group ops-team@my-org.com the Run Viewer role (roles/run.viewer) so they can perform Run Viewer operations",
+          "expected": "{\n  \"\"bindings\"\": [\n    {\n      \"\"role\"\": \"\"roles/run.viewer\"\",\n      \"\"members\"\": [\n        \"\"group:ops-team@my-org.com\"\"\n      ]\n    }\n  ]\n}",
+          "generated": "{\n  \"bindings\": [\n    {\n      \"role\": \"roles/run.viewer\",\n      \"members\": [\n        \"group:ops-team@my-org.com\"\n      ]\n    }\n  ]\n}",
+          "latency": 0.6240179538726807,
+          "evaluation": {
+            "valid_json": true,
+            "correct_format": false,
+            "similarity": 0.0,
+            "passed": false
+          }
+        }
+      ]
+    }
+  }
+}
