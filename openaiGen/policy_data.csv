@@ -1,0 +1,120 @@
+Request Text,Response Policy
+"I want a policy such that user cloud-admin@example.com has the role roles/cloudfunctions.viewer. Make this access expire on 2025-11-03","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/cloudfunctions.viewer"""",
+      """"members"""": [
+        """"user:cloud-admin@example.com""""
+      ],
+      """"condition"""": {
+        """"title"""": """"Expiration Condition"""",
+        """"description"""": """"Expires on 2025-11-03"""",
+        """"expression"""": """"request.time < timestamp('2025-11-04T00:00:00.000Z')""""
+      }
+    }
+  ]
+}"
+"Grant group admin-team@my-org.com the Container Admin role, and also give service account network-sa@prod-project.iam.gserviceaccount.com the Dataflow Developer role","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/run.viewer"""",
+      """"members"""": [
+        """"group:admin-team@my-org.com"""",
+        """"service_account:network-sa@prod-project.iam.gserviceaccount.com""""
+      ],
+      """"condition"""": {
+        """"title"""": """"Expiration Condition"""",
+        """"description"""": """"Expires on 2027-06-22"""",
+        """"expression"""": """"request.time < timestamp('2027-06-23T00:00:00.000Z')""""
+      }
+    }
+  ]
+}"
+"I need a policy for group dev-team@example.com to have Dataflow Developer and user admin-team@my-org.com to have Custom Role. The first role should expire on {expiration_date1}, and the second on {expiration_date2}","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/dataflow.developer"""",
+      """"members"""": [
+        """"group:dev-team@example.com"""",
+        """"user:admin-team@my-org.com"""",
+        """"service_account:cloud-agent@my-project.iam.gserviceaccount.com""""
+      ]
+    }
+  ]
+}"
+"Generate a policy binding that will grant user (data-team@my-org.com) with the Bigquery Admin role","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/bigquery.admin"""",
+      """"members"""": [
+        """"user:data-team@my-org.com""""
+      ]
+    }
+  ]
+}"
+"Create a policy that grants user dev-team@my-org.com access to roles/aiplatform.trainer","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/aiplatform.trainer"""",
+      """"members"""": [
+        """"user:dev-team@my-org.com""""
+      ],
+      """"condition"""": {
+        """"title"""": """"Expiration Condition"""",
+        """"description"""": """"Expires on 2026-01-08"""",
+        """"expression"""": """"request.time < timestamp('2026-01-09T00:00:00.000Z')""""
+      }
+    }
+  ]
+}"
+"Grant user function-admin@my-org.com the Storage Objectadmin role for project gke-project, expiring on {expiration_date}","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/storage.objectAdmin"""",
+      """"members"""": [
+        """"user:function-admin@my-org.com""""
+      ]
+    }
+  ]
+}"
+"Grant service account data-agent@gke-project.iam.gserviceaccount.com the Dataflow Developer role for project monitoring-project, expiring on {expiration_date}","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/dataflow.developer"""",
+      """"members"""": [
+        """"service_account:data-agent@gke-project.iam.gserviceaccount.com""""
+      ]
+    }
+  ]
+}"
+"I need a policy that allows user cloud-dev@example.com to encrypt and decrypt using KMS keys in the project monitoring-project","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/cloudkms.cryptoKeyEncrypterDecrypter"""",
+      """"members"""": [
+        """"user:cloud-dev@example.com""""
+      ]
+    }
+  ]
+}"
+"Our cloud architecture team, represented by service account cloud-service@prod-project.iam.gserviceaccount.com, needs {role_name1} and {role_name2} roles across all projects within the organization","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/secretmanager.admin"""",
+      """"members"""": [
+        """"service_account:cloud-service@prod-project.iam.gserviceaccount.com"""",
+        """"service_account:function-manager@analytics-project.iam.gserviceaccount.com""""
+      ]
+    }
+  ]
+}"
+"I need a policy that allows user app-ops@cloud.google.com to manage compute instances in the project gke-project","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/compute.instanceAdmin"""",
+      """"members"""": [
+        """"user:app-ops@cloud.google.com""""
+      ]
+    }
+  ]
+}"
