@@ -26,6 +26,7 @@ GENERATION_PROMPT = (
     "Your response must be valid CSV with exactly two values: a request and a response'.\n\n"
     'The response should be in the format "request","response".\n\n'
     'The request should be a plain-English description of the policy binding to generate, '
+    'The request should NOT have any commas in the text. It can have periods or any other punctuation.\n\n'
     'including the role(s) and member(s) to include. '
     'The response should be a JSON snippet that correctly implements the policy described in the request.\n\n'
     'Make the requests with varying complexity and specificity, and include multiple roles and members as needed. SOME requests will specify the roles, but ALL requests will specificy the emails of the user/groups.\n\n'
@@ -61,8 +62,6 @@ def generate_example():
         generated_text = response.choices[0].message.content.strip()
         
         print(generated_text)
-        # Parse the generated text as JSON
-        # Basic schema check
         if "bindings" in generated_text:
             return generated_text
     except Exception as e:
@@ -134,13 +133,13 @@ if __name__ == "__main__":
     parser.add_argument(
         "--num-points",
         type=int,
-        default=10,
+        default=1,
         help="Number of valid synthetic data points to generate."
     )
     parser.add_argument(
         "--output-file",
         type=str,
-        default="synthetic_data.csv",
+        default="geminiGen/synthetic_data.csv",
         help="Output file to write the JSONL data."
     )
     args = parser.parse_args()
