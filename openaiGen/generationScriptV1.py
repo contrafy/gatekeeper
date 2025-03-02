@@ -452,6 +452,49 @@ def generate_policy_request():
         "policy": policy_str
     }
 
+def validate_no_placeholders(examples):
+    """Ensure no placeholders remain in the examples"""
+    cleaned_examples = []
+    
+    for example in examples:
+        request_text = example["request_text"]
+        policy = example["policy"]
+        
+        # Check for placeholders in request text
+        request_placeholders = re.findall(r"{([^}]+)}", request_text)
+        if request_placeholders:
+            print(f"Warning: Found placeholders in request: {request_placeholders}")
+            
+            # Replace any remaining placeholders with realistic values
+            for placeholder in request_placeholders:
+                if "date" in placeholder or "expiration" in placeholder:
+                    request_text = request_text.replace(f"{{{placeholder}}}", "2025-12-31")
+                elif "role" in placeholder:
+                    if "name" in placeholder:
+                        request_text = request_text.replace(f"{{{placeholder}}}", "Storage Object Viewer")
+                    else:
+                        request_text = request_text.replace(f"{{{placeholder}}}", "roles/storage.objectViewer")
+                elif "member" in placeholder:
+                    if "type" in placeholder:
+                        request_text = request_text.replace(f"{{{placeholder}}}", "user")
+                    else:
+                        request_text = request_text.replace(f"{{{placeholder}}}", "user@example.com")
+                elif "action" in placeholder:
+                    request_text = request_text.replace(f"{{{placeholder}}}", "access and manage resources")
+                elif "project" in placeholder:
+                    request_text = request_text.replace(f"{{{placeholder}}}", "my-project")
+                elif "team" in placeholder:
+                    request_text = request_text.replace(f"{{{placeholder}}}", "development team")
+                else:
+                    request_text = request_text.replace(f"{{{placeholder}}}", f"sample_{placeholder}")
+        
+        cleaned_examples.append({
+            "request_text": request_text,
+            "policy": policy
+        })
+    
+    return cleaned_examples
+
 def generate_data_with_openai(num_examples=10, model="gpt-4o-mini"):
     """Generate synthetic data using OpenAI API for validation"""
     
@@ -563,7 +606,8 @@ def main():
     if args.use_openai:
         examples = generate_data_with_openai(args.num_examples, args.model)
     else:
-        examples = [generate_policy_request() for _ in range(args.num_examples)]
+        raw_examples = [generate_policy_request() for _ in range(args.num_examples)]
+        examples = validate_no_placeholders(raw_examples)
     
     # Format data for OpenAI fine-tuning
     formatted_data = format_for_openai_finetuning(examples)

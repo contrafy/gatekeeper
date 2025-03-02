@@ -1,1407 +1,1345 @@
 Request Text,Response Policy
-"Create a policy where user dev-team@example.com and user app-admin@example.com both have the Compute Storageadmin role","{
+"Grant service account bucket-manager@dev-project.iam.gserviceaccount.com the Cloudfunctions Developer role for project gke-project, expiring on 2025-12-31","{
   """"bindings"""": [
     {
-      """"role"""": """"roles/compute.storageAdmin"""",
+      """"role"""": """"roles/cloudfunctions.developer"""",
       """"members"""": [
-        """"user:dev-team@example.com"""",
-        """"user:app-admin@example.com"""",
-        """"service_account:job-manager@data-project.iam.gserviceaccount.com""""
+        """"service_account:bucket-manager@dev-project.iam.gserviceaccount.com""""
       ]
     }
   ]
 }"
-"I need a policy for {member_type1} {member1} to have {role_name1} and {member_type2} {member2} to have {role_name2}. The first role should expire on {expiration_date1}, and the second on {expiration_date2}","{
+"I need a policy for service account app-service@analytics-project.iam.gserviceaccount.com to have Viewer and service account bucket-admin@data-project.iam.gserviceaccount.com to have Custom Role. The first role should expire on 2025-12-31, and the second on 2025-12-31","{
   """"bindings"""": [
     {
-      """"role"""": """"roles/aiplatform.trainer"""",
+      """"role"""": """"roles/viewer"""",
       """"members"""": [
-        """"group:network-team@example.com""""
-      ]
-    },
-    {
-      """"role"""": """"roles/owner"""",
-      """"members"""": [
-        """"group:network-team@example.com""""
-      ]
-    },
-    {
-      """"role"""": """"roles/logging.logWriter"""",
-      """"members"""": [
-        """"group:network-team@example.com""""
+        """"service_account:app-service@analytics-project.iam.gserviceaccount.com"""",
+        """"service_account:bucket-admin@data-project.iam.gserviceaccount.com""""
       ]
     }
   ]
 }"
-"Give service account admin-sa@gke-project.iam.gserviceaccount.com the Monitoring Viewer role (roles/monitoring.viewer) so they can perform Monitoring Viewer operations","{
+"I need a policy that allows group ops-team@cloud.google.com to have both Storage Object Viewer and Storage Object Viewer roles","{
   """"bindings"""": [
     {
-      """"role"""": """"roles/monitoring.viewer"""",
-      """"members"""": [
-        """"service_account:admin-sa@gke-project.iam.gserviceaccount.com""""
-      ]
-    }
-  ]
-}"
-"Give service account data-sa@ai-project.iam.gserviceaccount.com the Container Viewer role (roles/container.viewer) so they can perform Container Viewer operations","{
-  """"bindings"""": [
-    {
-      """"role"""": """"roles/container.viewer"""",
-      """"members"""": [
-        """"service_account:data-sa@ai-project.iam.gserviceaccount.com""""
-      ]
-    }
-  ]
-}"
-"Create a policy where {member_type1} {member1} and {member_type2} {member2} both have the Secretmanager Secretaccessor role","{
-  """"bindings"""": [
-    {
-      """"role"""": """"roles/secretmanager.secretAccessor"""",
+      """"role"""": """"roles/editor"""",
       """"members"""": [
         """"group:ops-team@cloud.google.com""""
       ]
     },
     {
-      """"role"""": """"roles/cloudsql.client"""",
-      """"members"""": [
-        """"group:ops-team@cloud.google.com""""
-      ]
-    },
-    {
-      """"role"""": """"roles/container.developer"""",
+      """"role"""": """"roles/logging.admin"""",
       """"members"""": [
         """"group:ops-team@cloud.google.com""""
       ]
     }
   ]
 }"
-"Give service account data-agent@monitoring-project.iam.gserviceaccount.com the Dataflow Developer role (roles/dataflow.developer) so they can develop Dataflow jobs","{
+"Generate a policy binding that will grant user (instance-admin@my-org.com) with the Bigquery Dataeditor role","{
   """"bindings"""": [
     {
-      """"role"""": """"roles/dataflow.developer"""",
+      """"role"""": """"roles/bigquery.dataEditor"""",
       """"members"""": [
-        """"service_account:data-agent@monitoring-project.iam.gserviceaccount.com""""
+        """"user:instance-admin@my-org.com""""
       ]
     }
   ]
 }"
-"Our security team needs a policy that gives service account keyring-admin@data-project.iam.gserviceaccount.com the following permissions: roles/logging.viewer","{
+"The user keyring-admin@example.com requires access to Storage Object Viewer, Storage Object Viewer, and Storage Object Viewer. This access should expire on 2025-12-31","{
   """"bindings"""": [
     {
-      """"role"""": """"roles/logging.viewer"""",
+      """"role"""": """"roles/bigquery.dataEditor"""",
       """"members"""": [
-        """"service_account:keyring-admin@data-project.iam.gserviceaccount.com""""
-      ],
-      """"condition"""": {
-        """"title"""": """"Expiration Condition"""",
-        """"description"""": """"Expires on 2026-11-12"""",
-        """"expression"""": """"request.time < timestamp('2026-11-13T00:00:00.000Z')""""
-      }
-    }
-  ]
-}"
-"I need a policy for service account data-service@my-project.iam.gserviceaccount.com to have Cloudkms Cryptokeyencrypterdecrypter and user security-team@example.com to have Custom Role. The first role should expire on {expiration_date1}, and the second on {expiration_date2}","{
-  """"bindings"""": [
-    {
-      """"role"""": """"roles/cloudkms.cryptoKeyEncrypterDecrypter"""",
-      """"members"""": [
-        """"service_account:data-service@my-project.iam.gserviceaccount.com"""",
-        """"user:security-team@example.com""""
+        """"user:keyring-admin@example.com"""",
+        """"user:ml-team@example.com"""",
+        """"service_account:security-sa@monitoring-project.iam.gserviceaccount.com""""
       ]
     }
   ]
 }"
-"Our machine learning team, represented by group ops-team@cloud.google.com, needs {role_name1} and {role_name2} roles across all projects within the organization","{
+"I need a policy that allows user security-team@my-org.com to perform Run Viewer operations in the project prod-project","{
   """"bindings"""": [
     {
-      """"role"""": """"roles/aiplatform.user"""",
+      """"role"""": """"roles/run.viewer"""",
       """"members"""": [
-        """"group:ops-team@cloud.google.com"""",
-        """"service_account:app-service@prod-project.iam.gserviceaccount.com""""
-      ],
-      """"condition"""": {
-        """"title"""": """"Expiration Condition"""",
-        """"description"""": """"Expires on 2028-01-20"""",
-        """"expression"""": """"request.time < timestamp('2028-01-21T00:00:00.000Z')""""
-      }
-    }
-  ]
-}"
-"Grant service account keyring-operator@ai-project.iam.gserviceaccount.com the Monitoring Viewer role, and also give user security-team@my-org.com the Custom Role role","{
-  """"bindings"""": [
-    {
-      """"role"""": """"roles/monitoring.viewer"""",
-      """"members"""": [
-        """"service_account:keyring-operator@ai-project.iam.gserviceaccount.com"""",
         """"user:security-team@my-org.com""""
       ]
     }
   ]
 }"
-"Create a policy where service account cloud-service@data-project.iam.gserviceaccount.com has the Container Developer role","{
-  """"bindings"""": [
-    {
-      """"role"""": """"roles/container.developer"""",
-      """"members"""": [
-        """"service_account:cloud-service@data-project.iam.gserviceaccount.com""""
-      ]
-    }
-  ]
-}"
-"Our monitoring team needs a policy that gives user ops-team@my-org.com the following permissions: roles/cloudsql.viewer","{
-  """"bindings"""": [
-    {
-      """"role"""": """"roles/cloudsql.viewer"""",
-      """"members"""": [
-        """"user:ops-team@my-org.com""""
-      ],
-      """"condition"""": {
-        """"title"""": """"Expiration Condition"""",
-        """"description"""": """"Expires on 2026-09-28"""",
-        """"expression"""": """"request.time < timestamp('2026-09-29T00:00:00.000Z')""""
-      }
-    }
-  ]
-}"
-"Create a policy where service account monitoring-sa@analytics-project.iam.gserviceaccount.com has the Bigquery Dataeditor role","{
-  """"bindings"""": [
-    {
-      """"role"""": """"roles/bigquery.dataEditor"""",
-      """"members"""": [
-        """"service_account:monitoring-sa@analytics-project.iam.gserviceaccount.com""""
-      ]
-    }
-  ]
-}"
-"Give group ops-team@example.com the Cloudfunctions Viewer role (roles/cloudfunctions.viewer) so they can perform Cloudfunctions Viewer operations","{
-  """"bindings"""": [
-    {
-      """"role"""": """"roles/cloudfunctions.viewer"""",
-      """"members"""": [
-        """"group:ops-team@example.com""""
-      ]
-    }
-  ]
-}"
-"The service account cloud-service@gke-project.iam.gserviceaccount.com needs Storage Objectcreator to upload files to storage buckets. This access should expire on 2026-11-08","{
-  """"bindings"""": [
-    {
-      """"role"""": """"roles/storage.objectCreator"""",
-      """"members"""": [
-        """"service_account:cloud-service@gke-project.iam.gserviceaccount.com""""
-      ],
-      """"condition"""": {
-        """"title"""": """"Expiration Condition"""",
-        """"description"""": """"Expires on 2026-11-08"""",
-        """"expression"""": """"request.time < timestamp('2026-11-09T00:00:00.000Z')""""
-      }
-    }
-  ]
-}"
-"The service account admin-sa@my-project.iam.gserviceaccount.com needs Dataflow Admin to perform Dataflow Admin operations. This access should expire on 2025-07-22","{
-  """"bindings"""": [
-    {
-      """"role"""": """"roles/dataflow.admin"""",
-      """"members"""": [
-        """"service_account:admin-sa@my-project.iam.gserviceaccount.com""""
-      ],
-      """"condition"""": {
-        """"title"""": """"Expiration Condition"""",
-        """"description"""": """"Expires on 2025-07-22"""",
-        """"expression"""": """"request.time < timestamp('2025-07-23T00:00:00.000Z')""""
-      }
-    }
-  ]
-}"
-"I need a policy for {member_type1} {member1} to have {role_name1} and {member_type2} {member2} to have {role_name2}. The first role should expire on {expiration_date1}, and the second on {expiration_date2}","{
-  """"bindings"""": [
-    {
-      """"role"""": """"roles/resourcemanager.folderAdmin"""",
-      """"members"""": [
-        """"group:ops-team@my-org.com""""
-      ]
-    },
-    {
-      """"role"""": """"roles/iam.securityAdmin"""",
-      """"members"""": [
-        """"group:ops-team@my-org.com""""
-      ]
-    }
-  ]
-}"
-"Our analytics team needs a policy that gives user app-dev@cloud.google.com the following permissions: roles/bigquery.admin","{
-  """"bindings"""": [
-    {
-      """"role"""": """"roles/bigquery.admin"""",
-      """"members"""": [
-        """"user:app-dev@cloud.google.com""""
-      ],
-      """"condition"""": {
-        """"title"""": """"Expiration Condition"""",
-        """"description"""": """"Expires on 2027-09-24"""",
-        """"expression"""": """"request.time < timestamp('2027-09-25T00:00:00.000Z')""""
-      }
-    }
-  ]
-}"
-"Give service account cloud-agent@data-project.iam.gserviceaccount.com the Resourcemanager Folderadmin role (roles/resourcemanager.folderAdmin) so they can perform Resourcemanager Folderadmin operations","{
-  """"bindings"""": [
-    {
-      """"role"""": """"roles/resourcemanager.folderAdmin"""",
-      """"members"""": [
-        """"service_account:cloud-agent@data-project.iam.gserviceaccount.com""""
-      ]
-    }
-  ]
-}"
-"The user bucket-operator@example.com requires access to {role_name1}, {role_name2}, and {role_name3}. This access should expire on {expiration_date}","{
-  """"bindings"""": [
-    {
-      """"role"""": """"roles/cloudsql.viewer"""",
-      """"members"""": [
-        """"user:bucket-operator@example.com""""
-      ]
-    },
-    {
-      """"role"""": """"roles/logging.viewer"""",
-      """"members"""": [
-        """"user:bucket-operator@example.com""""
-      ]
-    }
-  ]
-}"
-"The group network-team@example.com requires access to {role_name1}, {role_name2}, and {role_name3}. This access should expire on {expiration_date}","{
-  """"bindings"""": [
-    {
-      """"role"""": """"roles/compute.instanceAdmin"""",
-      """"members"""": [
-        """"group:network-team@example.com""""
-      ]
-    },
-    {
-      """"role"""": """"roles/owner"""",
-      """"members"""": [
-        """"group:network-team@example.com""""
-      ]
-    },
-    {
-      """"role"""": """"roles/iam.securityReviewer"""",
-      """"members"""": [
-        """"group:network-team@example.com""""
-      ]
-    }
-  ]
-}"
-"For our development environment, {member_type1} {member1} needs {role_name1}, and {member_type2} {member2} needs {role_name2}. Both should expire on {expiration_date}","{
-  """"bindings"""": [
-    {
-      """"role"""": """"roles/dataflow.admin"""",
-      """"members"""": [
-        """"service_account:keyring-manager@gke-project.iam.gserviceaccount.com""""
-      ]
-    },
-    {
-      """"role"""": """"roles/container.viewer"""",
-      """"members"""": [
-        """"service_account:keyring-manager@gke-project.iam.gserviceaccount.com""""
-      ]
-    }
-  ]
-}"
-"I need a policy for service account database-operator@prod-project.iam.gserviceaccount.com to have Compute Instanceadmin and service account cloud-agent@gke-project.iam.gserviceaccount.com to have Custom Role. The first role should expire on {expiration_date1}, and the second on {expiration_date2}","{
-  """"bindings"""": [
-    {
-      """"role"""": """"roles/compute.instanceAdmin"""",
-      """"members"""": [
-        """"service_account:database-operator@prod-project.iam.gserviceaccount.com"""",
-        """"service_account:cloud-agent@gke-project.iam.gserviceaccount.com""""
-      ]
-    }
-  ]
-}"
-"Our network administration team, represented by user cloud-admin@example.com, needs {role_name1} and {role_name2} roles across all projects within the organization","{
-  """"bindings"""": [
-    {
-      """"role"""": """"roles/cloudsql.admin"""",
-      """"members"""": [
-        """"user:cloud-admin@example.com""""
-      ]
-    },
-    {
-      """"role"""": """"roles/iam.securityReviewer"""",
-      """"members"""": [
-        """"user:cloud-admin@example.com""""
-      ]
-    },
-    {
-      """"role"""": """"roles/cloudfunctions.viewer"""",
-      """"members"""": [
-        """"user:cloud-admin@example.com""""
-      ]
-    }
-  ]
-}"
-"I need a policy for service account cloud-service@my-project.iam.gserviceaccount.com to have Dataflow Developer and user ops-admin@my-org.com to have Container Admin. The first role should expire on {expiration_date1}, and the second on {expiration_date2}","{
-  """"bindings"""": [
-    {
-      """"role"""": """"roles/dataflow.developer"""",
-      """"members"""": [
-        """"service_account:cloud-service@my-project.iam.gserviceaccount.com""""
-      ]
-    },
-    {
-      """"role"""": """"roles/container.admin"""",
-      """"members"""": [
-        """"user:ops-admin@my-org.com""""
-      ]
-    }
-  ]
-}"
-"For our data analytics platform, user admin-admin@my-org.com needs Aiplatform User, and service account cloud-service@analytics-project.iam.gserviceaccount.com needs Custom Role. Both should expire on {expiration_date}","{
-  """"bindings"""": [
-    {
-      """"role"""": """"roles/aiplatform.user"""",
-      """"members"""": [
-        """"user:admin-admin@my-org.com"""",
-        """"service_account:cloud-service@analytics-project.iam.gserviceaccount.com""""
-      ]
-    }
-  ]
-}"
-"For our cloud infrastructure, {member_type1} {member1} needs {role_name1}, and {member_type2} {member2} needs {role_name2}. Both should expire on 2027-04-07","{
-  """"bindings"""": [
-    {
-      """"role"""": """"roles/storage.admin"""",
-      """"members"""": [
-        """"user:cloud-admin@my-org.com""""
-      ],
-      """"condition"""": {
-        """"title"""": """"Expiration Condition"""",
-        """"description"""": """"Expires on 2027-04-07"""",
-        """"expression"""": """"request.time < timestamp('2027-04-08T00:00:00.000Z')""""
-      }
-    }
-  ]
-}"
-"Grant service account bucket-operator@ai-project.iam.gserviceaccount.com the Container Viewer role, and also give group dev-team@my-org.com the Resourcemanager Projectcreator role","{
-  """"bindings"""": [
-    {
-      """"role"""": """"roles/container.viewer"""",
-      """"members"""": [
-        """"service_account:bucket-operator@ai-project.iam.gserviceaccount.com""""
-      ]
-    },
-    {
-      """"role"""": """"roles/resourcemanager.projectCreator"""",
-      """"members"""": [
-        """"group:dev-team@my-org.com""""
-      ]
-    }
-  ]
-}"
-"Give group ops-team@my-org.com the Run Viewer role (roles/run.viewer) so they can perform Run Viewer operations","{
-  """"bindings"""": [
-    {
-      """"role"""": """"roles/run.viewer"""",
-      """"members"""": [
-        """"group:ops-team@my-org.com""""
-      ]
-    }
-  ]
-}"
-"Our cloud architecture team, represented by user network-team@example.com, needs {role_name1} and {role_name2} roles across all projects within the organization","{
-  """"bindings"""": [
-    {
-      """"role"""": """"roles/resourcemanager.projectCreator"""",
-      """"members"""": [
-        """"user:network-team@example.com""""
-      ]
-    },
-    {
-      """"role"""": """"roles/monitoring.viewer"""",
-      """"members"""": [
-        """"user:network-team@example.com""""
-      ]
-    }
-  ]
-}"
-"I need a policy that allows service account data-service@my-project.iam.gserviceaccount.com to perform Cloudsql Editor operations in the project analytics-project","{
-  """"bindings"""": [
-    {
-      """"role"""": """"roles/cloudsql.editor"""",
-      """"members"""": [
-        """"service_account:data-service@my-project.iam.gserviceaccount.com""""
-      ]
-    }
-  ]
-}"
-"Create a policy where group network-team@example.com and user cluster-operator@example.com both have the Monitoring Viewer role","{
-  """"bindings"""": [
-    {
-      """"role"""": """"roles/monitoring.viewer"""",
-      """"members"""": [
-        """"group:network-team@example.com"""",
-        """"user:cluster-operator@example.com"""",
-        """"service_account:cloud-agent@data-project.iam.gserviceaccount.com""""
-      ]
-    }
-  ]
-}"
-"I want a policy such that service account ml-sa@my-project.iam.gserviceaccount.com has the role roles/logging.logWriter. Make this access expire on 2025-09-10","{
-  """"bindings"""": [
-    {
-      """"role"""": """"roles/logging.logWriter"""",
-      """"members"""": [
-        """"service_account:ml-sa@my-project.iam.gserviceaccount.com""""
-      ],
-      """"condition"""": {
-        """"title"""": """"Expiration Condition"""",
-        """"description"""": """"Expires on 2025-09-10"""",
-        """"expression"""": """"request.time < timestamp('2025-09-11T00:00:00.000Z')""""
-      }
-    }
-  ]
-}"
-"The service account cluster-admin@gke-project.iam.gserviceaccount.com needs Editor to edit resources. This access should expire on 2027-07-02","{
-  """"bindings"""": [
-    {
-      """"role"""": """"roles/editor"""",
-      """"members"""": [
-        """"service_account:cluster-admin@gke-project.iam.gserviceaccount.com""""
-      ],
-      """"condition"""": {
-        """"title"""": """"Expiration Condition"""",
-        """"description"""": """"Expires on 2027-07-02"""",
-        """"expression"""": """"request.time < timestamp('2027-07-03T00:00:00.000Z')""""
-      }
-    }
-  ]
-}"
-"I need a policy for {member_type1} {member1} to have {role_name1} and {member_type2} {member2} to have {role_name2}. The first role should expire on {expiration_date1}, and the second on {expiration_date2}","{
-  """"bindings"""": [
-    {
-      """"role"""": """"roles/aiplatform.user"""",
-      """"members"""": [
-        """"service_account:cluster-operator@dev-project.iam.gserviceaccount.com""""
-      ]
-    },
-    {
-      """"role"""": """"roles/cloudfunctions.developer"""",
-      """"members"""": [
-        """"service_account:cluster-operator@dev-project.iam.gserviceaccount.com""""
-      ]
-    },
-    {
-      """"role"""": """"roles/dataflow.viewer"""",
-      """"members"""": [
-        """"service_account:cluster-operator@dev-project.iam.gserviceaccount.com""""
-      ]
-    }
-  ]
-}"
-"Generate a policy binding that will grant service account (app-agent@ai-project.iam.gserviceaccount.com) with the Aiplatform User role","{
-  """"bindings"""": [
-    {
-      """"role"""": """"roles/aiplatform.user"""",
-      """"members"""": [
-        """"service_account:app-agent@ai-project.iam.gserviceaccount.com""""
-      ]
-    }
-  ]
-}"
-"I need a policy for user data-ops@example.com to have Run Admin and service account ops-sa@gke-project.iam.gserviceaccount.com to have Custom Role. The first role should expire on {expiration_date1}, and the second on {expiration_date2}","{
-  """"bindings"""": [
-    {
-      """"role"""": """"roles/run.admin"""",
-      """"members"""": [
-        """"user:data-ops@example.com"""",
-        """"service_account:ops-sa@gke-project.iam.gserviceaccount.com""""
-      ]
-    }
-  ]
-}"
-"For our AI testing platform, service account cloud-agent@data-project.iam.gserviceaccount.com needs Cloudfunctions Viewer, and group admin-team@example.com needs Custom Role. Both should expire on {expiration_date}","{
-  """"bindings"""": [
-    {
-      """"role"""": """"roles/cloudfunctions.viewer"""",
-      """"members"""": [
-        """"service_account:cloud-agent@data-project.iam.gserviceaccount.com"""",
-        """"group:admin-team@example.com"""",
-        """"service_account:cloud-service@monitoring-project.iam.gserviceaccount.com""""
-      ]
-    }
-  ]
-}"
-"I need a policy for {member_type1} {member1} to have {role_name1} and {member_type2} {member2} to have {role_name2}. The first role should expire on {expiration_date1}, and the second on {expiration_date2}","{
-  """"bindings"""": [
-    {
-      """"role"""": """"roles/viewer"""",
-      """"members"""": [
-        """"service_account:keyring-manager@dev-project.iam.gserviceaccount.com""""
-      ]
-    },
-    {
-      """"role"""": """"roles/secretmanager.secretVersionManager"""",
-      """"members"""": [
-        """"service_account:keyring-manager@dev-project.iam.gserviceaccount.com""""
-      ]
-    }
-  ]
-}"
-"I need a policy for user database-operator@example.com to have Appengine Deployer access, with expiration on 2027-02-17","{
-  """"bindings"""": [
-    {
-      """"role"""": """"roles/appengine.deployer"""",
-      """"members"""": [
-        """"user:database-operator@example.com""""
-      ],
-      """"condition"""": {
-        """"title"""": """"Expiration Condition"""",
-        """"description"""": """"Expires on 2027-02-17"""",
-        """"expression"""": """"request.time < timestamp('2027-02-18T00:00:00.000Z')""""
-      }
-    }
-  ]
-}"
-"The group admin-team@cloud.google.com needs Compute Instanceadmin to manage compute instances. This access should expire on 2026-08-03","{
-  """"bindings"""": [
-    {
-      """"role"""": """"roles/compute.instanceAdmin"""",
-      """"members"""": [
-        """"group:admin-team@cloud.google.com""""
-      ],
-      """"condition"""": {
-        """"title"""": """"Expiration Condition"""",
-        """"description"""": """"Expires on 2026-08-03"""",
-        """"expression"""": """"request.time < timestamp('2026-08-04T00:00:00.000Z')""""
-      }
-    }
-  ]
-}"
-"Grant user data-admin@example.com the Cloudsql Admin role for project my-project, expiring on {expiration_date}","{
-  """"bindings"""": [
-    {
-      """"role"""": """"roles/cloudsql.admin"""",
-      """"members"""": [
-        """"user:data-admin@example.com""""
-      ]
-    }
-  ]
-}"
-"Grant group monitoring-team@example.com the Container Admin role, and also give group security-team@example.com the Compute Storageadmin role","{
-  """"bindings"""": [
-    {
-      """"role"""": """"roles/compute.storageAdmin"""",
-      """"members"""": [
-        """"group:monitoring-team@example.com"""",
-        """"group:security-team@example.com""""
-      ]
-    }
-  ]
-}"
-"Generate a policy binding that will grant group (dev-team@my-org.com) with the Logging Admin role","{
+"For our AI testing platform, user monitoring-team@cloud.google.com needs Logging Admin, and service account cluster-manager@analytics-project.iam.gserviceaccount.com needs Custom Role. Both should expire on 2025-12-31","{
   """"bindings"""": [
     {
       """"role"""": """"roles/logging.admin"""",
       """"members"""": [
-        """"group:dev-team@my-org.com""""
+        """"user:monitoring-team@cloud.google.com"""",
+        """"service_account:cluster-manager@analytics-project.iam.gserviceaccount.com"""",
+        """"user:ops-user@cloud.google.com""""
       ]
     }
   ]
 }"
-"I need a policy that allows service account app-processor@monitoring-project.iam.gserviceaccount.com to administer Kubernetes clusters in the project my-project","{
+"The service account admin-sa@analytics-project.iam.gserviceaccount.com requires access to Storage Object Viewer, Storage Object Viewer, and Storage Object Viewer. This access should expire on 2025-12-31","{
   """"bindings"""": [
     {
-      """"role"""": """"roles/container.admin"""",
+      """"role"""": """"roles/run.invoker"""",
       """"members"""": [
-        """"service_account:app-processor@monitoring-project.iam.gserviceaccount.com""""
-      ]
-    }
-  ]
-}"
-"I need a policy that allows service account app-processor@dev-project.iam.gserviceaccount.com to have both {role_name1} and {role_name2} roles","{
-  """"bindings"""": [
-    {
-      """"role"""": """"roles/bigquery.jobUser"""",
-      """"members"""": [
-        """"service_account:app-processor@dev-project.iam.gserviceaccount.com"""",
-        """"user:monitoring-user@example.com"""",
-        """"group:dev-team@example.com""""
-      ]
-    }
-  ]
-}"
-"The group dev-team@cloud.google.com needs Dataflow Admin to perform Dataflow Admin operations. This access should expire on 2027-01-04","{
-  """"bindings"""": [
-    {
-      """"role"""": """"roles/dataflow.admin"""",
-      """"members"""": [
-        """"group:dev-team@cloud.google.com""""
-      ],
-      """"condition"""": {
-        """"title"""": """"Expiration Condition"""",
-        """"description"""": """"Expires on 2027-01-04"""",
-        """"expression"""": """"request.time < timestamp('2027-01-05T00:00:00.000Z')""""
-      }
-    }
-  ]
-}"
-"Our application development team, represented by service account dev-sa@analytics-project.iam.gserviceaccount.com, needs {role_name1} and {role_name2} roles across all projects within the organization","{
-  """"bindings"""": [
-    {
-      """"role"""": """"roles/cloudsql.viewer"""",
-      """"members"""": [
-        """"service_account:dev-sa@analytics-project.iam.gserviceaccount.com""""
+        """"service_account:admin-sa@analytics-project.iam.gserviceaccount.com""""
       ]
     },
     {
-      """"role"""": """"roles/aiplatform.modelUser"""",
+      """"role"""": """"roles/compute.firewallAdmin"""",
       """"members"""": [
-        """"service_account:dev-sa@analytics-project.iam.gserviceaccount.com""""
-      ]
-    },
-    {
-      """"role"""": """"roles/monitoring.viewer"""",
-      """"members"""": [
-        """"service_account:dev-sa@analytics-project.iam.gserviceaccount.com""""
+        """"service_account:admin-sa@analytics-project.iam.gserviceaccount.com""""
       ]
     }
   ]
 }"
-"Create a policy that grants service account cluster-admin@dev-project.iam.gserviceaccount.com access to roles/run.viewer","{
+"I need a policy for user user@example.com to have Storage Object Viewer and user user@example.com to have Storage Object Viewer. The first role should expire on 2025-12-31, and the second on 2025-12-31","{
   """"bindings"""": [
     {
-      """"role"""": """"roles/run.viewer"""",
+      """"role"""": """"roles/secretmanager.viewer"""",
       """"members"""": [
-        """"service_account:cluster-admin@dev-project.iam.gserviceaccount.com""""
-      ],
-      """"condition"""": {
-        """"title"""": """"Expiration Condition"""",
-        """"description"""": """"Expires on 2026-07-01"""",
-        """"expression"""": """"request.time < timestamp('2026-07-02T00:00:00.000Z')""""
-      }
-    }
-  ]
-}"
-"I need a policy for service account ml-sa@monitoring-project.iam.gserviceaccount.com to have Dataflow Viewer and user ops-team@my-org.com to have Custom Role. The first role should expire on {expiration_date1}, and the second on {expiration_date2}","{
-  """"bindings"""": [
-    {
-      """"role"""": """"roles/dataflow.viewer"""",
-      """"members"""": [
-        """"service_account:ml-sa@monitoring-project.iam.gserviceaccount.com"""",
-        """"user:ops-team@my-org.com""""
-      ]
-    }
-  ]
-}"
-"Create a policy where user keyring-operator@example.com has the Cloudfunctions Admin role","{
-  """"bindings"""": [
-    {
-      """"role"""": """"roles/cloudfunctions.admin"""",
-      """"members"""": [
-        """"user:keyring-operator@example.com""""
-      ]
-    }
-  ]
-}"
-"Generate a policy binding that will grant service account (keyring-admin@prod-project.iam.gserviceaccount.com) with the Cloudfunctions Developer role","{
-  """"bindings"""": [
-    {
-      """"role"""": """"roles/cloudfunctions.developer"""",
-      """"members"""": [
-        """"service_account:keyring-admin@prod-project.iam.gserviceaccount.com""""
-      ]
-    }
-  ]
-}"
-"The user ml-team@my-org.com requires access to {role_name1}, {role_name2}, and {role_name3}. This access should expire on {expiration_date}","{
-  """"bindings"""": [
-    {
-      """"role"""": """"roles/iam.securityReviewer"""",
-      """"members"""": [
-        """"user:ml-team@my-org.com"""",
-        """"user:security-admin@example.com"""",
-        """"service_account:ml-sa@dev-project.iam.gserviceaccount.com""""
-      ]
-    }
-  ]
-}"
-"Create a policy where {member_type1} {member1} and {member_type2} {member2} both have the Compute Networkadmin role","{
-  """"bindings"""": [
-    {
-      """"role"""": """"roles/compute.networkAdmin"""",
-      """"members"""": [
-        """"service_account:instance-admin@data-project.iam.gserviceaccount.com""""
-      ]
-    },
-    {
-      """"role"""": """"roles/logging.viewer"""",
-      """"members"""": [
-        """"service_account:instance-admin@data-project.iam.gserviceaccount.com""""
-      ]
-    },
-    {
-      """"role"""": """"roles/viewer"""",
-      """"members"""": [
-        """"service_account:instance-admin@data-project.iam.gserviceaccount.com""""
-      ]
-    }
-  ]
-}"
-"Create a policy where user ops-team@example.com has the Storage Objectadmin role","{
-  """"bindings"""": [
-    {
-      """"role"""": """"roles/storage.objectAdmin"""",
-      """"members"""": [
-        """"user:ops-team@example.com""""
-      ]
-    }
-  ]
-}"
-"The service account monitoring-sa@analytics-project.iam.gserviceaccount.com needs Monitoring Viewer to perform Monitoring Viewer operations. This access should expire on 2026-05-04","{
-  """"bindings"""": [
-    {
-      """"role"""": """"roles/monitoring.viewer"""",
-      """"members"""": [
-        """"service_account:monitoring-sa@analytics-project.iam.gserviceaccount.com""""
-      ],
-      """"condition"""": {
-        """"title"""": """"Expiration Condition"""",
-        """"description"""": """"Expires on 2026-05-04"""",
-        """"expression"""": """"request.time < timestamp('2026-05-05T00:00:00.000Z')""""
-      }
-    }
-  ]
-}"
-"For our data analytics platform, {member_type1} {member1} needs {role_name1}, and {member_type2} {member2} needs {role_name2}. Both should expire on {expiration_date}","{
-  """"bindings"""": [
-    {
-      """"role"""": """"roles/container.admin"""",
-      """"members"""": [
-        """"service_account:network-sa@ai-project.iam.gserviceaccount.com""""
-      ]
-    },
-    {
-      """"role"""": """"roles/owner"""",
-      """"members"""": [
-        """"service_account:network-sa@ai-project.iam.gserviceaccount.com""""
-      ]
-    }
-  ]
-}"
-"I need a policy that allows service account cluster-operator@dev-project.iam.gserviceaccount.com to have both {role_name1} and {role_name2} roles","{
-  """"bindings"""": [
-    {
-      """"role"""": """"roles/run.admin"""",
-      """"members"""": [
-        """"service_account:cluster-operator@dev-project.iam.gserviceaccount.com""""
-      ]
-    },
-    {
-      """"role"""": """"roles/aiplatform.modelUser"""",
-      """"members"""": [
-        """"service_account:cluster-operator@dev-project.iam.gserviceaccount.com""""
-      ]
-    },
-    {
-      """"role"""": """"roles/resourcemanager.projectCreator"""",
-      """"members"""": [
-        """"service_account:cluster-operator@dev-project.iam.gserviceaccount.com""""
-      ]
-    }
-  ]
-}"
-"I want a policy such that service account keyring-manager@prod-project.iam.gserviceaccount.com has the role roles/viewer. Make this access expire on 2026-11-13","{
-  """"bindings"""": [
-    {
-      """"role"""": """"roles/viewer"""",
-      """"members"""": [
-        """"service_account:keyring-manager@prod-project.iam.gserviceaccount.com""""
-      ],
-      """"condition"""": {
-        """"title"""": """"Expiration Condition"""",
-        """"description"""": """"Expires on 2026-11-13"""",
-        """"expression"""": """"request.time < timestamp('2026-11-14T00:00:00.000Z')""""
-      }
-    }
-  ]
-}"
-"The service account keyring-manager@ai-project.iam.gserviceaccount.com requires access to {role_name1}, {role_name2}, and {role_name3}. This access should expire on {expiration_date}","{
-  """"bindings"""": [
-    {
-      """"role"""": """"roles/cloudsql.admin"""",
-      """"members"""": [
-        """"service_account:keyring-manager@ai-project.iam.gserviceaccount.com"""",
-        """"user:dev-user@cloud.google.com"""",
-        """"group:ops-team@example.com""""
-      ]
-    }
-  ]
-}"
-"The user function-operator@cloud.google.com requires access to {role_name1}, {role_name2}, and {role_name3}. This access should expire on {expiration_date}","{
-  """"bindings"""": [
-    {
-      """"role"""": """"roles/dataflow.worker"""",
-      """"members"""": [
-        """"user:function-operator@cloud.google.com""""
+        """"group:data-team@cloud.google.com""""
       ]
     },
     {
       """"role"""": """"roles/iam.securityReviewer"""",
       """"members"""": [
-        """"group:network-team@my-org.com""""
-      ]
-    },
-    {
-      """"role"""": """"roles/compute.viewer"""",
-      """"members"""": [
-        """"service_account:dev-sa@analytics-project.iam.gserviceaccount.com""""
-      ]
-    }
-  ]
-}"
-"I want a policy such that service account app-service@monitoring-project.iam.gserviceaccount.com has the role roles/resourcemanager.folderAdmin. Make this access expire on 2027-07-02","{
-  """"bindings"""": [
-    {
-      """"role"""": """"roles/resourcemanager.folderAdmin"""",
-      """"members"""": [
-        """"service_account:app-service@monitoring-project.iam.gserviceaccount.com""""
-      ],
-      """"condition"""": {
-        """"title"""": """"Expiration Condition"""",
-        """"description"""": """"Expires on 2027-07-02"""",
-        """"expression"""": """"request.time < timestamp('2027-07-03T00:00:00.000Z')""""
-      }
-    }
-  ]
-}"
-"Our cloud architecture team, represented by user monitoring-team@my-org.com, needs {role_name1} and {role_name2} roles across all projects within the organization","{
-  """"bindings"""": [
-    {
-      """"role"""": """"roles/iam.securityReviewer"""",
-      """"members"""": [
-        """"user:monitoring-team@my-org.com""""
-      ]
-    },
-    {
-      """"role"""": """"roles/aiplatform.modelUser"""",
-      """"members"""": [
-        """"user:monitoring-team@my-org.com""""
+        """"group:data-team@cloud.google.com""""
       ]
     },
     {
       """"role"""": """"roles/run.invoker"""",
       """"members"""": [
-        """"user:monitoring-team@my-org.com""""
+        """"group:data-team@cloud.google.com""""
       ]
     }
   ]
 }"
-"I need a policy for user monitoring-manager@cloud.google.com to have Monitoring Admin access, with expiration on 2027-05-30","{
+"Give service account cloud-service@my-project.iam.gserviceaccount.com the Cloudsql Client role (roles/cloudsql.client) so they can perform Cloudsql Client operations","{
   """"bindings"""": [
     {
-      """"role"""": """"roles/monitoring.admin"""",
+      """"role"""": """"roles/cloudsql.client"""",
       """"members"""": [
-        """"user:monitoring-manager@cloud.google.com""""
-      ],
-      """"condition"""": {
-        """"title"""": """"Expiration Condition"""",
-        """"description"""": """"Expires on 2027-05-30"""",
-        """"expression"""": """"request.time < timestamp('2027-05-31T00:00:00.000Z')""""
-      }
-    }
-  ]
-}"
-"Generate a policy binding that will grant user (keyring-operator@example.com) with the Resourcemanager Folderadmin role","{
-  """"bindings"""": [
-    {
-      """"role"""": """"roles/resourcemanager.folderAdmin"""",
-      """"members"""": [
-        """"user:keyring-operator@example.com""""
+        """"service_account:cloud-service@my-project.iam.gserviceaccount.com""""
       ]
     }
   ]
 }"
-"I need a policy for user ml-team@my-org.com to have Iam Securityreviewer access, with expiration on 2027-05-22","{
-  """"bindings"""": [
-    {
-      """"role"""": """"roles/iam.securityReviewer"""",
-      """"members"""": [
-        """"user:ml-team@my-org.com""""
-      ],
-      """"condition"""": {
-        """"title"""": """"Expiration Condition"""",
-        """"description"""": """"Expires on 2027-05-22"""",
-        """"expression"""": """"request.time < timestamp('2027-05-23T00:00:00.000Z')""""
-      }
-    }
-  ]
-}"
-"For our cloud infrastructure, user ml-admin@example.com needs Compute Firewalladmin, and user admin-team@cloud.google.com needs Custom Role. Both should expire on {expiration_date}","{
-  """"bindings"""": [
-    {
-      """"role"""": """"roles/compute.firewallAdmin"""",
-      """"members"""": [
-        """"user:ml-admin@example.com"""",
-        """"user:admin-team@cloud.google.com"""",
-        """"service_account:data-agent@gke-project.iam.gserviceaccount.com""""
-      ]
-    }
-  ]
-}"
-"For our AI testing platform, user cloud-admin@my-org.com needs Dataflow Viewer, and user database-admin@cloud.google.com needs Custom Role. Both should expire on {expiration_date}","{
-  """"bindings"""": [
-    {
-      """"role"""": """"roles/dataflow.viewer"""",
-      """"members"""": [
-        """"user:cloud-admin@my-org.com"""",
-        """"user:database-admin@cloud.google.com"""",
-        """"group:security-team@cloud.google.com""""
-      ]
-    }
-  ]
-}"
-"I need a policy for user job-admin@my-org.com to have Compute Viewer access, with expiration on 2026-10-21","{
-  """"bindings"""": [
-    {
-      """"role"""": """"roles/compute.viewer"""",
-      """"members"""": [
-        """"user:job-admin@my-org.com""""
-      ],
-      """"condition"""": {
-        """"title"""": """"Expiration Condition"""",
-        """"description"""": """"Expires on 2026-10-21"""",
-        """"expression"""": """"request.time < timestamp('2026-10-22T00:00:00.000Z')""""
-      }
-    }
-  ]
-}"
-"The group security-team@example.com needs Dataflow Worker to perform Dataflow Worker operations. This access should expire on 2027-09-20","{
-  """"bindings"""": [
-    {
-      """"role"""": """"roles/dataflow.worker"""",
-      """"members"""": [
-        """"group:security-team@example.com""""
-      ],
-      """"condition"""": {
-        """"title"""": """"Expiration Condition"""",
-        """"description"""": """"Expires on 2027-09-20"""",
-        """"expression"""": """"request.time < timestamp('2027-09-21T00:00:00.000Z')""""
-      }
-    }
-  ]
-}"
-"Grant {member_type1} {member1} the {role_name1} role, and also give {member_type2} {member2} the {role_name2} role","{
-  """"bindings"""": [
-    {
-      """"role"""": """"roles/appengine.deployer"""",
-      """"members"""": [
-        """"service_account:job-operator@analytics-project.iam.gserviceaccount.com""""
-      ]
-    },
-    {
-      """"role"""": """"roles/appengine.deployer"""",
-      """"members"""": [
-        """"service_account:job-operator@analytics-project.iam.gserviceaccount.com""""
-      ]
-    },
-    {
-      """"role"""": """"roles/dataflow.viewer"""",
-      """"members"""": [
-        """"service_account:job-operator@analytics-project.iam.gserviceaccount.com""""
-      ]
-    }
-  ]
-}"
-"Grant {member_type1} {member1} the {role_name1} role, and also give {member_type2} {member2} the {role_name2} role","{
-  """"bindings"""": [
-    {
-      """"role"""": """"roles/appengine.appAdmin"""",
-      """"members"""": [
-        """"user:data-user@example.com""""
-      ]
-    },
-    {
-      """"role"""": """"roles/run.viewer"""",
-      """"members"""": [
-        """"user:data-user@example.com""""
-      ]
-    }
-  ]
-}"
-"Our automation team, represented by service account cloud-processor@prod-project.iam.gserviceaccount.com, needs {role_name1} and {role_name2} roles across all projects within the organization","{
-  """"bindings"""": [
-    {
-      """"role"""": """"roles/cloudfunctions.developer"""",
-      """"members"""": [
-        """"service_account:cloud-processor@prod-project.iam.gserviceaccount.com""""
-      ]
-    },
-    {
-      """"role"""": """"roles/aiplatform.trainer"""",
-      """"members"""": [
-        """"service_account:cloud-processor@prod-project.iam.gserviceaccount.com""""
-      ]
-    },
-    {
-      """"role"""": """"roles/run.viewer"""",
-      """"members"""": [
-        """"service_account:cloud-processor@prod-project.iam.gserviceaccount.com""""
-      ]
-    }
-  ]
-}"
-"Our infrastructure team needs a policy that gives user app-dev@cloud.google.com the following permissions: roles/container.admin","{
+"I need a policy that allows service account keyring-admin@gke-project.iam.gserviceaccount.com to have both Storage Object Viewer and Storage Object Viewer roles","{
   """"bindings"""": [
     {
       """"role"""": """"roles/container.admin"""",
       """"members"""": [
-        """"user:app-dev@cloud.google.com""""
-      ],
-      """"condition"""": {
-        """"title"""": """"Expiration Condition"""",
-        """"description"""": """"Expires on 2025-07-28"""",
-        """"expression"""": """"request.time < timestamp('2025-07-29T00:00:00.000Z')""""
-      }
+        """"service_account:keyring-admin@gke-project.iam.gserviceaccount.com"""",
+        """"service_account:dev-sa@analytics-project.iam.gserviceaccount.com"""",
+        """"service_account:monitoring-sa@monitoring-project.iam.gserviceaccount.com""""
+      ]
     }
   ]
 }"
-"Grant {member_type1} {member1} the {role_name1} role, and also give {member_type2} {member2} the {role_name2} role","{
+"Create a policy where user user@example.com and user user@example.com both have the Bigquery Dataviewer role","{
   """"bindings"""": [
     {
-      """"role"""": """"roles/aiplatform.admin"""",
+      """"role"""": """"roles/bigquery.dataViewer"""",
       """"members"""": [
-        """"user:ops-user@example.com""""
+        """"service_account:app-agent@analytics-project.iam.gserviceaccount.com""""
       ]
     },
     {
-      """"role"""": """"roles/viewer"""",
+      """"role"""": """"roles/appengine.appAdmin"""",
       """"members"""": [
-        """"user:ops-user@example.com""""
+        """"service_account:app-agent@analytics-project.iam.gserviceaccount.com""""
+      ]
+    }
+  ]
+}"
+"Grant user user@example.com the Storage Object Viewer role, and also give user user@example.com the Storage Object Viewer role","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/secretmanager.secretAccessor"""",
+      """"members"""": [
+        """"group:data-team@example.com""""
       ]
     },
     {
-      """"role"""": """"roles/appengine.serviceAdmin"""",
-      """"members"""": [
-        """"user:ops-user@example.com""""
-      ]
-    }
-  ]
-}"
-"Generate a policy binding that will grant group (security-team@example.com) with the Storage Objectadmin role","{
-  """"bindings"""": [
-    {
-      """"role"""": """"roles/storage.objectAdmin"""",
-      """"members"""": [
-        """"group:security-team@example.com""""
-      ]
-    }
-  ]
-}"
-"Our data science team needs a policy that gives user dev-manager@my-org.com the following permissions: roles/cloudsql.viewer","{
-  """"bindings"""": [
-    {
-      """"role"""": """"roles/cloudsql.viewer"""",
-      """"members"""": [
-        """"user:dev-manager@my-org.com""""
-      ],
-      """"condition"""": {
-        """"title"""": """"Expiration Condition"""",
-        """"description"""": """"Expires on 2025-10-18"""",
-        """"expression"""": """"request.time < timestamp('2025-10-19T00:00:00.000Z')""""
-      }
-    }
-  ]
-}"
-"Create a policy where user network-team@cloud.google.com has the Dataflow Viewer role","{
-  """"bindings"""": [
-    {
-      """"role"""": """"roles/dataflow.viewer"""",
-      """"members"""": [
-        """"user:network-team@cloud.google.com""""
-      ]
-    }
-  ]
-}"
-"I need a policy that allows service account data-service@dev-project.iam.gserviceaccount.com to have both {role_name1} and {role_name2} roles","{
-  """"bindings"""": [
-    {
-      """"role"""": """"roles/cloudkms.cryptoKeyEncrypterDecrypter"""",
-      """"members"""": [
-        """"service_account:data-service@dev-project.iam.gserviceaccount.com""""
-      ],
-      """"condition"""": {
-        """"title"""": """"Expiration Condition"""",
-        """"description"""": """"Expires on 2025-11-22"""",
-        """"expression"""": """"request.time < timestamp('2025-11-23T00:00:00.000Z')""""
-      }
-    }
-  ]
-}"
-"I need a policy for group security-team@example.com to have Resourcemanager Projectcreator and group monitoring-team@cloud.google.com to have Custom Role. The first role should expire on {expiration_date1}, and the second on {expiration_date2}","{
-  """"bindings"""": [
-    {
-      """"role"""": """"roles/resourcemanager.projectCreator"""",
-      """"members"""": [
-        """"group:security-team@example.com"""",
-        """"group:monitoring-team@cloud.google.com"""",
-        """"service_account:cloud-service@data-project.iam.gserviceaccount.com""""
-      ]
-    }
-  ]
-}"
-"Our development team needs a policy that gives service account cloud-processor@prod-project.iam.gserviceaccount.com the following permissions: roles/secretmanager.secretVersionManager","{
-  """"bindings"""": [
-    {
-      """"role"""": """"roles/secretmanager.secretVersionManager"""",
-      """"members"""": [
-        """"service_account:cloud-processor@prod-project.iam.gserviceaccount.com""""
-      ],
-      """"condition"""": {
-        """"title"""": """"Expiration Condition"""",
-        """"description"""": """"Expires on 2027-12-15"""",
-        """"expression"""": """"request.time < timestamp('2027-12-16T00:00:00.000Z')""""
-      }
-    }
-  ]
-}"
-"Create a policy where service account database-admin@data-project.iam.gserviceaccount.com and service account security-sa@my-project.iam.gserviceaccount.com both have the Aiplatform Modeluser role","{
-  """"bindings"""": [
-    {
-      """"role"""": """"roles/aiplatform.modelUser"""",
-      """"members"""": [
-        """"service_account:database-admin@data-project.iam.gserviceaccount.com"""",
-        """"service_account:security-sa@my-project.iam.gserviceaccount.com"""",
-        """"service_account:ml-sa@my-project.iam.gserviceaccount.com""""
-      ]
-    }
-  ]
-}"
-"Generate a policy binding that will grant service account (job-admin@prod-project.iam.gserviceaccount.com) with the Resourcemanager Projectcreator role","{
-  """"bindings"""": [
-    {
-      """"role"""": """"roles/resourcemanager.projectCreator"""",
-      """"members"""": [
-        """"service_account:job-admin@prod-project.iam.gserviceaccount.com""""
-      ]
-    }
-  ]
-}"
-"I need a policy for group monitoring-team@cloud.google.com to have Run Viewer access, with expiration on 2027-08-14","{
-  """"bindings"""": [
-    {
-      """"role"""": """"roles/run.viewer"""",
-      """"members"""": [
-        """"group:monitoring-team@cloud.google.com""""
-      ],
-      """"condition"""": {
-        """"title"""": """"Expiration Condition"""",
-        """"description"""": """"Expires on 2027-08-14"""",
-        """"expression"""": """"request.time < timestamp('2027-08-15T00:00:00.000Z')""""
-      }
-    }
-  ]
-}"
-"Grant {member_type1} {member1} the {role_name1} role, and also give {member_type2} {member2} the {role_name2} role","{
-  """"bindings"""": [
-    {
-      """"role"""": """"roles/cloudkms.cryptoKeyEncrypterDecrypter"""",
+      """"role"""": """"roles/cloudfunctions.admin"""",
       """"members"""": [
         """"group:data-team@example.com""""
       ]
     }
   ]
 }"
-"For our security monitoring system, {member_type1} {member1} needs {role_name1}, and {member_type2} {member2} needs {role_name2}. Both should expire on {expiration_date}","{
+"I need a policy that allows service account app-processor@analytics-project.iam.gserviceaccount.com to administer Kubernetes clusters in the project prod-project","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/container.admin"""",
+      """"members"""": [
+        """"service_account:app-processor@analytics-project.iam.gserviceaccount.com""""
+      ]
+    }
+  ]
+}"
+"Create a policy where user user@example.com and user user@example.com both have the Dataflow Admin role","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/dataflow.admin"""",
+      """"members"""": [
+        """"user:data-team@cloud.google.com""""
+      ]
+    },
+    {
+      """"role"""": """"roles/cloudsql.client"""",
+      """"members"""": [
+        """"user:data-team@cloud.google.com""""
+      ]
+    }
+  ]
+}"
+"I need a policy that allows user monitoring-user@my-org.com to have both Storage Object Viewer and Storage Object Viewer roles","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/cloudfunctions.viewer"""",
+      """"members"""": [
+        """"user:monitoring-user@my-org.com"""",
+        """"group:admin-team@my-org.com""""
+      ]
+    }
+  ]
+}"
+"Create a policy where group security-team@example.com has the Run Viewer role","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/run.viewer"""",
+      """"members"""": [
+        """"group:security-team@example.com""""
+      ]
+    }
+  ]
+}"
+"The service account admin-sa@monitoring-project.iam.gserviceaccount.com needs Aiplatform Trainer to perform Aiplatform Trainer operations. This access should expire on 2025-09-20","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/aiplatform.trainer"""",
+      """"members"""": [
+        """"service_account:admin-sa@monitoring-project.iam.gserviceaccount.com""""
+      ],
+      """"condition"""": {
+        """"title"""": """"Expiration Condition"""",
+        """"description"""": """"Expires on 2025-09-20"""",
+        """"expression"""": """"request.time < timestamp('2025-09-21T00:00:00.000Z')""""
+      }
+    }
+  ]
+}"
+"Generate a policy binding that will grant user (admin-team@my-org.com) with the Dataflow Developer role","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/dataflow.developer"""",
+      """"members"""": [
+        """"user:admin-team@my-org.com""""
+      ]
+    }
+  ]
+}"
+"Our analytics team, represented by service account keyring-manager@data-project.iam.gserviceaccount.com, needs Storage Object Viewer and Storage Object Viewer roles across all projects within the organization","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/dataflow.viewer"""",
+      """"members"""": [
+        """"service_account:keyring-manager@data-project.iam.gserviceaccount.com""""
+      ]
+    },
+    {
+      """"role"""": """"roles/resourcemanager.projectCreator"""",
+      """"members"""": [
+        """"service_account:keyring-manager@data-project.iam.gserviceaccount.com""""
+      ]
+    },
+    {
+      """"role"""": """"roles/dataflow.worker"""",
+      """"members"""": [
+        """"service_account:keyring-manager@data-project.iam.gserviceaccount.com""""
+      ]
+    }
+  ]
+}"
+"I want a policy such that service account data-agent@data-project.iam.gserviceaccount.com has the role roles/dataflow.developer. Make this access expire on 2027-08-24","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/dataflow.developer"""",
+      """"members"""": [
+        """"service_account:data-agent@data-project.iam.gserviceaccount.com""""
+      ],
+      """"condition"""": {
+        """"title"""": """"Expiration Condition"""",
+        """"description"""": """"Expires on 2027-08-24"""",
+        """"expression"""": """"request.time < timestamp('2027-08-25T00:00:00.000Z')""""
+      }
+    }
+  ]
+}"
+"The user dev-team@my-org.com requires access to Storage Object Viewer, Storage Object Viewer, and Storage Object Viewer. This access should expire on 2025-12-31","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/monitoring.admin"""",
+      """"members"""": [
+        """"user:dev-team@my-org.com""""
+      ]
+    }
+  ]
+}"
+"I need a policy that allows user cloud-ops@my-org.com to have both Storage Object Viewer and Storage Object Viewer roles","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/iam.securityReviewer"""",
+      """"members"""": [
+        """"user:cloud-ops@my-org.com""""
+      ]
+    },
+    {
+      """"role"""": """"roles/storage.objectViewer"""",
+      """"members"""": [
+        """"user:cloud-ops@my-org.com""""
+      ]
+    }
+  ]
+}"
+"Create a policy where user database-operator@example.com and service account cluster-manager@analytics-project.iam.gserviceaccount.com both have the Bigquery Jobuser role","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/bigquery.jobUser"""",
+      """"members"""": [
+        """"user:database-operator@example.com"""",
+        """"service_account:cluster-manager@analytics-project.iam.gserviceaccount.com""""
+      ]
+    }
+  ]
+}"
+"I need a policy for service account app-service@dev-project.iam.gserviceaccount.com to have Cloudfunctions Developer access, with expiration on 2027-08-30","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/cloudfunctions.developer"""",
+      """"members"""": [
+        """"service_account:app-service@dev-project.iam.gserviceaccount.com""""
+      ],
+      """"condition"""": {
+        """"title"""": """"Expiration Condition"""",
+        """"description"""": """"Expires on 2027-08-30"""",
+        """"expression"""": """"request.time < timestamp('2027-08-31T00:00:00.000Z')""""
+      }
+    }
+  ]
+}"
+"Give user job-admin@cloud.google.com the Dataflow Developer role (roles/dataflow.developer) so they can develop Dataflow jobs","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/dataflow.developer"""",
+      """"members"""": [
+        """"user:job-admin@cloud.google.com""""
+      ]
+    }
+  ]
+}"
+"For our AI testing platform, service account cloud-service@my-project.iam.gserviceaccount.com needs Dataflow Admin, and group ops-team@my-org.com needs Custom Role. Both should expire on 2025-12-31","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/dataflow.admin"""",
+      """"members"""": [
+        """"service_account:cloud-service@my-project.iam.gserviceaccount.com"""",
+        """"group:ops-team@my-org.com"""",
+        """"group:data-team@my-org.com""""
+      ]
+    }
+  ]
+}"
+"Create a policy where user function-operator@my-org.com has the Container Admin role","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/container.admin"""",
+      """"members"""": [
+        """"user:function-operator@my-org.com""""
+      ]
+    }
+  ]
+}"
+"I need a policy that allows user app-dev@cloud.google.com to administer Kubernetes clusters in the project dev-project","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/container.admin"""",
+      """"members"""": [
+        """"user:app-dev@cloud.google.com""""
+      ]
+    }
+  ]
+}"
+"The user data-team@cloud.google.com needs Monitoring Metricwriter to perform Monitoring Metricwriter operations. This access should expire on 2025-08-27","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/monitoring.metricWriter"""",
+      """"members"""": [
+        """"user:data-team@cloud.google.com""""
+      ],
+      """"condition"""": {
+        """"title"""": """"Expiration Condition"""",
+        """"description"""": """"Expires on 2025-08-27"""",
+        """"expression"""": """"request.time < timestamp('2025-08-28T00:00:00.000Z')""""
+      }
+    }
+  ]
+}"
+"I need a policy that allows user dev-team@my-org.com to have both Storage Object Viewer and Storage Object Viewer roles","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/compute.instanceAdmin"""",
+      """"members"""": [
+        """"user:dev-team@my-org.com""""
+      ]
+    },
+    {
+      """"role"""": """"roles/cloudsql.viewer"""",
+      """"members"""": [
+        """"user:dev-team@my-org.com""""
+      ]
+    },
+    {
+      """"role"""": """"roles/monitoring.viewer"""",
+      """"members"""": [
+        """"user:dev-team@my-org.com""""
+      ]
+    }
+  ]
+}"
+"I need a policy for user user@example.com to have Storage Object Viewer and user user@example.com to have Storage Object Viewer. The first role should expire on 2026-11-16, and the second on 2026-12-16","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/monitoring.admin"""",
+      """"members"""": [
+        """"user:app-ops@my-org.com""""
+      ],
+      """"condition"""": {
+        """"title"""": """"Expiration Condition"""",
+        """"description"""": """"Expires on 2026-11-16"""",
+        """"expression"""": """"request.time < timestamp('2026-11-17T00:00:00.000Z')""""
+      }
+    }
+  ]
+}"
+"For our development environment, service account bucket-operator@monitoring-project.iam.gserviceaccount.com needs Cloudfunctions Viewer, and user data-admin@example.com needs Custom Role. Both should expire on 2025-12-31","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/cloudfunctions.viewer"""",
+      """"members"""": [
+        """"service_account:bucket-operator@monitoring-project.iam.gserviceaccount.com"""",
+        """"user:data-admin@example.com"""",
+        """"user:app-admin@my-org.com""""
+      ]
+    }
+  ]
+}"
+"I need a policy that allows service account cloud-processor@my-project.iam.gserviceaccount.com to have both Storage Object Viewer and Storage Object Viewer roles","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/editor"""",
+      """"members"""": [
+        """"service_account:cloud-processor@my-project.iam.gserviceaccount.com""""
+      ]
+    },
+    {
+      """"role"""": """"roles/appengine.appAdmin"""",
+      """"members"""": [
+        """"service_account:cloud-processor@my-project.iam.gserviceaccount.com""""
+      ]
+    }
+  ]
+}"
+"Grant user instance-admin@my-org.com the Cloudfunctions Viewer role, and also give service account data-processor@gke-project.iam.gserviceaccount.com the Custom Role role","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/cloudfunctions.viewer"""",
+      """"members"""": [
+        """"user:instance-admin@my-org.com"""",
+        """"service_account:data-processor@gke-project.iam.gserviceaccount.com""""
+      ]
+    }
+  ]
+}"
+"For our AI testing platform, user user@example.com needs Storage Object Viewer, and user user@example.com needs Storage Object Viewer. Both should expire on 2025-12-31","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/appengine.serviceAdmin"""",
+      """"members"""": [
+        """"group:dev-team@example.com""""
+      ]
+    },
+    {
+      """"role"""": """"roles/bigquery.dataViewer"""",
+      """"members"""": [
+        """"group:dev-team@example.com""""
+      ]
+    }
+  ]
+}"
+"The service account ml-sa@dev-project.iam.gserviceaccount.com needs Appengine Deployer to deploy applications to App Engine. This access should expire on 2027-05-14","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/appengine.deployer"""",
+      """"members"""": [
+        """"service_account:ml-sa@dev-project.iam.gserviceaccount.com""""
+      ],
+      """"condition"""": {
+        """"title"""": """"Expiration Condition"""",
+        """"description"""": """"Expires on 2027-05-14"""",
+        """"expression"""": """"request.time < timestamp('2027-05-15T00:00:00.000Z')""""
+      }
+    }
+  ]
+}"
+"I need a policy for group data-team@my-org.com to have Appengine Serviceadmin access, with expiration on 2026-09-10","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/appengine.serviceAdmin"""",
+      """"members"""": [
+        """"group:data-team@my-org.com""""
+      ],
+      """"condition"""": {
+        """"title"""": """"Expiration Condition"""",
+        """"description"""": """"Expires on 2026-09-10"""",
+        """"expression"""": """"request.time < timestamp('2026-09-11T00:00:00.000Z')""""
+      }
+    }
+  ]
+}"
+"Create a policy where user user@example.com and user user@example.com both have the Container Developer role","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/container.developer"""",
+      """"members"""": [
+        """"user:ops-team@example.com""""
+      ]
+    },
+    {
+      """"role"""": """"roles/resourcemanager.organizationAdmin"""",
+      """"members"""": [
+        """"user:ops-team@example.com""""
+      ]
+    },
+    {
+      """"role"""": """"roles/cloudkms.cryptoKeyEncrypterDecrypter"""",
+      """"members"""": [
+        """"user:ops-team@example.com""""
+      ]
+    }
+  ]
+}"
+"For our cloud infrastructure, user user@example.com needs Storage Object Viewer, and user user@example.com needs Storage Object Viewer. Both should expire on 2025-12-31","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/appengine.deployer"""",
+      """"members"""": [
+        """"service_account:data-processor@prod-project.iam.gserviceaccount.com""""
+      ]
+    },
+    {
+      """"role"""": """"roles/appengine.deployer"""",
+      """"members"""": [
+        """"service_account:data-processor@prod-project.iam.gserviceaccount.com""""
+      ]
+    }
+  ]
+}"
+"Create a policy where user data-dev@my-org.com has the Aiplatform Modeluser role","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/aiplatform.modelUser"""",
+      """"members"""": [
+        """"user:data-dev@my-org.com""""
+      ]
+    }
+  ]
+}"
+"The service account bucket-admin@dev-project.iam.gserviceaccount.com needs Bigquery Jobuser to perform Bigquery Jobuser operations. This access should expire on 2025-09-27","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/bigquery.jobUser"""",
+      """"members"""": [
+        """"service_account:bucket-admin@dev-project.iam.gserviceaccount.com""""
+      ],
+      """"condition"""": {
+        """"title"""": """"Expiration Condition"""",
+        """"description"""": """"Expires on 2025-09-27"""",
+        """"expression"""": """"request.time < timestamp('2025-09-28T00:00:00.000Z')""""
+      }
+    }
+  ]
+}"
+"I need a policy that allows service account database-manager@prod-project.iam.gserviceaccount.com to perform Run Invoker operations in the project analytics-project","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/run.invoker"""",
+      """"members"""": [
+        """"service_account:database-manager@prod-project.iam.gserviceaccount.com""""
+      ]
+    }
+  ]
+}"
+"Our infrastructure team needs a policy that gives user monitoring-user@my-org.com the following permissions: roles/dataflow.admin","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/dataflow.admin"""",
+      """"members"""": [
+        """"user:monitoring-user@my-org.com""""
+      ],
+      """"condition"""": {
+        """"title"""": """"Expiration Condition"""",
+        """"description"""": """"Expires on 2026-07-23"""",
+        """"expression"""": """"request.time < timestamp('2026-07-24T00:00:00.000Z')""""
+      }
+    }
+  ]
+}"
+"I need a policy that allows service account dev-sa@dev-project.iam.gserviceaccount.com to perform Secretmanager Secretversionmanager operations in the project ai-project","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/secretmanager.secretVersionManager"""",
+      """"members"""": [
+        """"service_account:dev-sa@dev-project.iam.gserviceaccount.com""""
+      ]
+    }
+  ]
+}"
+"I need a policy that allows user data-team@example.com to have both Storage Object Viewer and Storage Object Viewer roles","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/storage.objectViewer"""",
+      """"members"""": [
+        """"user:data-team@example.com"""",
+        """"service_account:keyring-admin@prod-project.iam.gserviceaccount.com""""
+      ]
+    }
+  ]
+}"
+"Create a policy where service account network-sa@analytics-project.iam.gserviceaccount.com has the Aiplatform Modeluser role","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/aiplatform.modelUser"""",
+      """"members"""": [
+        """"service_account:network-sa@analytics-project.iam.gserviceaccount.com""""
+      ]
+    }
+  ]
+}"
+"Create a policy where service account app-agent@gke-project.iam.gserviceaccount.com has the Container Developer role","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/container.developer"""",
+      """"members"""": [
+        """"service_account:app-agent@gke-project.iam.gserviceaccount.com""""
+      ]
+    }
+  ]
+}"
+"Generate a policy binding that will grant service account (data-sa@gke-project.iam.gserviceaccount.com) with the Cloudfunctions Viewer role","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/cloudfunctions.viewer"""",
+      """"members"""": [
+        """"service_account:data-sa@gke-project.iam.gserviceaccount.com""""
+      ]
+    }
+  ]
+}"
+"Generate a policy binding that will grant group (ops-team@example.com) with the Appengine Appviewer role","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/appengine.appViewer"""",
+      """"members"""": [
+        """"group:ops-team@example.com""""
+      ]
+    }
+  ]
+}"
+"Give group security-team@example.com the Container Admin role (roles/container.admin) so they can administer Kubernetes clusters","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/container.admin"""",
+      """"members"""": [
+        """"group:security-team@example.com""""
+      ]
+    }
+  ]
+}"
+"Generate a policy binding that will grant user (cloud-ops@example.com) with the Logging Viewer role","{
   """"bindings"""": [
     {
       """"role"""": """"roles/logging.viewer"""",
       """"members"""": [
-        """"service_account:ops-sa@my-project.iam.gserviceaccount.com""""
+        """"user:cloud-ops@example.com""""
+      ]
+    }
+  ]
+}"
+"For our cloud infrastructure, user instance-operator@example.com needs Compute Networkadmin, and service account function-operator@prod-project.iam.gserviceaccount.com needs Custom Role. Both should expire on 2025-12-31","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/compute.networkAdmin"""",
+      """"members"""": [
+        """"user:instance-operator@example.com"""",
+        """"service_account:function-operator@prod-project.iam.gserviceaccount.com""""
+      ]
+    }
+  ]
+}"
+"I need a policy that allows service account admin-sa@gke-project.iam.gserviceaccount.com to have both Storage Object Viewer and Storage Object Viewer roles","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/secretmanager.viewer"""",
+      """"members"""": [
+        """"service_account:admin-sa@gke-project.iam.gserviceaccount.com""""
       ]
     },
+    {
+      """"role"""": """"roles/run.invoker"""",
+      """"members"""": [
+        """"service_account:admin-sa@gke-project.iam.gserviceaccount.com""""
+      ]
+    }
+  ]
+}"
+"The service account cloud-service@prod-project.iam.gserviceaccount.com requires access to Storage Object Viewer, Storage Object Viewer, and Storage Object Viewer. This access should expire on 2026-12-23","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/cloudfunctions.viewer"""",
+      """"members"""": [
+        """"service_account:cloud-service@prod-project.iam.gserviceaccount.com"""",
+        """"group:dev-team@example.com""""
+      ],
+      """"condition"""": {
+        """"title"""": """"Expiration Condition"""",
+        """"description"""": """"Expires on 2026-12-23"""",
+        """"expression"""": """"request.time < timestamp('2026-12-24T00:00:00.000Z')""""
+      }
+    }
+  ]
+}"
+"For our development environment, user user@example.com needs Storage Object Viewer, and user user@example.com needs Storage Object Viewer. Both should expire on 2025-12-31","{
+  """"bindings"""": [
     {
       """"role"""": """"roles/bigquery.jobUser"""",
       """"members"""": [
-        """"service_account:ops-sa@my-project.iam.gserviceaccount.com""""
-      ]
-    },
-    {
-      """"role"""": """"roles/dataflow.developer"""",
-      """"members"""": [
-        """"service_account:ops-sa@my-project.iam.gserviceaccount.com""""
+        """"group:data-team@cloud.google.com""""
       ]
     }
   ]
 }"
-"I need a policy that allows service account bucket-admin@data-project.iam.gserviceaccount.com to have both {role_name1} and {role_name2} roles","{
+"Grant user keyring-admin@example.com the Compute Networkadmin role for project data-project, expiring on 2025-12-31","{
   """"bindings"""": [
     {
-      """"role"""": """"roles/aiplatform.viewer"""",
+      """"role"""": """"roles/compute.networkAdmin"""",
       """"members"""": [
-        """"service_account:bucket-admin@data-project.iam.gserviceaccount.com"""",
-        """"user:monitoring-team@cloud.google.com""""
+        """"user:keyring-admin@example.com""""
       ]
     }
   ]
 }"
-"I need a policy that allows user cluster-admin@my-org.com to perform Monitoring Metricwriter operations in the project analytics-project","{
+"Create a policy that grants user data-manager@my-org.com access to roles/monitoring.metricWriter","{
   """"bindings"""": [
     {
       """"role"""": """"roles/monitoring.metricWriter"""",
+      """"members"""": [
+        """"user:data-manager@my-org.com""""
+      ],
+      """"condition"""": {
+        """"title"""": """"Expiration Condition"""",
+        """"description"""": """"Expires on 2026-08-09"""",
+        """"expression"""": """"request.time < timestamp('2026-08-10T00:00:00.000Z')""""
+      }
+    }
+  ]
+}"
+"The user admin-team@cloud.google.com requires access to Storage Object Viewer, Storage Object Viewer, and Storage Object Viewer. This access should expire on 2025-12-31","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/bigquery.dataViewer"""",
+      """"members"""": [
+        """"user:admin-team@cloud.google.com""""
+      ]
+    },
+    {
+      """"role"""": """"roles/logging.viewer"""",
+      """"members"""": [
+        """"user:admin-team@cloud.google.com""""
+      ]
+    }
+  ]
+}"
+"Generate a policy binding that will grant user (cluster-operator@example.com) with the Compute Storageadmin role","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/compute.storageAdmin"""",
+      """"members"""": [
+        """"user:cluster-operator@example.com""""
+      ]
+    }
+  ]
+}"
+"Give group monitoring-team@cloud.google.com the Container Admin role (roles/container.admin) so they can administer Kubernetes clusters","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/container.admin"""",
+      """"members"""": [
+        """"group:monitoring-team@cloud.google.com""""
+      ]
+    }
+  ]
+}"
+"The service account admin-sa@analytics-project.iam.gserviceaccount.com needs Cloudfunctions Developer to deploy Cloud Functions. This access should expire on 2025-10-29","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/cloudfunctions.developer"""",
+      """"members"""": [
+        """"service_account:admin-sa@analytics-project.iam.gserviceaccount.com""""
+      ],
+      """"condition"""": {
+        """"title"""": """"Expiration Condition"""",
+        """"description"""": """"Expires on 2025-10-29"""",
+        """"expression"""": """"request.time < timestamp('2025-10-30T00:00:00.000Z')""""
+      }
+    }
+  ]
+}"
+"Grant group ml-team@my-org.com the Resourcemanager Organizationadmin role for project data-project, expiring on 2025-12-31","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/resourcemanager.organizationAdmin"""",
+      """"members"""": [
+        """"group:ml-team@my-org.com""""
+      ]
+    }
+  ]
+}"
+"Grant user user@example.com the Storage Object Viewer role, and also give user user@example.com the Storage Object Viewer role","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/storage.objectAdmin"""",
+      """"members"""": [
+        """"service_account:cluster-manager@monitoring-project.iam.gserviceaccount.com""""
+      ]
+    },
+    {
+      """"role"""": """"roles/run.invoker"""",
+      """"members"""": [
+        """"service_account:cluster-manager@monitoring-project.iam.gserviceaccount.com""""
+      ]
+    }
+  ]
+}"
+"The user app-ops@my-org.com requires access to Storage Object Viewer, Storage Object Viewer, and Storage Object Viewer. This access should expire on 2025-12-31","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/logging.viewer"""",
+      """"members"""": [
+        """"user:app-ops@my-org.com""""
+      ]
+    },
+    {
+      """"role"""": """"roles/storage.objectAdmin"""",
+      """"members"""": [
+        """"user:app-ops@my-org.com""""
+      ]
+    },
+    {
+      """"role"""": """"roles/aiplatform.admin"""",
+      """"members"""": [
+        """"user:app-ops@my-org.com""""
+      ]
+    }
+  ]
+}"
+"I need a policy that allows service account instance-admin@dev-project.iam.gserviceaccount.com to have both Storage Object Viewer and Storage Object Viewer roles","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/cloudsql.admin"""",
+      """"members"""": [
+        """"service_account:instance-admin@dev-project.iam.gserviceaccount.com""""
+      ]
+    },
+    {
+      """"role"""": """"roles/storage.admin"""",
+      """"members"""": [
+        """"service_account:instance-admin@dev-project.iam.gserviceaccount.com""""
+      ]
+    },
+    {
+      """"role"""": """"roles/secretmanager.viewer"""",
+      """"members"""": [
+        """"service_account:instance-admin@dev-project.iam.gserviceaccount.com""""
+      ]
+    }
+  ]
+}"
+"Create a policy where service account app-service@data-project.iam.gserviceaccount.com has the Logging Viewer role","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/logging.viewer"""",
+      """"members"""": [
+        """"service_account:app-service@data-project.iam.gserviceaccount.com""""
+      ]
+    }
+  ]
+}"
+"Create a policy where service account app-processor@data-project.iam.gserviceaccount.com has the Bigquery Jobuser role","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/bigquery.jobUser"""",
+      """"members"""": [
+        """"service_account:app-processor@data-project.iam.gserviceaccount.com""""
+      ]
+    }
+  ]
+}"
+"Create a policy that grants group network-team@example.com access to roles/logging.logWriter","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/logging.logWriter"""",
+      """"members"""": [
+        """"group:network-team@example.com""""
+      ],
+      """"condition"""": {
+        """"title"""": """"Expiration Condition"""",
+        """"description"""": """"Expires on 2028-01-17"""",
+        """"expression"""": """"request.time < timestamp('2028-01-18T00:00:00.000Z')""""
+      }
+    }
+  ]
+}"
+"Give user cluster-admin@my-org.com the Iam Securityreviewer role (roles/iam.securityReviewer) so they can perform Iam Securityreviewer operations","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/iam.securityReviewer"""",
       """"members"""": [
         """"user:cluster-admin@my-org.com""""
       ]
     }
   ]
 }"
-"I need a policy that allows user security-admin@cloud.google.com to perform Aiplatform Viewer operations in the project dev-project","{
+"Create a policy where service account keyring-operator@gke-project.iam.gserviceaccount.com has the Run Invoker role","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/run.invoker"""",
+      """"members"""": [
+        """"service_account:keyring-operator@gke-project.iam.gserviceaccount.com""""
+      ]
+    }
+  ]
+}"
+"I need a policy that allows user cloud-dev@example.com to have both Storage Object Viewer and Storage Object Viewer roles","{
   """"bindings"""": [
     {
       """"role"""": """"roles/aiplatform.viewer"""",
       """"members"""": [
-        """"user:security-admin@cloud.google.com""""
+        """"user:cloud-dev@example.com"""",
+        """"user:security-manager@cloud.google.com""""
       ]
     }
   ]
 }"
-"Grant {member_type1} {member1} the {role_name1} role, and also give {member_type2} {member2} the {role_name2} role","{
+"I need a policy for group network-team@cloud.google.com to have Storage Objectcreator access, with expiration on 2026-09-03","{
   """"bindings"""": [
     {
-      """"role"""": """"roles/dataflow.worker"""",
+      """"role"""": """"roles/storage.objectCreator"""",
       """"members"""": [
-        """"user:app-dev@my-org.com""""
-      ]
-    }
-  ]
-}"
-"Our monitoring team, represented by group data-team@my-org.com, needs {role_name1} and {role_name2} roles across all projects within the organization","{
-  """"bindings"""": [
-    {
-      """"role"""": """"roles/cloudsql.client"""",
-      """"members"""": [
-        """"group:data-team@my-org.com"""",
-        """"user:security-team@cloud.google.com""""
-      ]
-    }
-  ]
-}"
-"Grant {member_type1} {member1} the {role_name1} role, and also give {member_type2} {member2} the {role_name2} role","{
-  """"bindings"""": [
-    {
-      """"role"""": """"roles/run.admin"""",
-      """"members"""": [
-        """"group:network-team@example.com""""
-      ]
-    },
-    {
-      """"role"""": """"roles/dataflow.worker"""",
-      """"members"""": [
-        """"group:network-team@example.com""""
-      ]
-    }
-  ]
-}"
-"I want a policy such that user database-admin@my-org.com has the role roles/resourcemanager.organizationAdmin. Make this access expire on 2027-10-13","{
-  """"bindings"""": [
-    {
-      """"role"""": """"roles/resourcemanager.organizationAdmin"""",
-      """"members"""": [
-        """"user:database-admin@my-org.com""""
+        """"group:network-team@cloud.google.com""""
       ],
       """"condition"""": {
         """"title"""": """"Expiration Condition"""",
-        """"description"""": """"Expires on 2027-10-13"""",
-        """"expression"""": """"request.time < timestamp('2027-10-14T00:00:00.000Z')""""
+        """"description"""": """"Expires on 2026-09-03"""",
+        """"expression"""": """"request.time < timestamp('2026-09-04T00:00:00.000Z')""""
       }
     }
   ]
 }"
-"For our AI testing platform, {member_type1} {member1} needs {role_name1}, and {member_type2} {member2} needs {role_name2}. Both should expire on {expiration_date}","{
+"Grant user user@example.com the Storage Object Viewer role, and also give user user@example.com the Storage Object Viewer role","{
   """"bindings"""": [
     {
-      """"role"""": """"roles/resourcemanager.folderAdmin"""",
+      """"role"""": """"roles/appengine.appAdmin"""",
       """"members"""": [
-        """"group:network-team@cloud.google.com""""
+        """"service_account:ml-sa@prod-project.iam.gserviceaccount.com""""
       ]
     },
     {
-      """"role"""": """"roles/aiplatform.modelUser"""",
+      """"role"""": """"roles/storage.objectViewer"""",
       """"members"""": [
-        """"group:network-team@cloud.google.com""""
-      ]
-    },
-    {
-      """"role"""": """"roles/resourcemanager.folderAdmin"""",
-      """"members"""": [
-        """"group:network-team@cloud.google.com""""
+        """"service_account:ml-sa@prod-project.iam.gserviceaccount.com""""
       ]
     }
   ]
 }"
-"Create a policy where service account monitoring-sa@gke-project.iam.gserviceaccount.com has the Cloudfunctions Viewer role","{
+"I need a policy for user database-operator@cloud.google.com to have Run Invoker and user data-team@cloud.google.com to have Custom Role. The first role should expire on 2025-12-31, and the second on 2025-12-31","{
   """"bindings"""": [
     {
-      """"role"""": """"roles/cloudfunctions.viewer"""",
+      """"role"""": """"roles/run.invoker"""",
       """"members"""": [
+        """"user:database-operator@cloud.google.com"""",
+        """"user:data-team@cloud.google.com"""",
         """"service_account:monitoring-sa@gke-project.iam.gserviceaccount.com""""
       ]
     }
   ]
 }"
-"I need a policy that allows user ops-team@my-org.com to configure monitoring in the project data-project","{
+"I need a policy that allows service account network-sa@my-project.iam.gserviceaccount.com to have both Storage Object Viewer and Storage Object Viewer roles","{
   """"bindings"""": [
     {
-      """"role"""": """"roles/monitoring.admin"""",
+      """"role"""": """"roles/bigquery.dataEditor"""",
       """"members"""": [
-        """"user:ops-team@my-org.com""""
-      ]
-    }
-  ]
-}"
-"I need a policy for service account monitoring-sa@data-project.iam.gserviceaccount.com to have Storage Objectadmin access, with expiration on 2027-03-01","{
-  """"bindings"""": [
-    {
-      """"role"""": """"roles/storage.objectAdmin"""",
-      """"members"""": [
-        """"service_account:monitoring-sa@data-project.iam.gserviceaccount.com""""
+        """"service_account:network-sa@my-project.iam.gserviceaccount.com""""
       ],
       """"condition"""": {
         """"title"""": """"Expiration Condition"""",
-        """"description"""": """"Expires on 2027-03-01"""",
-        """"expression"""": """"request.time < timestamp('2027-03-02T00:00:00.000Z')""""
+        """"description"""": """"Expires on 2028-01-06"""",
+        """"expression"""": """"request.time < timestamp('2028-01-07T00:00:00.000Z')""""
       }
-    }
-  ]
-}"
-"I need a policy for group ml-team@my-org.com to have Editor and group admin-team@cloud.google.com to have Custom Role. The first role should expire on {expiration_date1}, and the second on {expiration_date2}","{
-  """"bindings"""": [
+    },
     {
-      """"role"""": """"roles/editor"""",
+      """"role"""": """"roles/aiplatform.user"""",
       """"members"""": [
-        """"group:ml-team@my-org.com"""",
-        """"group:admin-team@cloud.google.com""""
+        """"service_account:dev-sa@data-project.iam.gserviceaccount.com""""
       ]
     }
   ]
 }"
-"Grant service account cloud-agent@monitoring-project.iam.gserviceaccount.com the Cloudsql Admin role for project prod-project, expiring on {expiration_date}","{
-  """"bindings"""": [
-    {
-      """"role"""": """"roles/cloudsql.admin"""",
-      """"members"""": [
-        """"service_account:cloud-agent@monitoring-project.iam.gserviceaccount.com""""
-      ]
-    }
-  ]
-}"
-"I need a policy that allows service account app-service@ai-project.iam.gserviceaccount.com to use AI Platform services in the project analytics-project","{
+"I need a policy for user dev-manager@cloud.google.com to have Aiplatform User and user network-team@cloud.google.com to have Custom Role. The first role should expire on 2025-11-23, and the second on 2025-12-23","{
   """"bindings"""": [
     {
       """"role"""": """"roles/aiplatform.user"""",
       """"members"""": [
-        """"service_account:app-service@ai-project.iam.gserviceaccount.com""""
+        """"user:dev-manager@cloud.google.com"""",
+        """"user:network-team@cloud.google.com""""
+      ],
+      """"condition"""": {
+        """"title"""": """"Expiration Condition"""",
+        """"description"""": """"Expires on 2025-11-23"""",
+        """"expression"""": """"request.time < timestamp('2025-11-24T00:00:00.000Z')""""
+      }
+    }
+  ]
+}"
+"Give group security-team@cloud.google.com the Bigquery Admin role (roles/bigquery.admin) so they can perform Bigquery Admin operations","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/bigquery.admin"""",
+      """"members"""": [
+        """"group:security-team@cloud.google.com""""
       ]
+    }
+  ]
+}"
+"I need a policy that allows user admin-user@example.com to have both Storage Object Viewer and Storage Object Viewer roles","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/logging.logWriter"""",
+      """"members"""": [
+        """"user:admin-user@example.com""""
+      ]
+    },
+    {
+      """"role"""": """"roles/compute.instanceAdmin"""",
+      """"members"""": [
+        """"user:admin-user@example.com""""
+      ]
+    },
+    {
+      """"role"""": """"roles/bigquery.jobUser"""",
+      """"members"""": [
+        """"user:admin-user@example.com""""
+      ]
+    }
+  ]
+}"
+"I need a policy that allows user data-ops@example.com to edit resources in the project monitoring-project","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/editor"""",
+      """"members"""": [
+        """"user:data-ops@example.com""""
+      ]
+    }
+  ]
+}"
+"Our application development team, represented by user cluster-operator@cloud.google.com, needs Storage Object Viewer and Storage Object Viewer roles across all projects within the organization","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/owner"""",
+      """"members"""": [
+        """"user:cluster-operator@cloud.google.com"""",
+        """"user:ops-user@cloud.google.com""""
+      ],
+      """"condition"""": {
+        """"title"""": """"Expiration Condition"""",
+        """"description"""": """"Expires on 2027-01-29"""",
+        """"expression"""": """"request.time < timestamp('2027-01-30T00:00:00.000Z')""""
+      }
+    }
+  ]
+}"
+"I need a policy that allows service account instance-operator@analytics-project.iam.gserviceaccount.com to view files in storage buckets in the project dev-project","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/storage.objectViewer"""",
+      """"members"""": [
+        """"service_account:instance-operator@analytics-project.iam.gserviceaccount.com""""
+      ]
+    }
+  ]
+}"
+"For our cloud infrastructure, service account cloud-service@data-project.iam.gserviceaccount.com needs Cloudsql Client, and user monitoring-admin@example.com needs Cloudsql Admin. Both should expire on 2026-01-02","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/cloudsql.client"""",
+      """"members"""": [
+        """"service_account:cloud-service@data-project.iam.gserviceaccount.com""""
+      ],
+      """"condition"""": {
+        """"title"""": """"Expiration Condition"""",
+        """"description"""": """"Expires on 2026-01-02"""",
+        """"expression"""": """"request.time < timestamp('2026-01-03T00:00:00.000Z')""""
+      }
+    },
+    {
+      """"role"""": """"roles/cloudsql.admin"""",
+      """"members"""": [
+        """"user:monitoring-admin@example.com""""
+      ]
+    },
+    {
+      """"role"""": """"roles/cloudsql.admin"""",
+      """"members"""": [
+        """"service_account:data-processor@analytics-project.iam.gserviceaccount.com""""
+      ]
+    }
+  ]
+}"
+"Give service account security-sa@analytics-project.iam.gserviceaccount.com the Storage Admin role (roles/storage.admin) so they can perform Storage Admin operations","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/storage.admin"""",
+      """"members"""": [
+        """"service_account:security-sa@analytics-project.iam.gserviceaccount.com""""
+      ]
+    }
+  ]
+}"
+"Grant user user@example.com the Storage Object Viewer role, and also give user user@example.com the Storage Object Viewer role","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/secretmanager.secretVersionManager"""",
+      """"members"""": [
+        """"user:app-admin@example.com""""
+      ]
+    },
+    {
+      """"role"""": """"roles/container.admin"""",
+      """"members"""": [
+        """"user:app-admin@example.com""""
+      ]
+    }
+  ]
+}"
+"I want a policy such that service account app-service@prod-project.iam.gserviceaccount.com has the role roles/aiplatform.modelUser. Make this access expire on 2027-06-19","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/aiplatform.modelUser"""",
+      """"members"""": [
+        """"service_account:app-service@prod-project.iam.gserviceaccount.com""""
+      ],
+      """"condition"""": {
+        """"title"""": """"Expiration Condition"""",
+        """"description"""": """"Expires on 2027-06-19"""",
+        """"expression"""": """"request.time < timestamp('2027-06-20T00:00:00.000Z')""""
+      }
+    }
+  ]
+}"
+"Create a policy where user security-team@my-org.com has the Aiplatform Admin role","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/aiplatform.admin"""",
+      """"members"""": [
+        """"user:security-team@my-org.com""""
+      ]
+    }
+  ]
+}"
+"Grant service account bucket-manager@monitoring-project.iam.gserviceaccount.com the Bigquery Admin role, and also give user security-team@example.com the Custom Role role","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/bigquery.admin"""",
+      """"members"""": [
+        """"service_account:bucket-manager@monitoring-project.iam.gserviceaccount.com"""",
+        """"user:security-team@example.com""""
+      ]
+    }
+  ]
+}"
+"Create a policy that grants user network-user@cloud.google.com access to roles/container.admin","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/container.admin"""",
+      """"members"""": [
+        """"user:network-user@cloud.google.com""""
+      ],
+      """"condition"""": {
+        """"title"""": """"Expiration Condition"""",
+        """"description"""": """"Expires on 2026-01-30"""",
+        """"expression"""": """"request.time < timestamp('2026-01-31T00:00:00.000Z')""""
+      }
+    }
+  ]
+}"
+"Grant service account cloud-agent@analytics-project.iam.gserviceaccount.com the Cloudsql Client role, and also give service account keyring-admin@ai-project.iam.gserviceaccount.com the Custom Role role","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/cloudsql.client"""",
+      """"members"""": [
+        """"service_account:cloud-agent@analytics-project.iam.gserviceaccount.com"""",
+        """"service_account:keyring-admin@ai-project.iam.gserviceaccount.com"""",
+        """"service_account:monitoring-sa@dev-project.iam.gserviceaccount.com""""
+      ]
+    }
+  ]
+}"
+"Our machine learning team, represented by service account data-processor@dev-project.iam.gserviceaccount.com, needs Storage Object Viewer and Storage Object Viewer roles across all projects within the organization","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/bigquery.dataEditor"""",
+      """"members"""": [
+        """"service_account:data-processor@dev-project.iam.gserviceaccount.com"""",
+        """"user:monitoring-admin@my-org.com""""
+      ]
+    }
+  ]
+}"
+"The service account data-sa@monitoring-project.iam.gserviceaccount.com needs Storage Admin to perform Storage Admin operations. This access should expire on 2025-06-13","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/storage.admin"""",
+      """"members"""": [
+        """"service_account:data-sa@monitoring-project.iam.gserviceaccount.com""""
+      ],
+      """"condition"""": {
+        """"title"""": """"Expiration Condition"""",
+        """"description"""": """"Expires on 2025-06-13"""",
+        """"expression"""": """"request.time < timestamp('2025-06-14T00:00:00.000Z')""""
+      }
+    }
+  ]
+}"
+"I want a policy such that service account cloud-processor@analytics-project.iam.gserviceaccount.com has the role roles/resourcemanager.organizationAdmin. Make this access expire on 2025-11-23","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/resourcemanager.organizationAdmin"""",
+      """"members"""": [
+        """"service_account:cloud-processor@analytics-project.iam.gserviceaccount.com""""
+      ],
+      """"condition"""": {
+        """"title"""": """"Expiration Condition"""",
+        """"description"""": """"Expires on 2025-11-23"""",
+        """"expression"""": """"request.time < timestamp('2025-11-24T00:00:00.000Z')""""
+      }
+    }
+  ]
+}"
+"I want a policy such that service account dev-sa@analytics-project.iam.gserviceaccount.com has the role roles/resourcemanager.folderAdmin. Make this access expire on 2025-11-18","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/resourcemanager.folderAdmin"""",
+      """"members"""": [
+        """"service_account:dev-sa@analytics-project.iam.gserviceaccount.com""""
+      ],
+      """"condition"""": {
+        """"title"""": """"Expiration Condition"""",
+        """"description"""": """"Expires on 2025-11-18"""",
+        """"expression"""": """"request.time < timestamp('2025-11-19T00:00:00.000Z')""""
+      }
+    }
+  ]
+}"
+"Our operations team needs a policy that gives user ops-admin@my-org.com the following permissions: roles/run.invoker","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/run.invoker"""",
+      """"members"""": [
+        """"user:ops-admin@my-org.com""""
+      ],
+      """"condition"""": {
+        """"title"""": """"Expiration Condition"""",
+        """"description"""": """"Expires on 2027-11-11"""",
+        """"expression"""": """"request.time < timestamp('2027-11-12T00:00:00.000Z')""""
+      }
+    }
+  ]
+}"
+"I need a policy that allows user instance-admin@my-org.com to perform Aiplatform Admin operations in the project monitoring-project","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/aiplatform.admin"""",
+      """"members"""": [
+        """"user:instance-admin@my-org.com""""
+      ]
+    }
+  ]
+}"
+"Create a policy where user database-admin@my-org.com and user cluster-admin@example.com both have the Aiplatform Trainer role","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/aiplatform.trainer"""",
+      """"members"""": [
+        """"user:database-admin@my-org.com"""",
+        """"user:cluster-admin@example.com""""
+      ]
+    }
+  ]
+}"
+"Give service account database-admin@monitoring-project.iam.gserviceaccount.com the Resourcemanager Folderadmin role (roles/resourcemanager.folderAdmin) so they can perform Resourcemanager Folderadmin operations","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/resourcemanager.folderAdmin"""",
+      """"members"""": [
+        """"service_account:database-admin@monitoring-project.iam.gserviceaccount.com""""
+      ]
+    }
+  ]
+}"
+"I need a policy for user user@example.com to have Storage Object Viewer and user user@example.com to have Storage Object Viewer. The first role should expire on 2025-12-31, and the second on 2025-12-31","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/storage.objectAdmin"""",
+      """"members"""": [
+        """"service_account:ml-sa@ai-project.iam.gserviceaccount.com""""
+      ]
+    },
+    {
+      """"role"""": """"roles/container.developer"""",
+      """"members"""": [
+        """"service_account:ml-sa@ai-project.iam.gserviceaccount.com""""
+      ]
+    }
+  ]
+}"
+"I want a policy such that service account data-sa@monitoring-project.iam.gserviceaccount.com has the role roles/container.developer. Make this access expire on 2027-12-08","{
+  """"bindings"""": [
+    {
+      """"role"""": """"roles/container.developer"""",
+      """"members"""": [
+        """"service_account:data-sa@monitoring-project.iam.gserviceaccount.com""""
+      ],
+      """"condition"""": {
+        """"title"""": """"Expiration Condition"""",
+        """"description"""": """"Expires on 2027-12-08"""",
+        """"expression"""": """"request.time < timestamp('2027-12-09T00:00:00.000Z')""""
+      }
     }
   ]
 }"
