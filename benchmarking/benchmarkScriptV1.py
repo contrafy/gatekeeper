@@ -15,6 +15,7 @@ import hashlib
 from difflib import SequenceMatcher
 
 from google import genai
+from google.genai import types
 
 # Load OpenAI API key from environment variable
 openai.api_key = os.environ.get("OPENAI_API_KEY")
@@ -311,18 +312,17 @@ class PolicyBenchmark:
                 }
                 return result
         elif model_type == "gemini":
-            print('BECNHMARK: Querying Gemini model')
-            # Placeholder for querying the Gemini model
             start_time = time.time()
             response = gemini_client.models.generate_content(
                 model = model_name,
-                contents = prompt,
-                prompt = system_prompt,
-                max_tokens=max_tokens,
-                temperature=temperature
+                contents = prompt
+                # config=types.GenerateContentConfig(
+                #     system_instruction=[system_prompt]
+                # ),
             )
             end_time = time.time()
 
+            print(response.text)
             result = {
                 "content": response.text,
                 "latency": end_time - start_time
