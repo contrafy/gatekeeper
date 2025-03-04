@@ -480,7 +480,7 @@ def save_results(self):
     
     return filename
 
-def visualize_results(self):
+def visualize_results(self, display_names = None):
     """Generate visualizations of benchmark results"""
     # Set up the plot
     plt.figure(figsize=(12, 8))
@@ -502,6 +502,9 @@ def visualize_results(self):
         similarities.append(metrics["avg_similarity"] * 100)
         latencies.append(metrics["avg_latency"])
     
+    if display_names:
+        model_names = display_names
+
     # Set width of bars
     bar_width = 0.2
     x = np.arange(len(model_names))
@@ -623,6 +626,7 @@ def main():
             )
         
         # Save and visualize results
+        # display_names = ['gpt-40-mini', 'gpt-3.5-turbo']
         benchmark.save_results()
         benchmark.visualize_results()
     
