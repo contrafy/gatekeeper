@@ -14,10 +14,19 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 import hashlib
 from difflib import SequenceMatcher
 
+from google import genai
+from google.genai import types
+
 # Load OpenAI API key from environment variable
 openai.api_key = os.environ.get("OPENAI_API_KEY")
 if not openai.api_key:
     raise ValueError("Please set the OPENAI_API_KEY environment variable")
+
+# Load Gemini Key
+GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY")
+if not GOOGLE_API_KEY:
+    raise ValueError("Please set the GOOGLE_API_KEY environment variable")
+gemini_client = genai.Client(api_key=GOOGLE_API_KEY)
 
 class PolicyBenchmark:
     def __init__(self, config=None):
@@ -46,6 +55,7 @@ class PolicyBenchmark:
         """
     
     def load_test_data(self, file_path):
+        print(file_path)
         """Load test data from file (CSV or JSONL)"""
         extension = os.path.splitext(file_path)[1].lower()
         
@@ -301,7 +311,23 @@ class PolicyBenchmark:
                     "latency": end_time - start_time
                 }
                 return result
-        
+        elif model_type == "gemini":
+            start_time = time.time()
+            response = gemini_client.models.generate_content(
+                model = model_name,
+                contents = prompt
+                # config=types.GenerateContentConfig(
+                #     system_instruction=[system_prompt]
+                # ),
+            )
+            end_time = time.time()
+
+            print(response.text)
+            result = {
+                "content": response.text,
+                "latency": end_time - start_time
+            }
+            return result
         # Can be extended to support other model providers (Anthropic, Google, etc.)
         else:
             raise ValueError(f"Unsupported model type: {model_type}")
@@ -316,7 +342,7 @@ def run_benchmark(self, model_config, test_data, sample_size=None):
     temperature = model_config.get("temperature", 0.2)
     max_tokens = model_config.get("max_tokens", 1000)
     
-    print(f"Running benchmark for model: {model_name}")
+    print(f"Running benchmark for model: {model_name} of type {model_type}")
     
     # Sample data if requested
     if sample_size and sample_size < len(test_data):
@@ -454,7 +480,7 @@ def save_results(self):
     
     return filename
 
-def visualize_results(self):
+def visualize_results(self, display_names = None):
     """Generate visualizations of benchmark results"""
     # Set up the plot
     plt.figure(figsize=(12, 8))
@@ -476,6 +502,9 @@ def visualize_results(self):
         similarities.append(metrics["avg_similarity"] * 100)
         latencies.append(metrics["avg_latency"])
     
+    if display_names:
+        model_names = display_names
+
     # Set width of bars
     bar_width = 0.2
     x = np.arange(len(model_names))
@@ -535,6 +564,8 @@ def main():
                         help="Path to test data file (CSV or JSONL)")
     parser.add_argument("--model", type=str, default="gpt-4o-mini",
                         help="OpenAI model to benchmark")
+    parser.add_argument("--type", type=str, default="openai",
+                        help="Model type (openai, gemini, etc.)")
     parser.add_argument("--sample_size", type=int, default=None,
                         help="Number of test cases to sample (default: all)")
     parser.add_argument("--results_dir", type=str, default="benchmark_results",
@@ -583,7 +614,7 @@ def main():
             # Run benchmark on a single model
             model_config = {
                 "name": args.model,
-                "type": "openai",
+                "type": args.type,
                 "temperature": 0.2,
                 "request_delay": 0.5
             }
@@ -595,6 +626,7 @@ def main():
             )
         
         # Save and visualize results
+        # display_names = ['gpt-40-mini', 'gpt-3.5-turbo']
         benchmark.save_results()
         benchmark.visualize_results()
     
