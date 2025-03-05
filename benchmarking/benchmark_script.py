@@ -5,26 +5,24 @@ import argparse
 import csv
 import time
 from datetime import datetime
-import openai
 import re
 import matplotlib.pyplot as plt
 import numpy as np
 import hashlib
 from difflib import SequenceMatcher
 
-from google import genai
-from google.genai import types
-
 # Load API keys
 openai.api_key = os.environ.get("OPENAI_API_KEY")
 GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY")
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
 
-# Initialize Gemini client if key exists
+# Initialize API clients if keys are present
+if openai.api_key:
+    import openai
 if GOOGLE_API_KEY:
+    from google import genai
+    from google.genai import types
     gemini_client = genai.Client(api_key=GOOGLE_API_KEY)
-
-# Initialize Groq client if key exists
 if GROQ_API_KEY:
     from groq import Groq
     groq_client = Groq(api_key=GROQ_API_KEY)
