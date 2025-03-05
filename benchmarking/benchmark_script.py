@@ -19,14 +19,13 @@ from google.genai import types
 
 # Load OpenAI API key from environment variable
 openai.api_key = os.environ.get("OPENAI_API_KEY")
-if not openai.api_key:
+GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY")
+
+if not openai.api_key and not GOOGLE_API_KEY:
     raise ValueError("Please set the OPENAI_API_KEY environment variable")
 
-# Load Gemini Key
-GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY")
-if not GOOGLE_API_KEY:
-    raise ValueError("Please set the GOOGLE_API_KEY environment variable")
-gemini_client = genai.Client(api_key=GOOGLE_API_KEY)
+if GOOGLE_API_KEY:
+    gemini_client = genai.Client(api_key=GOOGLE_API_KEY)
 
 class PolicyBenchmark:
     def __init__(self, config=None):
