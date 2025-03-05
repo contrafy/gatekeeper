@@ -432,6 +432,71 @@ def run_benchmark(self, model_config, test_data, sample_size=None):
         
     results = []
     last_status = None
+
+    # Initialize progress bar
+    update_progress(0, len(sampled_data), model_name, model_type)
+    
+    for i, item in enumerate(sampled_data):
+        request_text = item["request_text"]
+        expected_policy = item["expected_policy"]
+        
+        # Unique ID for this test case
+        test_id = hashlib.md5(request_text.encode()).hexdigest()
+        
+        try:
+            # Query the model
+            response = self.query_model(
+                model_name=model_name,
+                prompt=request_text,
+                system_prompt=system_prompt,
+                max_tokens=max_tokens,
+                temperature=temperature,
+                model_type=model_type
+            )
+            
+            # Update status only for non-200 responses
+            if hasattr(response, 'status_code') and response.status_code != 200:
+                last_status = f"HTTP Response ({model_type}): {response.status_code}"
+            else:
+                last_status = None
+                
+            # Evaluate the response
+            evaluation = self.evaluate_generated_policy(
+                response["content"], 
+                expected_policy
+            )
+            
+            result = {
+                "test_id": test_id,
+                "request": request_text,
+                "expected": expected_policy,
+                "generated": response["content"],
+                "latency": response["latency"],
+                "evaluation": evaluation
+            }
+            
+            results.append(result)
+            
+            # Update progress bar
+            update_progress(i + 1, len(sampled_data), model_name, model_type, last_status)
+            
+            # Throttle requests to avoid rate limits
+            time.sleep(model_config.get("request_delay", 0.5))
+            
+        except Exception as e:
+            last_status = f"Error: {str(e)}"
+            update_progress(i + 1, len(sampled_data), model_name, model_type, last_status)
+            
+            results.append({
+                "test_id": test_id,
+                "request": request_text,
+                "expected": expected_policy,
+                "error": str(e)
+            })
+            time.sleep(1)  # Longer delay on error
+    
+    # Final newline after progress bar completion
+    print("\n")
     
     # Compile aggregated metrics
     metrics = self.calculate_metrics(results)
