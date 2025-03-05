@@ -523,8 +523,6 @@ def calculate_metrics(self, results):
     """Calculate aggregated metrics from test results"""
     total_tests = len(results)
     successful_tests = sum(1 for r in results if "evaluation" in r and r["evaluation"].get("passed", False))
-    valid_json_count = sum(1 for r in results if "evaluation" in r and r["evaluation"].get("valid_json", False))
-    correct_format_count = sum(1 for r in results if "evaluation" in r and r["evaluation"].get("correct_format", False))
     
     # Filter out tests with errors
     valid_results = [r for r in results if "evaluation" in r]
@@ -540,8 +538,6 @@ def calculate_metrics(self, results):
         "total_tests": total_tests,
         "successful_tests": successful_tests,
         "success_rate": successful_tests / total_tests if total_tests > 0 else 0,
-        "valid_json_rate": valid_json_count / total_tests if total_tests > 0 else 0,
-        "correct_format_rate": correct_format_count / total_tests if total_tests > 0 else 0,
         "avg_similarity": avg_similarity,
         "avg_latency": avg_latency
     }
@@ -563,8 +559,7 @@ def save_results(self):
         
         # Write header
         writer.writerow([
-            "Model", "Success Rate", "Valid JSON Rate", "Correct Format Rate", 
-            "Avg Similarity", "Avg Latency (s)"
+            "Model", "Success Rate", "Avg Similarity", "Avg Latency (s)"
         ])
         
         # Write data
@@ -573,8 +568,6 @@ def save_results(self):
             writer.writerow([
                 model_name,
                 f"{metrics['success_rate']:.2%}",
-                f"{metrics['valid_json_rate']:.2%}",
-                f"{metrics['correct_format_rate']:.2%}",
                 f"{metrics['avg_similarity']:.4f}",
                 f"{metrics['avg_latency']:.3f}"
             ])
@@ -591,8 +584,6 @@ def visualize_results(self, display_names = None):
     # Extract model names and metrics
     model_names = []
     success_rates = []
-    valid_json_rates = []
-    correct_format_rates = []
     similarities = []
     latencies = []
     
@@ -608,8 +599,6 @@ def visualize_results(self, display_names = None):
         
         model_names.append(display_name)
         success_rates.append(metrics["success_rate"] * 100)
-        valid_json_rates.append(metrics["valid_json_rate"] * 100)
-        correct_format_rates.append(metrics["correct_format_rate"] * 100)
         similarities.append(metrics["avg_similarity"] * 100)
         latencies.append(metrics["avg_latency"])
     
@@ -625,8 +614,6 @@ def visualize_results(self, display_names = None):
     
     # Plot accuracy metrics
     ax1.bar(x - bar_width*1.5, success_rates, bar_width, label='Success Rate')
-    ax1.bar(x - bar_width/2, valid_json_rates, bar_width, label='Valid JSON Rate')
-    ax1.bar(x + bar_width/2, correct_format_rates, bar_width, label='Correct Format Rate')
     ax1.bar(x + bar_width*1.5, similarities, bar_width, label='Similarity (%)')
     
     ax1.set_xlabel('Models')
