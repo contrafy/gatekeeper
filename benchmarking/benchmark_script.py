@@ -1,4 +1,5 @@
 import os
+import sys
 import json
 import argparse
 import csv
@@ -631,7 +632,6 @@ def visualize_results(self, display_names = None):
     
     return vis_file
 
-# Add the main function to run the benchmark
 def main():
     # Set up logging for better diagnostics
     import logging
@@ -780,100 +780,6 @@ PolicyBenchmark.run_benchmark = run_benchmark
 PolicyBenchmark.calculate_metrics = calculate_metrics
 PolicyBenchmark.save_results = save_results
 PolicyBenchmark.visualize_results = visualize_results
-
-# Check if we have json5 module, and if not, fix the places where it's used
-try:
-    import json5
-except ImportError:
-    # Create a simple fallback implementation
-    def extract_json_from_response(self, text):
-        """Extract JSON from a response that might contain explanatory text"""
-        # Try to find JSON within markdown code blocks
-        json_match = re.search(r'```(?:json)?\s*([\s\S]*?)\s*```', text)
-        if json_match:
-            json_str = json_match.group(1).strip()
-            try:
-                # Try to parse with standard json
-                return json.loads(json_str)
-            except:
-                pass
-        
-        # Try to find content within curly braces
-        json_match = re.search(r'({[\s\S]*})', text)
-        if json_match:
-            json_str = json_match.group(1).strip()
-            try:
-                return json.loads(json_str)
-            except:
-                # Custom handling for common JSON issues
-                # 1. Replace double escaped quotes
-                json_str = json_str.replace('\\\"', '"')
-                # 2. Try again
-                try:
-                    return json.loads(json_str)
-                except:
-                    pass
-        
-        # Try to parse the entire text
-        try:
-            return json.loads(text)
-        except:
-            # Last attempt: try to clean up the text
-            # Remove extra quotes that might be from CSV escaping
-            cleaned_text = text.replace('""', '"')
-            try:
-                return json.loads(cleaned_text)
-            except:
-                return None
-
-    # Replace the method in the class
-    PolicyBenchmark.extract_json_from_response = extract_json_from_response
-    
-    # Also fix normalize_policy
-    def normalize_policy(self, policy_json):
-        """Normalize a policy JSON for consistent comparison"""
-        if isinstance(policy_json, str):
-            try:
-                policy_json = json.loads(policy_json)
-            except:
-                # Try cleaning up the string
-                cleaned_json = policy_json.replace('""', '"')
-                try:
-                    policy_json = json.loads(cleaned_json)
-                except:
-                    return None
-        
-        # Ensure we have a valid policy
-        if not isinstance(policy_json, dict) or "bindings" not in policy_json:
-            return None
-        
-        # Normalize each binding
-        for binding in policy_json.get("bindings", []):
-            # Sort members
-            if "members" in binding:
-                binding["members"] = sorted(binding["members"])
-            
-            # Handle roles that might be a list or a string
-            if "role" in binding and isinstance(binding["role"], list):
-                roles = binding.pop("role")
-                binding["role"] = roles[0]  # Keep first role
-                
-                # Create additional bindings for the extra roles
-                for extra_role in roles[1:]:
-                    new_binding = binding.copy()
-                    new_binding["role"] = extra_role
-                    policy_json["bindings"].append(new_binding)
-        
-        # Sort bindings by role for consistency
-        policy_json["bindings"] = sorted(
-            policy_json["bindings"], 
-            key=lambda x: (x.get("role", ""), tuple(x.get("members", [])))
-        )
-        
-        return policy_json
-    
-    # Replace the method
-    PolicyBenchmark.normalize_policy = normalize_policy
 
 if __name__ == "__main__":
     main()
