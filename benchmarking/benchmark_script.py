@@ -431,55 +431,7 @@ def run_benchmark(self, model_config, test_data, sample_size=None):
         sampled_data = test_data
         
     results = []
-    
-    # Use tqdm for progress tracking
-    for i, item in tqdm(enumerate(sampled_data), total=len(sampled_data)):
-        request_text = item["request_text"]
-        expected_policy = item["expected_policy"]
-        
-        # Unique ID for this test case
-        test_id = hashlib.md5(request_text.encode()).hexdigest()
-        
-        try:
-            # Query the model
-            response = self.query_model(
-                model_name=model_name,
-                prompt=request_text,
-                system_prompt=system_prompt,
-                max_tokens=max_tokens,
-                temperature=temperature,
-                model_type=model_type
-            )
-            
-            # Evaluate the response
-            evaluation = self.evaluate_generated_policy(
-                response["content"], 
-                expected_policy
-            )
-            
-            result = {
-                "test_id": test_id,
-                "request": request_text,
-                "expected": expected_policy,
-                "generated": response["content"],
-                "latency": response["latency"],
-                "evaluation": evaluation
-            }
-            
-            results.append(result)
-            
-            # Throttle requests to avoid rate limits
-            time.sleep(model_config.get("request_delay", 0.5))
-            
-        except Exception as e:
-            print(f"Error processing test case {i}: {str(e)}")
-            results.append({
-                "test_id": test_id,
-                "request": request_text,
-                "expected": expected_policy,
-                "error": str(e)
-            })
-            time.sleep(1)  # Longer delay on error
+    last_status = None
     
     # Compile aggregated metrics
     metrics = self.calculate_metrics(results)
@@ -494,6 +446,7 @@ def run_benchmark(self, model_config, test_data, sample_size=None):
     self.results["model_results"][model_key] = model_results
     
     return metrics
+
 def calculate_metrics(self, results):
     """Calculate aggregated metrics from test results"""
     total_tests = len(results)
