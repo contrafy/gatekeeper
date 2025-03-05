@@ -775,6 +775,25 @@ def main():
         import traceback
         traceback.print_exc()
 
+def update_progress(iteration, total, model_name, provider, last_status=None):
+    """
+    Update progress bar in place
+    """
+    percent = ("{0:.0f}").format(100 * (iteration / float(total)))
+    filled_length = int(50 * iteration // total)
+    bar = '█' * filled_length + '-' * (50 - filled_length)
+    
+    # Clear the current line
+    sys.stdout.write('\r')
+    sys.stdout.write(f"Running benchmark for model: {model_name} of type {provider}\n")
+    sys.stdout.write(f"{percent}%|{bar}| {iteration}/{total}")
+    
+    # Add status message if provided
+    if last_status:
+        sys.stdout.write(f"\n{last_status}")
+        
+    sys.stdout.flush()
+
 # Add these method declarations to the PolicyBenchmark class
 PolicyBenchmark.run_benchmark = run_benchmark
 PolicyBenchmark.calculate_metrics = calculate_metrics
