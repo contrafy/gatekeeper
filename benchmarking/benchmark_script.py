@@ -17,15 +17,23 @@ from difflib import SequenceMatcher
 from google import genai
 from google.genai import types
 
-# Load OpenAI API key from environment variable
+# Load API keys
 openai.api_key = os.environ.get("OPENAI_API_KEY")
 GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY")
+GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
 
-if not openai.api_key and not GOOGLE_API_KEY:
-    raise ValueError("Please set the OPENAI_API_KEY environment variable")
-
+# Initialize Gemini client if key exists
 if GOOGLE_API_KEY:
     gemini_client = genai.Client(api_key=GOOGLE_API_KEY)
+
+# Initialize Groq client if key exists
+if GROQ_API_KEY:
+    from groq import Groq
+    groq_client = Groq(api_key=GROQ_API_KEY)
+
+# Check if at least one API key is available
+if not (openai.api_key or GOOGLE_API_KEY or GROQ_API_KEY):
+    raise ValueError("Please set at least one of OPENAI_API_KEY, GOOGLE_API_KEY, or GROQ_API_KEY environment variables")
 
 class PolicyBenchmark:
     def __init__(self, config=None):
@@ -327,7 +335,28 @@ class PolicyBenchmark:
                 "latency": end_time - start_time
             }
             return result
-        # Can be extended to support other model providers (Anthropic, Google, etc.)
+        elif model_type == "groq":
+            start_time = time.time()
+        
+            messages = []
+            if system_prompt:
+                messages.append({"role": "system", "content": system_prompt})
+            
+            messages.append({"role": "user", "content": prompt})
+            
+            response = groq_client.chat.completions.create(
+                model=model_name,
+                messages=messages,
+                max_tokens=max_tokens,
+                temperature=temperature
+            )
+            end_time = time.time()
+            
+            result = {
+                "content": response.choices[0].message.content,
+                "latency": end_time - start_time
+            }
+            return result
         else:
             raise ValueError(f"Unsupported model type: {model_type}")
 
