@@ -49,6 +49,18 @@ class PolicyBenchmark:
             "config": self.config,
             "model_results": {}
         }
+
+        # Check available API providers
+        self.available_providers = []
+        if os.environ.get("OPENAI_API_KEY"):
+            self.available_providers.append("openai")
+        if os.environ.get("GOOGLE_API_KEY"):
+            self.available_providers.append("gemini")
+        if os.environ.get("GROQ_API_KEY"):
+            self.available_providers.append("groq")
+
+        if not self.available_providers:
+            raise ValueError("No API keys found. Please set at least one of OPENAI_API_KEY, GOOGLE_API_KEY, or GROQ_API_KEY")
         
         # Define system prompt
         self.default_system_prompt = """
@@ -277,7 +289,7 @@ class PolicyBenchmark:
             
         # Use sequence matcher to get similarity ratio
         return SequenceMatcher(None, policy1, policy2).ratio()
-       
+
     def query_model(self, model_name, prompt, system_prompt=None, max_tokens=1000, temperature=0.2, model_type="openai"):
         """Query a model with the given prompt"""
         if model_type == "openai":
@@ -320,24 +332,61 @@ class PolicyBenchmark:
                 return result
         elif model_type == "gemini":
             start_time = time.time()
-            response = gemini_client.models.generate_content(
-                model = model_name,
-                contents = prompt
-                # config=types.GenerateContentConfig(
-                #     system_instruction=[system_prompt]
-                # ),
-            )
+            
+            # Create content with system instruction if provided
+            if system_prompt:
+                generation_config = genai.GenerationConfig(
+                    temperature=temperature,
+                    max_output_tokens=max_tokens,
+                )
+                
+                safety_settings = types.SafetySetting(
+                    category=types.HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+                    threshold=types.HarmBlockThreshold.BLOCK_ONLY_HIGH,
+                )
+                
+                # Construct a ChatSession
+                model = gemini_client.get_model(model_name)
+                chat = model.start_chat(
+                    history=[],
+                    generation_config=generation_config,
+                    safety_settings=[safety_settings],
+                    system_instruction=system_prompt,
+                )
+                
+                response = chat.send_message(prompt)
+            else:
+                # Simple content generation without system prompt
+                response = gemini_client.generate_content(
+                    model=model_name,
+                    contents=prompt,
+                    generation_config={
+                        "temperature": temperature,
+                        "max_output_tokens": max_tokens,
+                    }
+                )
+            
             end_time = time.time()
-
-            print(response.text)
+            
+            # Extract the text from the response
+            try:
+                response_text = response.text
+            except AttributeError:
+                # For older API versions or different response structures
+                try:
+                    response_text = response.candidates[0].content.parts[0].text
+                except:
+                    response_text = str(response)
+            
             result = {
-                "content": response.text,
+                "content": response_text,
                 "latency": end_time - start_time
             }
             return result
         elif model_type == "groq":
+            # Groq handling
             start_time = time.time()
-        
+            
             messages = []
             if system_prompt:
                 messages.append({"role": "system", "content": system_prompt})
@@ -360,8 +409,6 @@ class PolicyBenchmark:
         else:
             raise ValueError(f"Unsupported model type: {model_type}")
 
-# Add these remaining functions to complete your benchmarkScriptV1.py file:
-
 def run_benchmark(self, model_config, test_data, sample_size=None):
     """Run benchmark for a specific model configuration"""
     model_name = model_config.get("name", "unknown")
@@ -369,6 +416,9 @@ def run_benchmark(self, model_config, test_data, sample_size=None):
     system_prompt = model_config.get("system_prompt", self.default_system_prompt)
     temperature = model_config.get("temperature", 0.2)
     max_tokens = model_config.get("max_tokens", 1000)
+    
+    # Create a unique key for the model in results
+    model_key = f"{model_name}-{model_type}"
     
     print(f"Running benchmark for model: {model_name} of type {model_type}")
     
@@ -433,17 +483,16 @@ def run_benchmark(self, model_config, test_data, sample_size=None):
     # Compile aggregated metrics
     metrics = self.calculate_metrics(results)
     
-    # Store results
+    # Store results using the unique model key
     model_results = {
         "model_config": model_config,
         "metrics": metrics,
         "test_results": results
     }
     
-    self.results["model_results"][model_name] = model_results
+    self.results["model_results"][model_key] = model_results
     
     return metrics
-
 def calculate_metrics(self, results):
     """Calculate aggregated metrics from test results"""
     total_tests = len(results)
@@ -521,16 +570,24 @@ def visualize_results(self, display_names = None):
     similarities = []
     latencies = []
     
-    for model_name, model_result in self.results["model_results"].items():
+    for model_key, model_result in self.results["model_results"].items():
         metrics = model_result["metrics"]
-        model_names.append(model_name)
+        # Use model_config to get the provider type and model name
+        model_config = model_result["model_config"]
+        model_type = model_config.get("type", "unknown")
+        model_name = model_config.get("name", "unknown")
+        
+        # Create a display name that includes provider
+        display_name = f"{model_name} ({model_type})"
+        
+        model_names.append(display_name)
         success_rates.append(metrics["success_rate"] * 100)
         valid_json_rates.append(metrics["valid_json_rate"] * 100)
         correct_format_rates.append(metrics["correct_format_rate"] * 100)
         similarities.append(metrics["avg_similarity"] * 100)
         latencies.append(metrics["avg_latency"])
     
-    if display_names:
+    if display_names and len(display_names) == len(model_names):
         model_names = display_names
 
     # Set width of bars
@@ -550,7 +607,7 @@ def visualize_results(self, display_names = None):
     ax1.set_ylabel('Percentage (%)')
     ax1.set_title('Policy Generation Accuracy Metrics')
     ax1.set_xticks(x)
-    ax1.set_xticklabels(model_names)
+    ax1.set_xticklabels(model_names, rotation=45, ha='right')
     ax1.legend()
     ax1.grid(axis='y', linestyle='--', alpha=0.7)
     
@@ -560,7 +617,7 @@ def visualize_results(self, display_names = None):
     ax2.set_ylabel('Average Latency (seconds)')
     ax2.set_title('Model Response Time')
     ax2.set_xticks(x)
-    ax2.set_xticklabels(model_names)
+    ax2.set_xticklabels(model_names, rotation=45, ha='right')
     ax2.grid(axis='y', linestyle='--', alpha=0.7)
     
     plt.tight_layout()
@@ -590,10 +647,10 @@ def main():
     parser = argparse.ArgumentParser(description="Benchmark GCP IAM policy generation models")
     parser.add_argument("--test_data", type=str, required=True, 
                         help="Path to test data file (CSV or JSONL)")
-    parser.add_argument("--model", type=str, default="gpt-4o-mini",
-                        help="OpenAI model to benchmark")
-    parser.add_argument("--type", type=str, default="openai",
-                        help="Model type (openai, gemini, etc.)")
+    parser.add_argument("--model", type=str, default=None,
+                        help="Model to benchmark (e.g., gpt-4o-mini, gemma2-9b-it)")
+    parser.add_argument("--provider", type=str, default=None,
+                        help="Model provider (openai, gemini, groq)")
     parser.add_argument("--sample_size", type=int, default=None,
                         help="Number of test cases to sample (default: all)")
     parser.add_argument("--results_dir", type=str, default="benchmark_results",
@@ -615,22 +672,57 @@ def main():
         logging.info(f"Loaded {len(test_data)} test cases")
         
         if args.multi_model:
-            # Run benchmark on multiple models
-            models = [
-                {
-                    "name": "gpt-4o-mini",
-                    "type": "openai",
-                    "temperature": 0.2,
-                    "request_delay": 0.5
-                },
-                {
-                    "name": "gpt-3.5-turbo",
-                    "type": "openai",
-                    "temperature": 0.2,
-                    "request_delay": 0.5
-                }
-                # Add more models as needed
-            ]
+            # Define models based on available providers
+            models = []
+            
+            if "openai" in benchmark.available_providers and args.provider == "openai":
+                models.extend([
+                    {
+                        "name": "gpt-4o-mini",
+                        "type": "openai",
+                        "temperature": 0.2,
+                        "request_delay": 0.5
+                    },
+                    {
+                        "name": "gpt-3.5-turbo",
+                        "type": "openai",
+                        "temperature": 0.2,
+                        "request_delay": 0.5
+                    }
+                    # Add any fine-tuned models here as needed
+                ])
+            
+            if "gemini" in benchmark.available_providers and args.provider == "gemini":
+                models.extend([
+                    {
+                        "name": "gemini-1.5-pro",
+                        "type": "gemini",
+                        "temperature": 0.2,
+                        "request_delay": 0.5
+                    }
+                ])
+            
+            if "groq" in benchmark.available_providers and args.provider == "groq":
+                models.extend([
+                    {
+                        "name": "gemma2-9b-it",
+                        "type": "groq",
+                        "temperature": 0.2,
+                        "request_delay": 0.5
+                    },
+                    {
+                        "name": "llama-3.3-70b-versatile",
+                        "type": "groq",
+                        "temperature": 0.2,
+                        "request_delay": 0.5
+                    },
+                    {
+                        "name": "llama3-8b-8192",
+                        "type": "groq",
+                        "temperature": 0.2,
+                        "request_delay": 0.5
+                    }
+                ])
             
             for model_config in models:
                 benchmark.run_benchmark(
@@ -640,9 +732,29 @@ def main():
                 )
         else:
             # Run benchmark on a single model
+            if args.model is None:
+                # Default to first available provider and a sensible model
+                if "openai" in benchmark.available_providers:
+                    provider = "openai"
+                    model = "gpt-4o-mini"
+                elif "groq" in benchmark.available_providers:
+                    provider = "groq"
+                    model = "llama-3.3-70b-versatile"
+                elif "gemini" in benchmark.available_providers:
+                    provider = "gemini"
+                    model = "gemini-1.5-pro"
+            else:
+                model = args.model
+                provider = args.provider or "openai"  # Default to OpenAI if not specified
+                
+                # Verify the provider is available
+                if provider not in benchmark.available_providers:
+                    available = ", ".join(benchmark.available_providers)
+                    raise ValueError(f"Provider '{provider}' not available. Available providers: {available}")
+            
             model_config = {
-                "name": args.model,
-                "type": args.type,
+                "name": model,
+                "type": provider,
                 "temperature": 0.2,
                 "request_delay": 0.5
             }
@@ -654,7 +766,6 @@ def main():
             )
         
         # Save and visualize results
-        # display_names = ['gpt-40-mini', 'gpt-3.5-turbo']
         benchmark.save_results()
         benchmark.visualize_results()
     
