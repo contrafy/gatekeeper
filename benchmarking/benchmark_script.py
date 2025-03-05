@@ -7,11 +7,8 @@ import time
 from datetime import datetime
 import openai
 import re
-import pandas as pd
-from tqdm import tqdm
 import matplotlib.pyplot as plt
 import numpy as np
-from concurrent.futures import ThreadPoolExecutor, as_completed
 import hashlib
 from difflib import SequenceMatcher
 
@@ -293,6 +290,8 @@ class PolicyBenchmark:
 
     def query_model(self, model_name, prompt, system_prompt=None, max_tokens=1000, temperature=0.2, model_type="openai"):
         """Query a model with the given prompt"""
+        response_obj = {"content": "", "latency": 0, "status_code": 200}
+
         if model_type == "openai":
             # Handle different model architectures
             if system_prompt:
@@ -302,35 +301,43 @@ class PolicyBenchmark:
                 ]
                 
                 start_time = time.time()
-                response = openai.chat.completions.create(
-                    model=model_name,
-                    messages=messages,
-                    max_tokens=max_tokens,
-                    temperature=temperature
-                )
+                try:
+                    response = openai.chat.completions.create(
+                        model=model_name,
+                        messages=messages,
+                        max_tokens=max_tokens,
+                        temperature=temperature
+                    )
+                    response_obj["content"] = response.choices[0].message.content
+                    response_obj["status_code"] = 200
+                except Exception as e:
+                    response_obj["content"] = str(e)
+                    if hasattr(e, 'status_code'):
+                        response_obj["status_code"] = e.status_code
                 end_time = time.time()
                 
-                result = {
-                    "content": response.choices[0].message.content,
-                    "latency": end_time - start_time
-                }
-                return result
+                response_obj["latency"] = end_time - start_time
+                return response_obj
             else:
                 # Legacy completions API (deprecated but included for completeness)
                 start_time = time.time()
-                response = openai.chat.completions.create(
-                    model=model_name,
-                    messages=[{"role": "user", "content": prompt}],
-                    max_tokens=max_tokens,
-                    temperature=temperature
-                )
+                try:
+                    response = openai.chat.completions.create(
+                        model=model_name,
+                        messages=[{"role": "user", "content": prompt}],
+                        max_tokens=max_tokens,
+                        temperature=temperature
+                    )
+                    response_obj["content"] = response.choices[0].message.content
+                    response_obj["status_code"] = 200
+                except Exception as e:
+                    response_obj["content"] = str(e)
+                    if hasattr(e, 'status_code'):
+                        response_obj["status_code"] = e.status_code
                 end_time = time.time()
                 
-                result = {
-                    "content": response.choices[0].message.content,
-                    "latency": end_time - start_time
-                }
-                return result
+                response_obj["latency"] = end_time - start_time
+                return response_obj
         elif model_type == "gemini":
             start_time = time.time()
             
@@ -665,16 +672,14 @@ def main():
     parser = argparse.ArgumentParser(description="Benchmark GCP IAM policy generation models")
     parser.add_argument("--test_data", type=str, required=True, 
                         help="Path to test data file (CSV or JSONL)")
-    parser.add_argument("--model", type=str, default=None,
-                        help="Model to benchmark (e.g., gpt-4o-mini, gemma2-9b-it)")
-    parser.add_argument("--provider", type=str, default=None,
-                        help="Model provider (openai, gemini, groq)")
+    parser.add_argument("--providers", type=str, nargs='+', default=None,
+                        help="Model providers to benchmark (space-separated list: openai gemini groq)")
+    parser.add_argument("--models", type=str, nargs='+', default=None,
+                        help="Specific models to benchmark (space-separated list: gpt-4o-mini llama-3.3-70b-versatile)")
     parser.add_argument("--sample_size", type=int, default=None,
                         help="Number of test cases to sample (default: all)")
     parser.add_argument("--results_dir", type=str, default="benchmark_results",
                         help="Directory to store benchmark results")
-    parser.add_argument("--multi_model", action="store_true",
-                        help="Run benchmark on multiple models")
     
     args = parser.parse_args()
     
@@ -688,101 +693,19 @@ def main():
         logging.info(f"Loading test data from {args.test_data}")
         test_data = benchmark.load_test_data(args.test_data)
         logging.info(f"Loaded {len(test_data)} test cases")
+
+        # Get models to benchmark
+        models_to_benchmark = get_models_to_benchmark(benchmark, args)
+        logging.info(f"Selected {len(models_to_benchmark)} models for benchmarking: {models_to_benchmark}\n\n")
         
-        if args.multi_model:
-            # Define models based on available providers
-            models = []
-            
-            if "openai" in benchmark.available_providers and args.provider == "openai":
-                models.extend([
-                    {
-                        "name": "gpt-4o-mini",
-                        "type": "openai",
-                        "temperature": 0.2,
-                        "request_delay": 0.5
-                    },
-                    {
-                        "name": "gpt-3.5-turbo",
-                        "type": "openai",
-                        "temperature": 0.2,
-                        "request_delay": 0.5
-                    }
-                    # Add any fine-tuned models here as needed
-                ])
-            
-            if "gemini" in benchmark.available_providers and args.provider == "gemini":
-                models.extend([
-                    {
-                        "name": "gemini-1.5-pro",
-                        "type": "gemini",
-                        "temperature": 0.2,
-                        "request_delay": 0.5
-                    }
-                ])
-            
-            if "groq" in benchmark.available_providers and args.provider == "groq":
-                models.extend([
-                    {
-                        "name": "gemma2-9b-it",
-                        "type": "groq",
-                        "temperature": 0.2,
-                        "request_delay": 0.5
-                    },
-                    {
-                        "name": "llama-3.3-70b-versatile",
-                        "type": "groq",
-                        "temperature": 0.2,
-                        "request_delay": 0.5
-                    },
-                    {
-                        "name": "llama3-8b-8192",
-                        "type": "groq",
-                        "temperature": 0.2,
-                        "request_delay": 0.5
-                    }
-                ])
-            
-            for model_config in models:
-                benchmark.run_benchmark(
-                    model_config=model_config,
-                    test_data=test_data,
-                    sample_size=args.sample_size
-                )
-        else:
-            # Run benchmark on a single model
-            if args.model is None:
-                # Default to first available provider and a sensible model
-                if "openai" in benchmark.available_providers:
-                    provider = "openai"
-                    model = "gpt-4o-mini"
-                elif "groq" in benchmark.available_providers:
-                    provider = "groq"
-                    model = "llama-3.3-70b-versatile"
-                elif "gemini" in benchmark.available_providers:
-                    provider = "gemini"
-                    model = "gemini-1.5-pro"
-            else:
-                model = args.model
-                provider = args.provider or "openai"  # Default to OpenAI if not specified
-                
-                # Verify the provider is available
-                if provider not in benchmark.available_providers:
-                    available = ", ".join(benchmark.available_providers)
-                    raise ValueError(f"Provider '{provider}' not available. Available providers: {available}")
-            
-            model_config = {
-                "name": model,
-                "type": provider,
-                "temperature": 0.2,
-                "request_delay": 0.5
-            }
-            
+        # Run benchmarks for each selected model
+        for model_config in models_to_benchmark:
             benchmark.run_benchmark(
                 model_config=model_config,
                 test_data=test_data,
                 sample_size=args.sample_size
             )
-        
+
         # Save and visualize results
         benchmark.save_results()
         benchmark.visualize_results()
@@ -802,15 +725,69 @@ def update_progress(iteration, total, model_name, provider, last_status=None):
     bar = '█' * filled_length + '-' * (50 - filled_length)
     
     # Clear the current line
+    sys.stdout.flush()
     sys.stdout.write('\r')
-    sys.stdout.write(f"Running benchmark for model: {model_name} of type {provider}\n")
-    sys.stdout.write(f"{percent}%|{bar}| {iteration}/{total}")
+    sys.stdout.write(f"{percent}%|{bar}| {iteration}/{total}\n")
     
     # Add status message if provided
     if last_status:
         sys.stdout.write(f"\n{last_status}")
         
     sys.stdout.flush()
+
+def get_models_to_benchmark(benchmark, args):
+    """Get the list of models to benchmark based on command line arguments"""
+    # Available models by provider
+    available_models = {
+        "openai": [
+            {"name": "gpt-4o-mini", "type": "openai", "temperature": 0.2, "request_delay": 0.5},
+            {"name": "gpt-3.5-turbo", "type": "openai", "temperature": 0.2, "request_delay": 0.5}
+        ],
+        "gemini": [
+            {"name": "gemini-1.5-pro", "type": "gemini", "temperature": 0.2, "request_delay": 0.5}
+        ],
+        "groq": [
+            {"name": "gemma2-9b-it", "type": "groq", "temperature": 0.2, "request_delay": 0.5},
+            {"name": "llama-3.3-70b-versatile", "type": "groq", "temperature": 0.2, "request_delay": 0.5},
+            {"name": "llama3-8b-8192", "type": "groq", "temperature": 0.2, "request_delay": 0.5}
+        ]
+    }
+    
+    # Check which providers are available
+    available_providers = []
+    for provider in ["openai", "gemini", "groq"]:
+        if provider in benchmark.available_providers:
+            available_providers.append(provider)
+    
+    models_to_benchmark = []
+    
+    # If specific providers are requested
+    if args.providers:
+        # Filter to only available providers
+        requested_providers = [p for p in args.providers if p in available_providers]
+        if not requested_providers:
+            raise ValueError(f"None of the requested providers {args.providers} are available. Available providers: {available_providers}")
+        
+        # If specific models are provided
+        if args.models:
+            # Find all models that match both provider and model name
+            for provider in requested_providers:
+                provider_models = available_models.get(provider, [])
+                for model_config in provider_models:
+                    if model_config["name"] in args.models:
+                        models_to_benchmark.append(model_config)
+        # No specific models, use all models from requested providers
+        else:
+            for provider in requested_providers:
+                models_to_benchmark.extend(available_models.get(provider, []))
+    else:
+        raise ValueError("No valid providers selected for benchmarking (use --providers)")
+    
+    # If we still have no models, raise error
+    if not models_to_benchmark:
+        raise ValueError("No valid models selected for benchmarking")
+    
+    return models_to_benchmark
 
 # Add these method declarations to the PolicyBenchmark class
 PolicyBenchmark.run_benchmark = run_benchmark
