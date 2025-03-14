@@ -1,0 +1,6 @@
+Model,Success Rate,Avg Similarity,Avg Latency (s)
+gemma2-9b-it-groq,60.00%,0.8164,0.342
+llama-3.3-70b-versatile-groq,55.00%,0.7900,0.826
+llama3-8b-8192-groq,50.00%,0.6906,0.349
+gpt-4o-mini-openai,40.00%,0.6654,2.403
+gpt-3.5-turbo-openai,70.00%,0.8317,1.220

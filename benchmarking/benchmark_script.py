@@ -4,6 +4,7 @@ import json
 import argparse
 import csv
 import time
+
 from datetime import datetime
 import re
 import matplotlib.pyplot as plt
@@ -12,13 +13,14 @@ import hashlib
 from difflib import SequenceMatcher
 
 # Load API keys
-openai.api_key = os.environ.get("OPENAI_API_KEY")
+OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
 GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY")
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
 
 # Initialize API clients if keys are present
-if openai.api_key:
+if OPENAI_API_KEY:
     import openai
+    openai.api_key = OPENAI_API_KEY
 if GOOGLE_API_KEY:
     from google import genai
     from google.genai import types
@@ -574,68 +576,94 @@ def save_results(self):
     
     return filename
 
-def visualize_results(self, display_names = None):
-    """Generate visualizations of benchmark results"""
-    # Set up the plot
-    plt.figure(figsize=(12, 8))
-    
+def visualize_results(self, display_names=None):
+    """Generate horizontal bar chart visualization optimized for presentation slides"""
     # Extract model names and metrics
-    model_names = []
-    success_rates = []
-    similarities = []
-    latencies = []
+    model_data = []
     
     for model_key, model_result in self.results["model_results"].items():
         metrics = model_result["metrics"]
-        # Use model_config to get the provider type and model name
         model_config = model_result["model_config"]
         model_type = model_config.get("type", "unknown")
         model_name = model_config.get("name", "unknown")
         
         # Create a display name that includes provider
-        display_name = f"{model_name} ({model_type})"
+        display_name = f"{model_name}"  # Simplified for readability
         
-        model_names.append(display_name)
-        success_rates.append(metrics["success_rate"] * 100)
-        similarities.append(metrics["avg_similarity"] * 100)
-        latencies.append(metrics["avg_latency"])
+        model_data.append({
+            'display_name': display_name,
+            'success_rate': metrics["success_rate"] * 100,
+            'latency': metrics["avg_latency"],
+            'provider': model_type
+        })
     
-    if display_names and len(display_names) == len(model_names):
-        model_names = display_names
-
-    # Set width of bars
-    bar_width = 0.2
-    x = np.arange(len(model_names))
+    # Override display names if provided
+    if display_names and len(display_names) == len(model_data):
+        for i, name in enumerate(display_names):
+            model_data[i]['display_name'] = name
     
-    # Create subplots
-    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(14, 10))
+    # Sort by success rate (ascending)
+    model_data.sort(key=lambda x: x['success_rate'])
     
-    # Plot accuracy metrics
-    ax1.bar(x - bar_width*1.5, success_rates, bar_width, label='Success Rate')
-    ax1.bar(x + bar_width*1.5, similarities, bar_width, label='Similarity (%)')
+    # Set up colors by provider - vibrant colors
+    provider_colors = {
+        'openai': '#0066ff',  # Vibrant blue
+        'groq': '#ff6600',    # Vibrant orange
+        'gemini': '#00cc66'   # Vibrant green
+    }
     
-    ax1.set_xlabel('Models')
-    ax1.set_ylabel('Percentage (%)')
-    ax1.set_title('Policy Generation Accuracy Metrics')
-    ax1.set_xticks(x)
-    ax1.set_xticklabels(model_names, rotation=45, ha='right')
-    ax1.legend()
-    ax1.grid(axis='y', linestyle='--', alpha=0.7)
+    # Set up the plot - WIDE and SHORT format for presentation slides
+    plt.figure(figsize=(16, 6))
     
-    # Plot latency
-    ax2.bar(x, latencies, color='green', alpha=0.7)
-    ax2.set_xlabel('Models')
-    ax2.set_ylabel('Average Latency (seconds)')
-    ax2.set_title('Model Response Time')
-    ax2.set_xticks(x)
-    ax2.set_xticklabels(model_names, rotation=45, ha='right')
-    ax2.grid(axis='y', linestyle='--', alpha=0.7)
+    # Extract sorted data
+    model_names = [item['display_name'] for item in model_data]
+    success_rates = [item['success_rate'] for item in model_data]
+    latencies = [item['latency'] for item in model_data]
+    colors = [provider_colors.get(item['provider'], '#999999') for item in model_data]
+    providers = [item['provider'] for item in model_data]
     
+    # Create horizontal bar plot
+    y_pos = range(len(model_names))
+    bars = plt.barh(y_pos, success_rates, color=colors)
+    
+    # Add model names as y-axis labels
+    plt.yticks(y_pos, model_names, fontsize=12, fontweight='bold')
+    
+    # Add latency values as text inside or next to bars
+    for i, (bar, latency) in enumerate(zip(bars, latencies)):
+        width = bar.get_width()
+        # Position text inside bar if enough space, otherwise outside
+        x_pos = width - 10 if width > 20 else width + 2
+        # Use white text on dark background, black on light
+        text_color = 'white' if width > 20 else 'black'
+        plt.text(x_pos, bar.get_y() + bar.get_height()/2,
+                f'{width:.1f}% ({latency:.2f}s)',
+                ha='right' if width > 20 else 'left', 
+                va='center', 
+                color=text_color,
+                fontsize=11,
+                fontweight='bold')
+    
+    # Add legend for provider colors
+    from matplotlib.patches import Patch
+    legend_elements = [
+        Patch(facecolor=provider_colors['openai'], label='OpenAI'),
+        Patch(facecolor=provider_colors['groq'], label='Groq'),
+        Patch(facecolor=provider_colors['gemini'], label='Google')
+    ]
+    plt.legend(handles=legend_elements, loc='lower right', fontsize=10)
+    
+    # Customize plot
+    plt.xlabel('Success Rate (%)', fontsize=12, fontweight='bold')
+    plt.title('Policy Generation Success Rate by Model (with Response Time)', 
+              fontsize=14, fontweight='bold')
+    plt.xlim(0, max(success_rates) * 1.15)  # Add some margin for text
     plt.tight_layout()
+    plt.grid(axis='x', linestyle='--', alpha=0.3)
     
-    # Save visualization
+    # Save visualization with high DPI for clarity in presentations
     vis_file = f"{self.results_dir}/visualization_{self.benchmark_id}.png"
-    plt.savefig(vis_file)
+    plt.savefig(vis_file, bbox_inches='tight', dpi=300)
     plt.close()
     
     print(f"Visualization saved to {vis_file}")
