@@ -1,0 +1,4 @@
+Model,Success Rate,Avg Similarity,Avg Latency (s)
+gemma2-9b-it-groq,44.00%,0.7258,1.182
+llama-3.3-70b-versatile-groq,46.00%,0.6973,1.227
+llama3-8b-8192-groq,42.00%,0.6463,1.168
