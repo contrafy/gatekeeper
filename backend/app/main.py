@@ -86,14 +86,32 @@ async def generate_policy(request: PolicyRequest):
     """
     try:
         response = client.chat.completions.create(
-            model="gpt-4o-mini",
+            model="gpt-3.5-turbo",
             messages=[
                 {"role": "system", "content": SYSTEM_PROMPT},
                 {"role": "user", "content": request.prompt}
             ],
             temperature=0.1
         )
-        policy = response.choices[0].message.content
-        return {"policy": policy}
+        policy_text = response.choices[0].message.content
+        
+        # Try to parse the response as JSON
+        try:
+            import json
+            # Clean up the response text to ensure it's valid JSON
+            policy_text = policy_text.strip()
+            if policy_text.startswith('```json'):
+                policy_text = policy_text[7:]
+            if policy_text.endswith('```'):
+                policy_text = policy_text[:-3]
+            policy_text = policy_text.strip()
+            
+            # Parse and re-stringify to ensure valid JSON
+            policy_json = json.loads(policy_text)
+            return {"policy": json.dumps(policy_json, indent=2)}
+        except json.JSONDecodeError:
+            # If it's not valid JSON, return the raw text
+            return {"policy": policy_text}
+            
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error generating policy: {e}")
