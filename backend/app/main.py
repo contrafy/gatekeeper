@@ -1,9 +1,12 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from openai import OpenAI
 import os
 from dotenv import load_dotenv
+
+from google.oauth2 import id_token
+from google.auth.transport import requests as google_requests
 
 SYSTEM_PROMPT = """You are a specialized AI assistant focused on generating Google Cloud IAM policies. Your task is to convert natural language requests into precise, secure, and valid Google Cloud IAM policy bindings.
 
@@ -71,6 +74,7 @@ app.add_middleware(
 )
 
 client = OpenAI(api_key = os.getenv("OPENAI_API_KEY"))
+GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
 
 # request body struct
 # TODO: add context from users GCloud IAM project/organization data
@@ -115,3 +119,22 @@ async def generate_policy(request: PolicyRequest):
             
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error generating policy: {e}")
+
+@app.post("/apply_policy")
+async def apply_policy(request: Request):
+    data = await request.json()
+    policy = data.get("policy")
+    auth_header = request.headers.get("Authorization")
+
+    if not auth_header or not auth_header.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="missing or invalid token")
+    
+    token = auth_header.split("Bearer ")[1]
+    
+    try:
+        idinfo = id_token.verify_oauth2_token(token, google_requests.Request(), GOOGLE_CLIENT_ID)
+        # TODO: call google cloud iam api with 'policy' here, using idinfo for context if needed
+        return {"status": "policy applied"}
+    except Exception as e:
+        raise HTTPException(status_code=401, detail="invalid token")
+

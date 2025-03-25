@@ -7,6 +7,14 @@
   font-family: 'Google Sans', Arial, sans-serif;
 }
 
+.oauth-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin: 2rem;
+}
+
 h1 {
   color: #202124;
   font-size: 2.5rem;
