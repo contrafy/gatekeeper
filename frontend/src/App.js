@@ -159,22 +159,24 @@ function App() {
             rows="6"
             className="prompt-input"
           />
-          { policy && (
-            <button onClick={handleApplyPolicy} className="apply-btn">
-              <span role="img" aria-label="apply">🚀</span> apply policy
-            </button>
-          )}
-          <button type="submit" disabled={loading} className="submit-btn">
-            {loading ? (
-              <>
-                <span role="img" aria-label="loading">⚡</span> Generating...
-              </>
-            ) : (
-              <>
-                <span role="img" aria-label="generate">✨</span> Generate Policy
-              </>
+          <div className="buttons-container">
+            { policy && (
+              <button onClick={handleApplyPolicy} className="apply-btn">
+                <span role="img" aria-label="apply">🚀</span> apply policy
+              </button>
             )}
-          </button>
+            <button type="submit" disabled={loading} className="submit-btn">
+              {loading ? (
+                <>
+                  <span role="img" aria-label="loading">⚡</span> Generating...
+                </>
+              ) : (
+                <>
+                  <span role="img" aria-label="generate">✨</span> Generate Policy
+                </>
+              )}
+            </button>
+          </div>
         </form>
 
         {error && (

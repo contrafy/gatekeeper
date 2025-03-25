@@ -122,19 +122,52 @@ async def generate_policy(request: PolicyRequest):
 
 @app.post("/apply_policy")
 async def apply_policy(request: Request):
+    # parse the incoming policy payload
     data = await request.json()
-    policy = data.get("policy")
-    auth_header = request.headers.get("Authorization")
+    policy_str = data.get("policy")
+    if not policy_str:
+        raise HTTPException(status_code=400, detail="missing policy payload")
+    try:
+        import json
+        policy_dict = json.loads(policy_str)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail="invalid policy json")
 
+    # verify oauth token
+    auth_header = request.headers.get("Authorization")
     if not auth_header or not auth_header.startswith("Bearer "):
         raise HTTPException(status_code=401, detail="missing or invalid token")
-    
     token = auth_header.split("Bearer ")[1]
-    
     try:
-        idinfo = id_token.verify_oauth2_token(token, google_requests.Request(), GOOGLE_CLIENT_ID)
-        # TODO: call google cloud iam api with 'policy' here, using idinfo for context if needed
-        return {"status": "policy applied"}
+        id_token.verify_oauth2_token(token, google_requests.Request(), GOOGLE_CLIENT_ID)
     except Exception as e:
         raise HTTPException(status_code=401, detail="invalid token")
 
+    # apply the policy using the cloud resource manager client
+    from googleapiclient import discovery
+    from googleapiclient.errors import HttpError
+
+    PROJECT_ID = os.getenv("GCLOUD_PROJECT_ID")
+    if not PROJECT_ID:
+        raise HTTPException(status_code=500, detail="gcloud project id not set in environment")
+
+    try:
+        crm_service = discovery.build("cloudresourcemanager", "v1")
+        # fetch current iam policy
+        current_policy = crm_service.projects().getIamPolicy(
+            resource=PROJECT_ID, body={}
+        ).execute()
+        # override bindings with the new ones from the generated policy
+        new_policy = current_policy
+        new_policy["bindings"] = policy_dict.get("bindings", [])
+        # update the iam policy on the project
+        updated_policy = crm_service.projects().setIamPolicy(
+            resource=PROJECT_ID, body={"policy": new_policy}
+        ).execute()
+
+        print("policy successfully applied:", updated_policy)
+        return {"status": "policy applied", "updated_policy": updated_policy}
+    except HttpError as err:
+        error_message = f"failed to apply policy: {err}"
+        print(error_message)
+        raise HTTPException(status_code=500, detail=error_message)
