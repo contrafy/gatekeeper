@@ -11,6 +11,7 @@ function App() {
   const [token, setToken] = useState("");
 
 
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -121,7 +122,7 @@ function App() {
   
 
   return (
-    <GoogleOAuthProvider clientId="144997409478-frr558o4aj25lmbmf8g9erjmpe354qa7.apps.googleusercontent.com">
+    <GoogleOAuthProvider clientId="652210973933-lr0mof1noah9mgns6dfgifk9o3b3i39a.apps.googleusercontent.com">
 
     <div className="App">
       <div className="container">

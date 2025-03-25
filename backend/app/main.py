@@ -126,22 +126,22 @@ async def apply_policy(request: Request):
     data = await request.json()
     policy_str = data.get("policy")
     if not policy_str:
-        raise HTTPException(status_code=400, detail="missing policy payload")
+        raise HTTPException(status_code=400, detail="Missing policy payload")
     try:
         import json
-        policy_dict = json.loads(policy_str)
+        new_policy_bindings = json.loads(policy_str).get("bindings", [])
     except Exception as e:
-        raise HTTPException(status_code=400, detail="invalid policy json")
+        raise HTTPException(status_code=400, detail="Invalid policy JSON")
 
     # verify oauth token
     auth_header = request.headers.get("Authorization")
     if not auth_header or not auth_header.startswith("Bearer "):
-        raise HTTPException(status_code=401, detail="missing or invalid token")
+        raise HTTPException(status_code=401, detail="Missing or invalid token")
     token = auth_header.split("Bearer ")[1]
     try:
         id_token.verify_oauth2_token(token, google_requests.Request(), GOOGLE_CLIENT_ID)
     except Exception as e:
-        raise HTTPException(status_code=401, detail="invalid token")
+        raise HTTPException(status_code=401, detail="Invalid token")
 
     # apply the policy using the cloud resource manager client
     from googleapiclient import discovery
@@ -149,7 +149,7 @@ async def apply_policy(request: Request):
 
     PROJECT_ID = os.getenv("GCLOUD_PROJECT_ID")
     if not PROJECT_ID:
-        raise HTTPException(status_code=500, detail="gcloud project id not set in environment")
+        raise HTTPException(status_code=500, detail="GCLOUD_PROJECT_ID not set in environment")
 
     try:
         crm_service = discovery.build("cloudresourcemanager", "v1")
@@ -157,17 +157,38 @@ async def apply_policy(request: Request):
         current_policy = crm_service.projects().getIamPolicy(
             resource=PROJECT_ID, body={}
         ).execute()
-        # override bindings with the new ones from the generated policy
-        new_policy = current_policy
-        new_policy["bindings"] = policy_dict.get("bindings", [])
-        # update the iam policy on the project
+
+        # get existing bindings
+        existing_bindings = current_policy.get("bindings", [])
+        # merge new bindings into existing ones
+        for new_binding in new_policy_bindings:
+            role = new_binding.get("role")
+            members_to_add = new_binding.get("members", [])
+            # check if binding for this role already exists
+            binding_found = False
+            for binding in existing_bindings:
+                if binding.get("role") == role:
+                    # add any new members that aren't already in the binding
+                    for member in members_to_add:
+                        if member not in binding.get("members", []):
+                            binding["members"].append(member)
+                    binding_found = True
+                    break
+            # if no binding exists for the role, add the new binding as is
+            if not binding_found:
+                existing_bindings.append(new_binding)
+
+        # update policy without removing existing (e.g., owner) bindings
+        updated_policy_body = current_policy.copy()
+        updated_policy_body["bindings"] = existing_bindings
+
         updated_policy = crm_service.projects().setIamPolicy(
-            resource=PROJECT_ID, body={"policy": new_policy}
+            resource=PROJECT_ID, body={"policy": updated_policy_body}
         ).execute()
 
-        print("policy successfully applied:", updated_policy)
-        return {"status": "policy applied", "updated_policy": updated_policy}
+        print("Policy successfully applied:", updated_policy)
+        return {"status": "Policy applied", "updated_policy": updated_policy}
     except HttpError as err:
-        error_message = f"failed to apply policy: {err}"
+        error_message = f"Failed to apply policy: {err}"
         print(error_message)
         raise HTTPException(status_code=500, detail=error_message)
