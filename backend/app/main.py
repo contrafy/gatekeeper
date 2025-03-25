@@ -147,9 +147,14 @@ async def apply_policy(request: Request):
     from googleapiclient import discovery
     from googleapiclient.errors import HttpError
 
-    PROJECT_ID = os.getenv("GCLOUD_PROJECT_ID")
+    # get the project id from the headers
+    PROJECT_ID = request.headers.get("project-id")
     if not PROJECT_ID:
-        raise HTTPException(status_code=500, detail="GCLOUD_PROJECT_ID not set in environment")
+        raise HTTPException(status_code=400, detail="Missing project-id")
+    
+    # PROJECT_ID = os.getenv("GCLOUD_PROJECT_ID")
+    # if not PROJECT_ID:
+    #     raise HTTPException(status_code=500, detail="GCLOUD_PROJECT_ID not set in environment")
 
     try:
         crm_service = discovery.build("cloudresourcemanager", "v1")

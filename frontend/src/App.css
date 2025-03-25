@@ -10,9 +10,31 @@
 .oauth-container {
   display: flex;
   justify-content: center;
-  align-items: center;
   gap: 1rem;
   margin: 2rem;
+}
+
+.oauth-success {
+    display: flex;
+    justify-content: center;
+    text-align: center;
+}
+
+.oauth-signout-button {
+    background: #1a73e8;
+    border: 1px solid #dadce0;
+    border-radius: 4px;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    outline: none;
+    color: #FFFFFF;
+    cursor: pointer;
+}
+
+.project-selector {
+    display:flex;
+    flex-direction: column;
+    padding: 1rem 0 0 1rem;
 }
 
 h1 {

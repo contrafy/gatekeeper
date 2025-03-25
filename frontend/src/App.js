@@ -9,7 +9,7 @@ function App() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [token, setToken] = useState("");
-
+  const [selectedProject, setProject] = useState("");
 
 
   const handleSubmit = async (e) => {
@@ -109,7 +109,8 @@ function App() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
+          "Authorization": `Bearer ${token}`,
+          "project-id": selectedProject
         },
         body: JSON.stringify({ policy })
       });
@@ -119,6 +120,15 @@ function App() {
       console.error("error applying policy:", error);
     }
   };
+
+  // TODO: Replace with actual project list from GCP
+  const getAllProjects = () => {
+    return [
+      { id: "project-1", name: "Project 1" },
+      { id: "project-2", name: "Project 2" },
+      { id: "project-3", name: "Project 3" },
+    ];
+  }
   
 
   return (
@@ -132,15 +142,31 @@ function App() {
 
         <div className="oauth-container">
           {token ? (
-            <button
-              onClick={() => {
-                console.debug('user is signing out');
-                googleLogout();
-                setToken(''); // clear the token for now
-              }}
-            >
-              sign out
-            </button>
+            <div className="oauth-success">
+              <button className="oauth-signout-button" 
+                onClick={() => {
+                  console.debug('user is signing out');
+                  googleLogout();
+                  setToken(''); // clear the token for now
+                }}
+              >
+                Sign out
+              </button>
+
+              <div className="project-selector">
+                <label htmlFor="project-selector">Select a project:</label>
+                <select id="project-selector" 
+                    value = {selectedProject}
+                    onChange = {(e) => setProject(e.target.value)}>
+                    <option value="" disabled>Select an imported project</option>
+                    {getAllProjects().map((project) => (
+                        <option key={project.id} value={project.id}>{project.name}</option>
+                    ))}
+                </select>
+                </div>
+            </div>
+
+            
           ) : (
             <GoogleLogin
               onSuccess={(credentialResponse) => {
