@@ -1,9 +1,12 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from openai import OpenAI
 import os
 from dotenv import load_dotenv
+
+from google.oauth2 import id_token
+from google.auth.transport import requests as google_requests
 
 SYSTEM_PROMPT = """You are a specialized AI assistant focused on generating Google Cloud IAM policies. Your task is to convert natural language requests into precise, secure, and valid Google Cloud IAM policy bindings.
 
@@ -71,6 +74,7 @@ app.add_middleware(
 )
 
 client = OpenAI(api_key = os.getenv("OPENAI_API_KEY"))
+GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
 
 # request body struct
 # TODO: add context from users GCloud IAM project/organization data
@@ -115,3 +119,76 @@ async def generate_policy(request: PolicyRequest):
             
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error generating policy: {e}")
+
+@app.post("/apply_policy")
+async def apply_policy(request: Request):
+    # parse the incoming policy payload
+    data = await request.json()
+    policy_str = data.get("policy")
+    if not policy_str:
+        raise HTTPException(status_code=400, detail="Missing policy payload")
+    try:
+        import json
+        new_policy_bindings = json.loads(policy_str).get("bindings", [])
+    except Exception as e:
+        raise HTTPException(status_code=400, detail="Invalid policy JSON")
+
+    # verify oauth token
+    auth_header = request.headers.get("Authorization")
+    if not auth_header or not auth_header.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Missing or invalid token")
+    token = auth_header.split("Bearer ")[1]
+    try:
+        id_token.verify_oauth2_token(token, google_requests.Request(), GOOGLE_CLIENT_ID)
+    except Exception as e:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+    # apply the policy using the cloud resource manager client
+    from googleapiclient import discovery
+    from googleapiclient.errors import HttpError
+
+    PROJECT_ID = os.getenv("GCLOUD_PROJECT_ID")
+    if not PROJECT_ID:
+        raise HTTPException(status_code=500, detail="GCLOUD_PROJECT_ID not set in environment")
+
+    try:
+        crm_service = discovery.build("cloudresourcemanager", "v1")
+        # fetch current iam policy
+        current_policy = crm_service.projects().getIamPolicy(
+            resource=PROJECT_ID, body={}
+        ).execute()
+
+        # get existing bindings
+        existing_bindings = current_policy.get("bindings", [])
+        # merge new bindings into existing ones
+        for new_binding in new_policy_bindings:
+            role = new_binding.get("role")
+            members_to_add = new_binding.get("members", [])
+            # check if binding for this role already exists
+            binding_found = False
+            for binding in existing_bindings:
+                if binding.get("role") == role:
+                    # add any new members that aren't already in the binding
+                    for member in members_to_add:
+                        if member not in binding.get("members", []):
+                            binding["members"].append(member)
+                    binding_found = True
+                    break
+            # if no binding exists for the role, add the new binding as is
+            if not binding_found:
+                existing_bindings.append(new_binding)
+
+        # update policy without removing existing (e.g., owner) bindings
+        updated_policy_body = current_policy.copy()
+        updated_policy_body["bindings"] = existing_bindings
+
+        updated_policy = crm_service.projects().setIamPolicy(
+            resource=PROJECT_ID, body={"policy": updated_policy_body}
+        ).execute()
+
+        print("Policy successfully applied:", updated_policy)
+        return {"status": "Policy applied", "updated_policy": updated_policy}
+    except HttpError as err:
+        error_message = f"Failed to apply policy: {err}"
+        print(error_message)
+        raise HTTPException(status_code=500, detail=error_message)

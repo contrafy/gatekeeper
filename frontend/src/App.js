@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './App.css';
+import { GoogleLogin, GoogleOAuthProvider, googleLogout } from '@react-oauth/google';
 
 function App() {
   const [prompt, setPrompt] = useState("");
@@ -7,6 +8,9 @@ function App() {
   const [chatResponse, setChatResponse] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [token, setToken] = useState("");
+
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -71,7 +75,8 @@ function App() {
       // Try to parse as JSON first
       JSON.parse(text);
       // If successful, apply syntax highlighting
-      return text
+      return text;
+      /*
         .replace(/"([^"]+)":/g, '<span class="key">"$1"</span>:')
         .replace(/"([^"]+)"/g, '<span class="string">"$1"</span>')
         .replace(/\b(true|false)\b/g, '<span class="boolean">$1</span>')
@@ -82,6 +87,7 @@ function App() {
         .replace(/\n/g, '<br/>')
         .replace(/ /g, '&nbsp;')
         .replace(/\t/g, '&nbsp;&nbsp;&nbsp;&nbsp;');
+    */
     } catch (e) {
       // If not valid JSON, return as plain text
       return text;
@@ -97,12 +103,54 @@ function App() {
     }
   };
 
+  const handleApplyPolicy = async () => {
+    try {
+      const response = await fetch("http://localhost:8000/apply_policy", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ policy })
+      });
+      const data = await response.json();
+      console.log("policy applied:", data);
+    } catch (error) {
+      console.error("error applying policy:", error);
+    }
+  };
+  
+
   return (
+    <GoogleOAuthProvider clientId="652210973933-lr0mof1noah9mgns6dfgifk9o3b3i39a.apps.googleusercontent.com">
+
     <div className="App">
       <div className="container">
         <h1>
           <span role="img" aria-label="shield">🛡️</span> Google Cloud IAM Policy Generator
         </h1>
+
+        <div className="oauth-container">
+          {token ? (
+            <button
+              onClick={() => {
+                console.debug('user is signing out');
+                googleLogout();
+                setToken(''); // clear the token for now
+              }}
+            >
+              sign out
+            </button>
+          ) : (
+            <GoogleLogin
+              onSuccess={(credentialResponse) => {
+                console.debug('oauth success:', credentialResponse);
+                setToken(credentialResponse.credential);
+              }}
+              onError={() => console.error('login failed')}
+            />
+          )}
+        </div>
         
         <form onSubmit={handleSubmit} className="prompt-form">
           <textarea
@@ -112,17 +160,24 @@ function App() {
             rows="6"
             className="prompt-input"
           />
-          <button type="submit" disabled={loading} className="submit-btn">
-            {loading ? (
-              <>
-                <span role="img" aria-label="loading">⚡</span> Generating...
-              </>
-            ) : (
-              <>
-                <span role="img" aria-label="generate">✨</span> Generate Policy
-              </>
+          <div className="buttons-container">
+            { policy && (
+              <button onClick={handleApplyPolicy} className="apply-btn">
+                <span role="img" aria-label="apply">🚀</span> apply policy
+              </button>
             )}
-          </button>
+            <button type="submit" disabled={loading} className="submit-btn">
+              {loading ? (
+                <>
+                  <span role="img" aria-label="loading">⚡</span> Generating...
+                </>
+              ) : (
+                <>
+                  <span role="img" aria-label="generate">✨</span> Generate Policy
+                </>
+              )}
+            </button>
+          </div>
         </form>
 
         {error && (
@@ -158,6 +213,7 @@ function App() {
         </div>
       </div>
     </div>
+    </GoogleOAuthProvider>
   );
 }
 
