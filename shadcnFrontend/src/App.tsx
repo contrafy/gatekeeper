@@ -1,5 +1,5 @@
 import "./App.css";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { jwtDecode } from "jwt-decode";
 //------------ Shadcn Imports ------------
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,16 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { ScrollArea } from "@/components/ui/scroll-area";
 //------------------------
 import {
   CredentialResponse,
@@ -20,17 +30,54 @@ import {
   GoogleOAuthProvider,
   googleLogout,
 } from "@react-oauth/google";
+import { decode } from "punycode";
 
 const CLIENT_ID = import.meta.env.VITE_GOOGLE_OAUTH_CLIENT_ID;
 
 function App() {
   const [prompt, setPrompt] = useState("");
+  const [previousPrompt, setPreviousPrompt] = useState("");
   const [policy, setPolicy] = useState("");
   const [chatResponse, setChatResponse] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [token, setToken] = useState("");
   const [userPicture, setUserPicture] = useState("");
+  const [userName, setUserName] = useState("");
+
+  useEffect(() => {
+    const savedToken = localStorage.getItem("token");
+    const savedUserName = localStorage.getItem("userName");
+    const savedUserPicture = localStorage.getItem("userPicture");
+
+    if (savedToken) setToken(savedToken);
+    if (savedUserName) setUserName(savedUserName);
+    if (savedUserPicture) setUserPicture(savedUserPicture);
+  }, []);
+
+  useEffect(() => {
+    if (token) {
+      localStorage.setItem("token", token);
+    } else {
+      localStorage.removeItem("token");
+    }
+  }, [token]);
+
+  useEffect(() => {
+    if (userName) {
+      localStorage.setItem("userName", userName);
+    } else {
+      localStorage.removeItem("userName");
+    }
+  }, [userName]);
+
+  useEffect(() => {
+    if (userPicture) {
+      localStorage.setItem("userPicture", userPicture);
+    } else {
+      localStorage.removeItem("userPicture");
+    }
+  }, [userPicture]);
 
   const handleGoogleSuccess = (credentialResponse : CredentialResponse) => {
     if (!credentialResponse.credential) return;
@@ -40,13 +87,29 @@ function App() {
 
     // Decode JWT to find the "picture" field
     const decoded: any = jwtDecode(credentialResponse.credential);
-
+    
     if (decoded.picture) {
       setUserPicture(decoded.picture);
     }
+    if (decoded.name)
+    {
+      setUserName(decoded.name)
+    }
+    
+  };
+
+  const handleSignOut = () => {
+    console.debug("user is signing out");
+    googleLogout();
+    // Clear from state, which also clears from localStorage
+    setToken("");
+    setUserName("");
+    setUserPicture("");
   };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    setPreviousPrompt(prompt);
+    setPrompt("");
     e.preventDefault();
     setLoading(true);
     setError("");
@@ -97,6 +160,7 @@ function App() {
       setError("Failed to generate policy. Please try again.");
     } finally {
       setLoading(false);
+      
     }
   };
 
@@ -174,10 +238,31 @@ function App() {
               <div>
                 <div className="w-fit mx-auto">
                   {token ? (
-                    <Avatar>
-                      <AvatarImage src={userPicture} alt="Profile" />
-                      <AvatarFallback>Me</AvatarFallback>
-                    </Avatar>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Avatar className="cursor-pointer">
+                          <AvatarImage src={userPicture} alt="Profile" />
+                          <AvatarFallback>Me</AvatarFallback>
+                        </Avatar>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent>
+                        <DropdownMenuLabel>
+                          {" "}
+                          Signed in as {userName}{" "}
+                        </DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuGroup>
+                          <DropdownMenuItem
+                            className="cursor-pointer hover:bg-gray-200"
+                            onClick={() => {
+                              handleSignOut();
+                            }}
+                          >
+                            Sign Out
+                          </DropdownMenuItem>
+                        </DropdownMenuGroup>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   ) : (
                     <GoogleLogin
                       shape="circle"
@@ -198,7 +283,7 @@ function App() {
         </div>
       </header>
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="w-full max-w-2xl shadow-lg mx-auto text-center px-6 py-10">
+        <div className="w-full max-w-2xl shadow-lg mx-auto text-center px-6 py-[5%]">
           <Card className="text-left">
             <CardHeader>
               <CardTitle>Enter prompt</CardTitle>
@@ -212,15 +297,7 @@ function App() {
                   rows={6}
                   className="prompt-input"
                 />
-                <div>
-                  {policy && (
-                    <Button variant="dark" onClick={handleApplyPolicy}>
-                      <span role="img" aria-label="apply">
-                        🚀
-                      </span>{" "}
-                      Apply Policy
-                    </Button>
-                  )}
+                <div className="py-2.5 flex justify-center">
                   <Button type="submit" disabled={loading}>
                     {loading ? (
                       <>
@@ -251,10 +328,23 @@ function App() {
             </div>
           )}
           <div className="response-container">
+            {previousPrompt && (
+              <div className="mb-2 text-left">
+                <strong>Previous Prompt:</strong> {previousPrompt}
+              </div>
+            )}
             {policy && (
               <div className="policy-output">
                 <div className="output-header">
                   <h2>Generated Policy</h2>
+                  {policy && (
+                    <Button variant="dark" onClick={handleApplyPolicy}>
+                      <span role="img" aria-label="apply">
+                        🚀
+                      </span>{" "}
+                      Apply Policy
+                    </Button>
+                  )}
                   <Button variant="dark" onClick={handleCopy}>
                     <span role="img" aria-label="copy">
                       📋
@@ -262,17 +352,23 @@ function App() {
                     Copy Policy
                   </Button>
                 </div>
-                <pre
-                  className={`policy-pre ${isJsonString(policy) ? "json" : ""}`}
-                  dangerouslySetInnerHTML={{ __html: highlightJson(policy) }}
-                />
+                <ScrollArea className="h-60 rounded-md border">
+                  <pre
+                    className={`policy-pre ${
+                      isJsonString(policy) ? "json" : ""
+                    }`}
+                    dangerouslySetInnerHTML={{ __html: highlightJson(policy) }}
+                  />
+                </ScrollArea>
               </div>
             )}
 
             {chatResponse && (
               <div className="chat-output">
                 <h2>Chat Response</h2>
-                <pre className="chat-pre">{chatResponse}</pre>
+                <ScrollArea className="h-60">
+                  <pre className="chat-pre">{chatResponse}</pre>
+                </ScrollArea>
               </div>
             )}
           </div>
