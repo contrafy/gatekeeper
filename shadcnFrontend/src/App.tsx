@@ -1,12 +1,27 @@
-import { FormEvent, useState } from 'react'
+import "./App.css";
+import { FormEvent, useState } from "react";
+import { jwtDecode } from "jwt-decode";
+//------------ Shadcn Imports ------------
 import { Button } from "@/components/ui/button";
-
-import './App.css'
+import { Textarea } from "./components/ui/textarea";
 import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+//------------------------
+import {
+  CredentialResponse,
   GoogleLogin,
   GoogleOAuthProvider,
   googleLogout,
 } from "@react-oauth/google";
+
+const CLIENT_ID = import.meta.env.VITE_GOOGLE_OAUTH_CLIENT_ID;
 
 function App() {
   const [prompt, setPrompt] = useState("");
@@ -15,8 +30,21 @@ function App() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [token, setToken] = useState("");
+  const [userPicture, setUserPicture] = useState("");
 
+  const handleGoogleSuccess = (credentialResponse : CredentialResponse) => {
+    if (!credentialResponse.credential) return;
 
+    // Store the token
+    setToken(credentialResponse.credential);
+
+    // Decode JWT to find the "picture" field
+    const decoded: any = jwtDecode(credentialResponse.credential);
+
+    if (decoded.picture) {
+      setUserPicture(decoded.picture);
+    }
+  };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -115,9 +143,9 @@ function App() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ policy })
+        body: JSON.stringify({ policy }),
       });
       const data = await response.json();
       console.log("policy applied:", data);
@@ -125,103 +153,132 @@ function App() {
       console.error("error applying policy:", error);
     }
   };
-  
 
   return (
-    <GoogleOAuthProvider clientId="652210973933-lr0mof1noah9mgns6dfgifk9o3b3i39a.apps.googleusercontent.com">
-
-    <div className="App">
-      <div className="container">
-        <h1>
-          <span role="img" aria-label="shield">🛡️</span> Google Cloud IAM Policy Generator
-        </h1>
-
-        <div className="oauth-container">
-          {token ? (
-            <button
-              onClick={() => {
-                console.debug('user is signing out');
-                googleLogout();
-                setToken(''); // clear the token for now
-              }}
-            >
-              sign out
-            </button>
-          ) : (
-            <GoogleLogin
-              onSuccess={(credentialResponse) => {
-                console.debug('oauth success:', credentialResponse);
-                if (credentialResponse.credential) {
-                  setToken(credentialResponse.credential);
-                }
-              }}
-              onError={() => console.error('login failed')}
-            />
-          )}
-        </div>
-        
-        <form onSubmit={handleSubmit} className="prompt-form">
-          <textarea
-            placeholder="Describe your IAM policy requirements in plain English..."
-            value={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
-            rows={6}
-            className="prompt-input"
-          />
-          <div className="buttons-container">
-            { policy && (
-              <button onClick={handleApplyPolicy} className="apply-btn">
-                <span role="img" aria-label="apply">🚀</span> apply policy
-              </button>
-            )}
-            <button type="submit" disabled={loading} className="submit-btn">
-              {loading ? (
-                <>
-                  <span role="img" aria-label="loading">⚡</span> Generating...
-                </>
-              ) : (
-                <>
-                  <span role="img" aria-label="generate">✨</span> Generate Policy
-                </>
-              )}
-            </button>
+    <div>
+      {/* HEADER SECTION */}
+      <header className="fixed top-0 w-full bg-black border-b">
+        <div className="flex items-center justify-between w-full px-7.5 py-2">
+          {/* Left side: Title */}
+          {/* Left side: shield + title in a row */}
+          <div className="flex items-center space-x-2">
+            <span role="img" aria-label="shield" className="text-xl">
+              🛡️
+            </span>
+            <div className="text-white font-semibold text-base">
+              Google Cloud IAM Policy Generator
+            </div>
           </div>
-        </form>
-
-        {error && (
-          <div className="error-message">
-            <span role="img" aria-label="error">⚠️</span> {error}
-          </div>
-        )}
-        
-        <div className="response-container">
-          {policy && (
-            <div className="policy-output">
-              <div className="output-header">
-                <h2>Generated Policy</h2>
-                <button onClick={handleCopy} className="action-btn">
-                  <span role="img" aria-label="copy">📋</span> Copy Policy
-                </button>
+          <div>
+            <GoogleOAuthProvider clientId={CLIENT_ID}>
+              <div>
+                <div className="w-fit mx-auto">
+                  {token ? (
+                    <Avatar>
+                      <AvatarImage src={userPicture} alt="Profile" />
+                      <AvatarFallback>Me</AvatarFallback>
+                    </Avatar>
+                  ) : (
+                    <GoogleLogin
+                      shape="circle"
+                      onSuccess={(credentialResponse) => {
+                        console.debug("oauth success:", credentialResponse);
+                        handleGoogleSuccess(credentialResponse);
+                        if (credentialResponse.credential) {
+                          setToken(credentialResponse.credential);
+                        }
+                      }}
+                      onError={() => console.error("login failed")}
+                    />
+                  )}
+                </div>
               </div>
-              <pre 
-                className={`policy-pre ${isJsonString(policy) ? 'json' : ''}`}
-                dangerouslySetInnerHTML={{ __html: highlightJson(policy) }}
-              />
+            </GoogleOAuthProvider>
+          </div>
+        </div>
+      </header>
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="w-full max-w-2xl shadow-lg mx-auto text-center px-6 py-10">
+          <Card className="text-left">
+            <CardHeader>
+              <CardTitle>Enter prompt</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleSubmit}>
+                <Textarea
+                  placeholder="Describe your IAM policy requirements in plain English..."
+                  value={prompt}
+                  onChange={(e) => setPrompt(e.target.value)}
+                  rows={6}
+                  className="prompt-input"
+                />
+                <div>
+                  {policy && (
+                    <Button variant="dark" onClick={handleApplyPolicy}>
+                      <span role="img" aria-label="apply">
+                        🚀
+                      </span>{" "}
+                      Apply Policy
+                    </Button>
+                  )}
+                  <Button type="submit" disabled={loading}>
+                    {loading ? (
+                      <>
+                        <span role="img" aria-label="loading">
+                          ⚡
+                        </span>{" "}
+                        Generating...
+                      </>
+                    ) : (
+                      <>
+                        <span role="img" aria-label="generate">
+                          ✨
+                        </span>{" "}
+                        Generate Policy
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+          {error && (
+            <div>
+              <span role="img" aria-label="error">
+                ⚠️
+              </span>{" "}
+              {error}
             </div>
           )}
-          
-          {chatResponse && (
-            <div className="chat-output">
-              <h2>Chat Response</h2>
-              <pre className="chat-pre">
-                {chatResponse}
-              </pre>
-            </div>
-          )}
+          <div className="response-container">
+            {policy && (
+              <div className="policy-output">
+                <div className="output-header">
+                  <h2>Generated Policy</h2>
+                  <Button variant="dark" onClick={handleCopy}>
+                    <span role="img" aria-label="copy">
+                      📋
+                    </span>{" "}
+                    Copy Policy
+                  </Button>
+                </div>
+                <pre
+                  className={`policy-pre ${isJsonString(policy) ? "json" : ""}`}
+                  dangerouslySetInnerHTML={{ __html: highlightJson(policy) }}
+                />
+              </div>
+            )}
+
+            {chatResponse && (
+              <div className="chat-output">
+                <h2>Chat Response</h2>
+                <pre className="chat-pre">{chatResponse}</pre>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
-    </GoogleOAuthProvider>
   );
 }
 
