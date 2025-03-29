@@ -9,8 +9,7 @@ function App() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [token, setToken] = useState("");
-  const [selectedProject, setProject] = useState("");
-
+  const [selectedProject, setSelectedProject] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -121,13 +120,23 @@ function App() {
     }
   };
 
-  // TODO: Replace with actual project list from GCP
-  const getAllProjects = () => {
-    return [
-      { id: "project-1", name: "Project 1" },
-      { id: "project-2", name: "Project 2" },
-      { id: "project-3", name: "Project 3" },
-    ];
+  const getAllProjects = async () => {
+    try {
+        const response = await fetch("http://localhost:8000/get_projects", {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${token}`,
+            "project-id": selectedProject
+          }
+        });
+
+        const data = await response.json();
+        return Array.from(data);
+    }
+    catch (e) {
+        console.error("Error fetching projects:", error);
+        return [];
+    }
   }
   
 
@@ -157,16 +166,15 @@ function App() {
                 <label htmlFor="project-selector">Select a project:</label>
                 <select id="project-selector" 
                     value = {selectedProject}
-                    onChange = {(e) => setProject(e.target.value)}>
+                    onChange = {(e) => setSelectedProject(e.target.value)}>
                     <option value="" disabled>Select an imported project</option>
                     {getAllProjects().map((project) => (
-                        <option key={project.id} value={project.id}>{project.name}</option>
+                        <option key={project['id']} value={project['id']}>{project['name']}</option>
                     ))}
                 </select>
                 </div>
             </div>
 
-            
           ) : (
             <GoogleLogin
               onSuccess={(credentialResponse) => {

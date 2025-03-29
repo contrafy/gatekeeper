@@ -197,3 +197,38 @@ async def apply_policy(request: Request):
         error_message = f"Failed to apply policy: {err}"
         print(error_message)
         raise HTTPException(status_code=500, detail=error_message)
+
+@app.get("/get_projects")
+async def get_projects(request: Request):
+    """
+    Returns a list of projects the authenticated user has access to.
+    """
+    # verify oauth token
+    auth_header = request.headers.get("Authorization")
+    if not auth_header or not auth_header.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Missing or invalid token")
+    token = auth_header.split("Bearer ")[1]
+    try:
+        id_token.verify_oauth2_token(token, google_requests.Request(), GOOGLE_CLIENT_ID)
+    except Exception as e:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    
+    from googleapiclient import discovery
+    from googleapiclient.errors import HttpError
+
+    try:
+        crm_service = discovery.build("cloudresourcemanager", "v1")
+        request = crm_service.projects().list()
+        projects = []
+
+        while request is not None:
+            response = request.execute()
+            projects.extend([{"id": project["projectId"], "name": project["name"]} for project in response.get("projects", [])])
+            request = crm_service.projects().list_next(previous_request=request, previous_response=response)
+
+        print(projects)
+        return projects
+    except HttpError as err:
+        raise HTTPException(status_code=500, detail=f"HttpError: Failed to fetch projects: {err}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"An error occurred: {e}")
