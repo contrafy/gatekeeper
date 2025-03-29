@@ -31,6 +31,9 @@ import {
   googleLogout,
 } from "@react-oauth/google";
 import { decode } from "punycode";
+import { ThemeProvider } from "./components/theme-provider";
+import { ModeToggle } from "./components/mode-toggle";
+
 
 const CLIENT_ID = import.meta.env.VITE_GOOGLE_OAUTH_CLIENT_ID;
 
@@ -220,160 +223,165 @@ function App() {
 
   return (
     <div>
-      {/* HEADER SECTION */}
-      <header className="fixed top-0 w-full bg-black border-b">
-        <div className="flex items-center justify-between w-full px-7.5 py-2">
-          {/* Left side: Title */}
-          {/* Left side: shield + title in a row */}
-          <div className="flex items-center space-x-2">
-            <span role="img" aria-label="shield" className="text-xl">
-              🛡️
-            </span>
-            <div className="text-white font-semibold text-base">
-              Google Cloud IAM Policy Generator
-            </div>
-          </div>
-          <div>
-            <GoogleOAuthProvider clientId={CLIENT_ID}>
-              <div>
-                <div className="w-fit mx-auto">
-                  {token ? (
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Avatar className="cursor-pointer">
-                          <AvatarImage src={userPicture} alt="Profile" />
-                          <AvatarFallback>Me</AvatarFallback>
-                        </Avatar>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent>
-                        <DropdownMenuLabel>
-                          {" "}
-                          Signed in as {userName}{" "}
-                        </DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuGroup>
-                          <DropdownMenuItem
-                            className="cursor-pointer hover:bg-gray-200"
-                            onClick={() => {
-                              handleSignOut();
-                            }}
-                          >
-                            Sign Out
-                          </DropdownMenuItem>
-                        </DropdownMenuGroup>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  ) : (
-                    <GoogleLogin
-                      shape="circle"
-                      onSuccess={(credentialResponse) => {
-                        console.debug("oauth success:", credentialResponse);
-                        handleGoogleSuccess(credentialResponse);
-                        if (credentialResponse.credential) {
-                          setToken(credentialResponse.credential);
-                        }
-                      }}
-                      onError={() => console.error("login failed")}
-                    />
-                  )}
-                </div>
+      <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+        {/* HEADER SECTION */}
+        <header className="fixed top-0 w-full  border-b bg-black">
+          <div className="flex items-center justify-between w-full px-7.5 py-2">
+            {/* Left side: Title */}
+            {/* Left side: shield + title in a row */}
+            <div className="flex items-center space-x-2">
+              <span role="img" aria-label="shield" className="text-xl">
+                🛡️
+              </span>
+              <div className=" font-semibold text-white text-base">
+                Google Cloud IAM Policy Generator
               </div>
-            </GoogleOAuthProvider>
-          </div>
-        </div>
-      </header>
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="w-full max-w-2xl shadow-lg mx-auto text-center px-6 py-[5%]">
-          <Card className="text-left">
-            <CardHeader>
-              <CardTitle>Enter prompt</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit}>
-                <Textarea
-                  placeholder="Describe your IAM policy requirements in plain English..."
-                  value={prompt}
-                  onChange={(e) => setPrompt(e.target.value)}
-                  rows={6}
-                  className="prompt-input"
-                />
-                <div className="py-2.5 flex justify-center">
-                  <Button type="submit" disabled={loading}>
-                    {loading ? (
-                      <>
-                        <span role="img" aria-label="loading">
-                          ⚡
-                        </span>{" "}
-                        Generating...
-                      </>
+            </div>
+            <div className="flex items-center space-x-4">
+              <ModeToggle></ModeToggle>
+              <GoogleOAuthProvider clientId={CLIENT_ID}>
+                <div>
+                  <div className="w-fit mx-auto">
+                    {token ? (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Avatar className="cursor-pointer">
+                            <AvatarImage src={userPicture} alt="Profile" />
+                            <AvatarFallback>Me</AvatarFallback>
+                          </Avatar>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                          <DropdownMenuLabel>
+                            {" "}
+                            Signed in as {userName}{" "}
+                          </DropdownMenuLabel>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuGroup>
+                            <DropdownMenuItem
+                              className="cursor-pointer hover:bg-gray-200"
+                              onClick={() => {
+                                handleSignOut();
+                              }}
+                            >
+                              Sign Out
+                            </DropdownMenuItem>
+                          </DropdownMenuGroup>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     ) : (
-                      <>
-                        <span role="img" aria-label="generate">
-                          ✨
-                        </span>{" "}
-                        Generate Policy
-                      </>
+                      <GoogleLogin
+                        shape="circle"
+                        onSuccess={(credentialResponse) => {
+                          console.debug("oauth success:", credentialResponse);
+                          handleGoogleSuccess(credentialResponse);
+                          if (credentialResponse.credential) {
+                            setToken(credentialResponse.credential);
+                          }
+                        }}
+                        onError={() => console.error("login failed")}
+                      />
                     )}
-                  </Button>
+                  </div>
                 </div>
-              </form>
-            </CardContent>
-          </Card>
-          {error && (
-            <div>
-              <span role="img" aria-label="error">
-                ⚠️
-              </span>{" "}
-              {error}
+              </GoogleOAuthProvider>
             </div>
-          )}
-          <div className="response-container">
-            {previousPrompt && (
-              <div className="mb-2 text-left">
-                <strong>Previous Prompt:</strong> {previousPrompt}
-              </div>
-            )}
-            {policy && (
-              <div className="policy-output">
-                <div className="output-header">
-                  <h2>Generated Policy</h2>
-                  {policy && (
-                    <Button variant="dark" onClick={handleApplyPolicy}>
-                      <span role="img" aria-label="apply">
-                        🚀
-                      </span>{" "}
-                      Apply Policy
-                    </Button>
-                  )}
-                  <Button variant="dark" onClick={handleCopy}>
-                    <span role="img" aria-label="copy">
-                      📋
-                    </span>{" "}
-                    Copy Policy
-                  </Button>
-                </div>
-                <ScrollArea className="h-60 rounded-md border">
-                  <pre
-                    className={`policy-pre ${
-                      isJsonString(policy) ? "json" : ""
-                    }`}
-                    dangerouslySetInnerHTML={{ __html: highlightJson(policy) }}
+          </div>
+        </header>
+        <div className="min-h-screen flex items-center justify-center bg-background">
+          <div className="w-full max-w-2xl shadow-lg mx-auto text-center px-6 py-[5%]">
+            <Card className="text-left">
+              <CardHeader>
+                <CardTitle>Enter prompt</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleSubmit}>
+                  <Textarea
+                    placeholder="Describe your IAM policy requirements in plain English..."
+                    value={prompt}
+                    onChange={(e) => setPrompt(e.target.value)}
+                    rows={6}
+                    className="prompt-input"
                   />
-                </ScrollArea>
+                  <div className="py-2.5 flex justify-center">
+                    <Button variant="dark" type="submit" disabled={loading}>
+                      {loading ? (
+                        <>
+                          <span role="img" aria-label="loading">
+                            ⚡
+                          </span>{" "}
+                          Generating...
+                        </>
+                      ) : (
+                        <>
+                          <span role="img" aria-label="generate">
+                            ✨
+                          </span>{" "}
+                          Generate Policy
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
+            {error && (
+              <div>
+                <span role="img" aria-label="error">
+                  ⚠️
+                </span>{" "}
+                {error}
               </div>
             )}
+            <div className="response-container">
+              {previousPrompt && (
+                <div className="mb-2 text-left">
+                  <strong>Prompt:</strong> {previousPrompt}
+                </div>
+              )}
+              {policy && (
+                <div className="policy-output">
+                  <div className="output-header">
+                    <h2>Generated Policy</h2>
+                    {policy && (
+                      <Button variant="dark" onClick={handleApplyPolicy}>
+                        <span role="img" aria-label="apply">
+                          🚀
+                        </span>{" "}
+                        Apply Policy
+                      </Button>
+                    )}
+                    <Button variant="dark" onClick={handleCopy}>
+                      <span role="img" aria-label="copy">
+                        📋
+                      </span>{" "}
+                      Copy Policy
+                    </Button>
+                  </div>
+                  <ScrollArea className="h-60 rounded-md border">
+                    <pre
+                      className={`policy-pre ${
+                        isJsonString(policy) ? "json" : ""
+                      }`}
+                      dangerouslySetInnerHTML={{
+                        __html: highlightJson(policy),
+                      }}
+                    />
+                  </ScrollArea>
+                </div>
+              )}
 
-            {chatResponse && (
-              <div className="chat-output">
-                <h2>Chat Response</h2>
-                <ScrollArea className="h-60">
-                  <pre className="chat-pre">{chatResponse}</pre>
-                </ScrollArea>
-              </div>
-            )}
+              {chatResponse && (
+                <div className="chat-output">
+                  <h2>Chat Response</h2>
+                  <ScrollArea className="h-60">
+                    <pre className="chat-pre">{chatResponse}</pre>
+                  </ScrollArea>
+                </div>
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      </ThemeProvider>
     </div>
   );
 }
