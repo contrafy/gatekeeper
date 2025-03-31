@@ -75,7 +75,7 @@ function App() {
       // Try to parse as JSON first
       JSON.parse(text);
       // If successful, apply syntax highlighting
-      return text;
+      return '<textarea class="policy-textbox">' + text + '</textarea>';
       /*
         .replace(/"([^"]+)":/g, '<span class="key">"$1"</span>:')
         .replace(/"([^"]+)"/g, '<span class="string">"$1"</span>')
@@ -195,10 +195,11 @@ function App() {
                   <span role="img" aria-label="copy">📋</span> Copy Policy
                 </button>
               </div>
-              <pre 
-                className={`policy-pre ${isJsonString(policy) ? 'json' : ''}`}
-                dangerouslySetInnerHTML={{ __html: highlightJson(policy) }}
-              />
+                <pre 
+                    className={`policy-pre ${isJsonString(policy) ? 'json' : ''}`}
+                    dangerouslySetInnerHTML={{ __html: highlightJson(policy) }}
+                />
+              
             </div>
           )}
           
