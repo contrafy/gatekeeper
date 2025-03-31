@@ -176,7 +176,7 @@ function App() {
       // Try to parse as JSON first
       JSON.parse(text);
       // If successful, apply syntax highlighting
-      return text;
+      return '<textarea class="policy-textbox">' + text + '</textarea>';
       /*
         .replace(/"([^"]+)":/g, '<span class="key">"$1"</span>:')
         .replace(/"([^"]+)"/g, '<span class="string">"$1"</span>')
