@@ -143,6 +143,17 @@ h2 {
   overflow-x: auto;
 }
 
+.policy-textbox {
+    background:#1e1e1e;
+    color:#d4d4d4;
+    border:none;
+    line-height: 1.5;
+    height: 100%;
+    resize:none;
+    field-sizing: content;
+    outline: none;
+}
+
 /* Chat output styling */
 .chat-output {
   text-align: left;
