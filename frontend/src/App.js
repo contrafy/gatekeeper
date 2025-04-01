@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './App.css';
 import { GoogleLogin, GoogleOAuthProvider, googleLogout } from '@react-oauth/google';
 
@@ -9,8 +9,9 @@ function App() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [token, setToken] = useState("");
-
-
+  
+  const [projects, setProjects] = useState([]);
+  const [selectedProject, setSelectedProject] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -109,7 +110,8 @@ function App() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
+          "Authorization": `Bearer ${token}`,
+          "project-id": selectedProject
         },
         body: JSON.stringify({ policy })
       });
@@ -119,6 +121,31 @@ function App() {
       console.error("error applying policy:", error);
     }
   };
+
+  const getAllProjects = async () => {
+    try {
+      const response = await fetch("http://localhost:8000/get_projects", {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+        },
+      });
+      const data = await response.json();
+      return Array.from(data);
+    } catch (e) {
+      console.error("Error fetching projects:", e);
+      return [];
+    }
+  };
+
+  // Fetch projects on component mount or when the token changes
+  useEffect(() => {
+    const fetchProjects = async () => {
+      const projectsData = await getAllProjects();
+      setProjects(projectsData);
+    };
+    fetchProjects();
+  }, [token]);
   
 
   return (
@@ -132,15 +159,30 @@ function App() {
 
         <div className="oauth-container">
           {token ? (
-            <button
-              onClick={() => {
-                console.debug('user is signing out');
-                googleLogout();
-                setToken(''); // clear the token for now
-              }}
-            >
-              sign out
-            </button>
+            <div className="oauth-success">
+              <button className="oauth-signout-button" 
+                onClick={() => {
+                  console.debug('user is signing out');
+                  googleLogout();
+                  setToken(''); // clear the token for now
+                }}
+              >
+                Sign out
+              </button>
+
+              <div className="project-selector">
+                <label htmlFor="project-selector">Select a project:</label>
+                <select id="project-selector" 
+                    value = {selectedProject}
+                    onChange = {(e) => setSelectedProject(e.target.value)}>
+                    <option value="" disabled>Select an imported project</option>
+                    {projects.map((project) => (
+                        <option key={project.id} value={project.id}>{project.name}</option>
+                    ))}
+                </select>
+                </div>
+            </div>
+
           ) : (
             <GoogleLogin
               onSuccess={(credentialResponse) => {
