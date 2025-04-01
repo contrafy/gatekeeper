@@ -219,6 +219,7 @@ async def get_projects(request: Request):
     try:
         crm_service = discovery.build("cloudresourcemanager", "v1")
         request = crm_service.projects().list()
+        print(request)
         projects = []
 
         while request is not None:
