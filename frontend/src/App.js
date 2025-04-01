@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './App.css';
 import { GoogleLogin, GoogleOAuthProvider, googleLogout } from '@react-oauth/google';
 
@@ -9,7 +9,9 @@ function App() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [token, setToken] = useState("");
-  const [selectedProject, setSelectedProject] = useState("");
+  
+  const [projects, setProjects] = useState([]);
+  const [selectedProject, setSelectedProject] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -122,22 +124,28 @@ function App() {
 
   const getAllProjects = async () => {
     try {
-        const response = await fetch("http://localhost:8000/get_projects", {
-          method: "GET",
-          headers: {
-            "Authorization": `Bearer ${token}`,
-            "project-id": selectedProject
-          }
-        });
+      const response = await fetch("http://localhost:8000/get_projects", {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+        },
+      });
+      const data = await response.json();
+      return Array.from(data);
+    } catch (e) {
+      console.error("Error fetching projects:", e);
+      return [];
+    }
+  };
 
-        const data = await response.json();
-        return Array.from(data);
-    }
-    catch (e) {
-        console.error("Error fetching projects:", error);
-        return [];
-    }
-  }
+  // Fetch projects on component mount or when the token changes
+  useEffect(() => {
+    const fetchProjects = async () => {
+      const projectsData = await getAllProjects();
+      setProjects(projectsData);
+    };
+    fetchProjects();
+  }, [token]);
   
 
   return (
@@ -168,8 +176,8 @@ function App() {
                     value = {selectedProject}
                     onChange = {(e) => setSelectedProject(e.target.value)}>
                     <option value="" disabled>Select an imported project</option>
-                    {getAllProjects().map((project) => (
-                        <option key={project['id']} value={project['id']}>{project['name']}</option>
+                    {projects.map((project) => (
+                        <option key={project.id} value={project.id}>{project.name}</option>
                     ))}
                 </select>
                 </div>
