@@ -30,10 +30,9 @@ import {
   GoogleOAuthProvider,
   googleLogout,
 } from "@react-oauth/google";
-import { decode } from "punycode";
 import { ThemeProvider } from "./components/theme-provider";
 import { ModeToggle } from "./components/mode-toggle";
-
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const CLIENT_ID = import.meta.env.VITE_GOOGLE_OAUTH_CLIENT_ID;
 
@@ -48,16 +47,16 @@ function App() {
   const [userPicture, setUserPicture] = useState("");
   const [userName, setUserName] = useState("");
 
-  const [projects, setProjects] = useState<any []>([]);
+  const [projects, setProjects] = useState<any[]>([]);
   const [selectedProject, setSelectedProject] = useState("");
+  const [fetchingProjects, setFetchingProjects] = useState(false);
+  const [projectError, setProjectError] = useState("");
 
   // Fetch projects on component mount or when the token changes
   useEffect(() => {
-    const fetchProjects = async () => {
-      const projectsData = await getAllProjects();
-      setProjects(projectsData);
-    };
-    fetchProjects();
+    if (token) {
+      fetchProjects();
+    }
   }, [token]);
   
   useEffect(() => {
@@ -118,7 +117,53 @@ function App() {
     setToken("");
     setUserName("");
     setUserPicture("");
+    setProjects([]);
+    setSelectedProject("");
   };
+
+  const fetchProjects = async () => {
+    if (!token) return;
+    
+    setFetchingProjects(true);
+    setProjectError("");
+    
+    try {
+      console.log("Fetching projects with token:", token.substring(0, 10) + "...");
+      const response = await fetch("http://localhost:8000/get_projects", {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || "Failed to fetch projects");
+      }
+      
+      const data = await response.json();
+      console.log("Projects fetched successfully:", data);
+      
+      if (Array.isArray(data)) {
+        setProjects(data);
+        
+        // If we have projects and none selected, select the first one
+        if (data.length > 0 && !selectedProject) {
+          setSelectedProject(data[0].id);
+        }
+      } else {
+        console.error("Invalid projects data format:", data);
+        setProjectError("Received invalid projects data format");
+      }
+    } catch (error) {
+      console.error("Error fetching projects:", error);
+      setProjectError(error instanceof Error ? error.message : "Unknown error fetching projects");
+      setProjects([]);
+    } finally {
+      setFetchingProjects(false);
+    }
+  };
+  
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     setPreviousPrompt(prompt);
     setPrompt("");
@@ -185,18 +230,6 @@ function App() {
       JSON.parse(text);
       // If successful, apply syntax highlighting
       return '<textarea class="policy-textbox">' + text + "</textarea>";
-      /*
-        .replace(/"([^"]+)":/g, '<span class="key">"$1"</span>:')
-        .replace(/"([^"]+)"/g, '<span class="string">"$1"</span>')
-        .replace(/\b(true|false)\b/g, '<span class="boolean">$1</span>')
-        .replace(/\b(null)\b/g, '<span class="null">$1</span>')
-        .replace(/\b(-?\d+\.?\d*)\b/g, '<span class="number">$1</span>')
-        .replace(/[{[]/g, '<span class="bracket">$&</span>')
-        .replace(/[}\]]/g, '<span class="bracket">$&</span>')
-        .replace(/\n/g, '<br/>')
-        .replace(/ /g, '&nbsp;')
-        .replace(/\t/g, '&nbsp;&nbsp;&nbsp;&nbsp;');
-    */
     } catch (e) {
       // If not valid JSON, return as plain text
       return text;
@@ -213,7 +246,18 @@ function App() {
   };
 
   const handleApplyPolicy = async () => {
+    if (!token) {
+      setError("You must be signed in to apply policies");
+      return;
+    }
+    
+    if (!selectedProject) {
+      setError("You must select a project before applying a policy");
+      return;
+    }
+    
     try {
+      setLoading(true);
       const response = await fetch("http://localhost:8000/apply_policy", {
         method: "POST",
         headers: {
@@ -223,26 +267,20 @@ function App() {
         },
         body: JSON.stringify({ policy }),
       });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || "Failed to apply policy");
+      }
+      
       const data = await response.json();
-      console.log("policy applied:", data);
+      console.log("Policy applied:", data);
+      setChatResponse("Policy successfully applied to project!");
     } catch (error) {
-      console.error("error applying policy:", error);
-    }
-  };
-
-  const getAllProjects = async () => {
-    try {
-      const response = await fetch("http://localhost:8000/get_projects", {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      const data = await response.json();
-      return Array.from(data);
-    } catch (e) {
-      console.error("Error fetching projects:", e);
-      return [];
+      console.error("Error applying policy:", error);
+      setError(error instanceof Error ? error.message : "Unknown error applying policy");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -319,27 +357,39 @@ function App() {
             <div className="flex justify-end mb-4">
               {token ? (
                 // Show project selector if signed in
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="secondary">
-                      {selectedProject
-                        ? projects.find((p) => p.id === selectedProject)?.name
-                        : "Select Project"}
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuLabel>Select a Project</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    {projects.map((project) => (
-                      <DropdownMenuItem
-                        key={project.id}
-                        onClick={() => setSelectedProject(project.id)}
-                      >
-                        {project.name}
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                <>
+                  {fetchingProjects ? (
+                    <div className="bg-gray-100 border border-gray-300 rounded-md px-4 py-2 text-sm text-gray-700">
+                      Loading projects...
+                    </div>
+                  ) : (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="secondary">
+                          {selectedProject && projects.length > 0
+                            ? projects.find((p) => p.id === selectedProject)?.name || "Select Project"
+                            : projects.length > 0 ? "Select Project" : "No Projects Found"}
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>Select a Project</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        {projects.length > 0 ? (
+                          projects.map((project) => (
+                            <DropdownMenuItem
+                              key={project.id}
+                              onClick={() => setSelectedProject(project.id)}
+                            >
+                              {project.name}
+                            </DropdownMenuItem>
+                          ))
+                        ) : (
+                          <DropdownMenuItem disabled>No projects available</DropdownMenuItem>
+                        )}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )}
+                </>
               ) : (
                 // Show prompt to sign in
                 <div className="bg-gray-100 border border-gray-300 rounded-md px-4 py-2 text-sm text-gray-700">
@@ -347,6 +397,14 @@ function App() {
                 </div>
               )}
             </div>
+
+            {projectError && (
+              <Alert variant="destructive" className="mb-4">
+                <AlertDescription>
+                  {projectError}
+                </AlertDescription>
+              </Alert>
+            )}
 
             <Card className="text-left">
               <CardHeader>
@@ -401,8 +459,12 @@ function App() {
                 <div className="policy-output">
                   <div className="output-header">
                     <h2>Generated Policy</h2>
-                    {policy && (
-                      <Button variant="dark" onClick={handleApplyPolicy}>
+                    {policy && token && selectedProject && (
+                      <Button 
+                        variant="dark" 
+                        onClick={handleApplyPolicy} 
+                        disabled={loading || !token || !selectedProject}
+                      >
                         <span role="img" aria-label="apply">
                           🚀
                         </span>{" "}
