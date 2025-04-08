@@ -48,6 +48,18 @@ function App() {
   const [userPicture, setUserPicture] = useState("");
   const [userName, setUserName] = useState("");
 
+  const [projects, setProjects] = useState<any []>([]);
+  const [selectedProject, setSelectedProject] = useState("");
+
+  // Fetch projects on component mount or when the token changes
+  useEffect(() => {
+    const fetchProjects = async () => {
+      const projectsData = await getAllProjects();
+      setProjects(projectsData);
+    };
+    fetchProjects();
+  }, [token]);
+  
   useEffect(() => {
     const savedToken = localStorage.getItem("token");
     const savedUserName = localStorage.getItem("userName");
@@ -82,7 +94,7 @@ function App() {
     }
   }, [userPicture]);
 
-  const handleGoogleSuccess = (credentialResponse : CredentialResponse) => {
+  const handleGoogleSuccess = (credentialResponse: CredentialResponse) => {
     if (!credentialResponse.credential) return;
 
     // Store the token
@@ -90,15 +102,13 @@ function App() {
 
     // Decode JWT to find the "picture" field
     const decoded: any = jwtDecode(credentialResponse.credential);
-    
+
     if (decoded.picture) {
       setUserPicture(decoded.picture);
     }
-    if (decoded.name)
-    {
-      setUserName(decoded.name)
+    if (decoded.name) {
+      setUserName(decoded.name);
     }
-    
   };
 
   const handleSignOut = () => {
@@ -109,7 +119,6 @@ function App() {
     setUserName("");
     setUserPicture("");
   };
-
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     setPreviousPrompt(prompt);
     setPrompt("");
@@ -163,7 +172,6 @@ function App() {
       setError("Failed to generate policy. Please try again.");
     } finally {
       setLoading(false);
-      
     }
   };
 
@@ -176,7 +184,7 @@ function App() {
       // Try to parse as JSON first
       JSON.parse(text);
       // If successful, apply syntax highlighting
-      return '<textarea class="policy-textbox">' + text + '</textarea>';
+      return '<textarea class="policy-textbox">' + text + "</textarea>";
       /*
         .replace(/"([^"]+)":/g, '<span class="key">"$1"</span>:')
         .replace(/"([^"]+)"/g, '<span class="string">"$1"</span>')
@@ -211,6 +219,7 @@ function App() {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
+          "project-id": selectedProject,
         },
         body: JSON.stringify({ policy }),
       });
@@ -218,6 +227,22 @@ function App() {
       console.log("policy applied:", data);
     } catch (error) {
       console.error("error applying policy:", error);
+    }
+  };
+
+  const getAllProjects = async () => {
+    try {
+      const response = await fetch("http://localhost:8000/get_projects", {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const data = await response.json();
+      return Array.from(data);
+    } catch (e) {
+      console.error("Error fetching projects:", e);
+      return [];
     }
   };
 
@@ -287,8 +312,42 @@ function App() {
             </div>
           </div>
         </header>
+
         <div className="min-h-screen flex items-center justify-center bg-background">
           <div className="w-full max-w-2xl shadow-lg mx-auto text-center px-6 py-[5%]">
+            {/* Project Selector Above Prompt Section */}
+            <div className="flex justify-end mb-4">
+              {token ? (
+                // Show project selector if signed in
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="secondary">
+                      {selectedProject
+                        ? projects.find((p) => p.id === selectedProject)?.name
+                        : "Select Project"}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>Select a Project</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    {projects.map((project) => (
+                      <DropdownMenuItem
+                        key={project.id}
+                        onClick={() => setSelectedProject(project.id)}
+                      >
+                        {project.name}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                // Show prompt to sign in
+                <div className="bg-gray-100 border border-gray-300 rounded-md px-4 py-2 text-sm text-gray-700">
+                  Please sign in with Google to select a project.
+                </div>
+              )}
+            </div>
+
             <Card className="text-left">
               <CardHeader>
                 <CardTitle>Enter prompt</CardTitle>
