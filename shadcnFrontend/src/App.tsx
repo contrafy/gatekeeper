@@ -312,8 +312,42 @@ function App() {
             </div>
           </div>
         </header>
+
         <div className="min-h-screen flex items-center justify-center bg-background">
           <div className="w-full max-w-2xl shadow-lg mx-auto text-center px-6 py-[5%]">
+            {/* Project Selector Above Prompt Section */}
+            <div className="flex justify-end mb-4">
+              {token ? (
+                // Show project selector if signed in
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="secondary">
+                      {selectedProject
+                        ? projects.find((p) => p.id === selectedProject)?.name
+                        : "Select Project"}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>Select a Project</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    {projects.map((project) => (
+                      <DropdownMenuItem
+                        key={project.id}
+                        onClick={() => setSelectedProject(project.id)}
+                      >
+                        {project.name}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                // Show prompt to sign in
+                <div className="bg-gray-100 border border-gray-300 rounded-md px-4 py-2 text-sm text-gray-700">
+                  Please sign in with Google to select a project.
+                </div>
+              )}
+            </div>
+
             <Card className="text-left">
               <CardHeader>
                 <CardTitle>Enter prompt</CardTitle>
