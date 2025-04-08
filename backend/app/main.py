@@ -206,7 +206,7 @@ async def get_projects(request: Request):
     # verify oauth token
     auth_header = request.headers.get("Authorization")
     if not auth_header or not auth_header.startswith("Bearer "):
-        raise HTTPException(status_code=401, detail="Missing or invalid token")
+        raise HTTPException(status_code=401, detail=f"Missing or invalid token, Auth Header: {auth_header}, Request Headers: {request.headers}")
     token = auth_header.split("Bearer ")[1]
     try:
         id_token.verify_oauth2_token(token, google_requests.Request(), GOOGLE_CLIENT_ID)
