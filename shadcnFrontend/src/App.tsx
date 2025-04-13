@@ -224,17 +224,17 @@ function App() {
     navigator.clipboard.writeText(policy);
   };
 
-  const highlightJson = (text: string): string => {
-    try {
-      // Try to parse as JSON first
-      JSON.parse(text);
-      // If successful, apply syntax highlighting
-      return '<textarea class="policy-textbox">' + text + "</textarea>";
-    } catch (e) {
-      // If not valid JSON, return as plain text
-      return text;
-    }
-  };
+  // Changed to a functional component instead of dangerouslySetInnerHTML
+const JsonTextarea = ({ text, onChange }: { text: string; onChange: (value: string) => void }) => {
+  return (
+    <Textarea
+      className="policy-textbox w-full h-full font-mono"
+      value={text}
+      onChange={(e) => onChange(e.target.value)}
+      rows={10}
+    />
+  );
+};
 
   const isJsonString = (str: string): boolean => {
     try {
@@ -258,6 +258,24 @@ function App() {
     
     try {
       setLoading(true);
+      console.log("Applying policy:", policy);
+      // Make sure we're sending properly formatted JSON
+      let policyToSend = policy;
+      try {
+        // If policy is already a string representation of JSON, parse and validate it
+        const parsed = JSON.parse(policy);
+        // Ensure we have bindings
+        if (!parsed.bindings) {
+          // If we don't have bindings, wrap it properly
+          policyToSend = JSON.stringify({ bindings: [] });
+        }
+      } catch (e) {
+        console.error("Policy is not valid JSON:", e);
+        setError("Policy is not valid JSON. Cannot apply.");
+        setLoading(false);
+        return;
+      }
+      
       const response = await fetch("http://localhost:8000/apply_policy", {
         method: "POST",
         headers: {
@@ -265,12 +283,14 @@ function App() {
           Authorization: `Bearer ${token}`,
           "project-id": selectedProject,
         },
-        body: JSON.stringify({ policy }),
+        body: JSON.stringify({ policy: policyToSend }),
       });
       
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.detail || "Failed to apply policy");
+        const errorDetail = errorData.detail || "Failed to apply policy";
+        console.error("API error details:", errorData);
+        throw new Error(errorDetail);
       }
       
       const data = await response.json();
@@ -442,21 +462,23 @@ function App() {
               </CardContent>
             </Card>
             {error && (
-              <div>
-                <span role="img" aria-label="error">
-                  ⚠️
-                </span>{" "}
-                {error}
-              </div>
+              <Alert variant="destructive" className="mt-4 mb-2">
+                <AlertDescription className="flex items-center">
+                  <span role="img" aria-label="error" className="mr-2">
+                    ⚠️
+                  </span>
+                  {error}
+                </AlertDescription>
+              </Alert>
             )}
-            <div className="response-container">
+            <div className="response-container h-auto">
               {previousPrompt && (
                 <div className="mb-2 text-left">
                   <strong>Prompt:</strong> {previousPrompt}
                 </div>
               )}
               {policy && (
-                <div className="policy-output">
+                <div className="policy-output mb-4 h-max">
                   <div className="output-header">
                     <h2>Generated Policy</h2>
                     {policy && token && selectedProject && (
@@ -478,16 +500,16 @@ function App() {
                       Copy Policy
                     </Button>
                   </div>
-                  <ScrollArea className="h-60 rounded-md border">
-                    <pre
-                      className={`policy-pre ${
-                        isJsonString(policy) ? "json" : ""
-                      }`}
-                      dangerouslySetInnerHTML={{
-                        __html: highlightJson(policy),
-                      }}
-                    />
-                  </ScrollArea>
+                  <div className="rounded-md border">
+                    {isJsonString(policy) ? (
+                      <JsonTextarea 
+                        text={policy} 
+                        onChange={(newValue) => setPolicy(newValue)} 
+                      />
+                    ) : (
+                      <pre className="policy-pre">{policy}</pre>
+                    )}
+                  </div>
                 </div>
               )}
 

@@ -129,9 +129,20 @@ async def apply_policy(request: Request):
         raise HTTPException(status_code=400, detail="Missing policy payload")
     try:
         import json
-        new_policy_bindings = json.loads(policy_str).get("bindings", [])
+        # Log the received policy for debugging
+        print(f"Received policy: {policy_str}")
+        
+        # Handle case where policy_str is already a JSON object
+        if isinstance(policy_str, dict):
+            policy_json = policy_str
+        else:
+            policy_json = json.loads(policy_str)
+            
+        new_policy_bindings = policy_json.get("bindings", [])
+        print(f"Parsed policy bindings: {new_policy_bindings}")
     except Exception as e:
-        raise HTTPException(status_code=400, detail="Invalid policy JSON")
+        print(f"Error parsing policy JSON: {e}")
+        raise HTTPException(status_code=400, detail=f"Invalid policy JSON: {str(e)}")
 
     # verify oauth token
     auth_header = request.headers.get("Authorization")
@@ -153,6 +164,8 @@ async def apply_policy(request: Request):
         raise HTTPException(status_code=400, detail="Missing project-id")
     
     try:
+        # Import google.auth here where it's used
+        import google.auth
         # Create service with explicit no quota project
         credentials, _ = google.auth.default(quota_project_id=None)
         crm_service = discovery.build("cloudresourcemanager", "v1", credentials=credentials)
@@ -193,9 +206,24 @@ async def apply_policy(request: Request):
         print("Policy successfully applied:", updated_policy)
         return {"status": "Policy applied", "updated_policy": updated_policy}
     except HttpError as err:
-        error_message = f"Failed to apply policy: {err}"
-        print(error_message)
-        raise HTTPException(status_code=500, detail=error_message)
+        # Extract the meaningful error message for better user experience
+        error_message = str(err)
+        clean_message = "Failed to apply policy"
+        
+        # Parse out specific error info from Google's error messages
+        if "Details:" in error_message:
+            detail_section = error_message.split("Details:")[1].strip()
+            if detail_section.startswith('"') and detail_section.endswith('"'):
+                detail_section = detail_section[1:-1]  # Remove extra quotes
+            clean_message = f"Error: {detail_section}"
+        elif "returned" in error_message:
+            # Extract the part between 'returned' and 'Details' if present
+            returned_part = error_message.split('returned "')[1].split('".')[0]
+            clean_message = f"Error: {returned_part}"
+        
+        print(f"Original error: {error_message}")
+        print(f"Cleaned error for user: {clean_message}")
+        raise HTTPException(status_code=err.resp.status, detail=clean_message)
 
 @app.get("/get_projects")
 async def get_projects(request: Request):
