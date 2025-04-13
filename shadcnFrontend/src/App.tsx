@@ -1,5 +1,5 @@
 import "./App.css";
-import { FormEvent, useEffect, useState } from "react";
+import React, { FormEvent, useEffect, useState } from "react";
 import { jwtDecode } from "jwt-decode";
 //------------ Shadcn Imports ------------
 import { Button } from "@/components/ui/button";
@@ -40,9 +40,11 @@ function App() {
   const [prompt, setPrompt] = useState("");
   const [previousPrompt, setPreviousPrompt] = useState("");
   const [policy, setPolicy] = useState("");
+  const [originalPolicy, setOriginalPolicy] = useState(""); // To track if policy has been modified
   const [chatResponse, setChatResponse] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [policyApplied, setPolicyApplied] = useState(false);
   const [token, setToken] = useState("");
   const [userPicture, setUserPicture] = useState("");
   const [userName, setUserName] = useState("");
@@ -198,18 +200,29 @@ function App() {
           // Try to parse it to validate it's actually JSON
           const parsedJson = JSON.parse(jsonStr);
           // If successful, set the policy and chat response
-          setPolicy(JSON.stringify(parsedJson, null, 2));
+          const formattedJson = JSON.stringify(parsedJson, null, 2);
+          setPolicy(formattedJson);
+          setOriginalPolicy(formattedJson); // Store original policy
+          setPolicyApplied(false); // Reset applied status for new policy
           // Get any text before the JSON as chat response
-          const chatText = fullResponse.substring(0, jsonStartIndex).trim();
+          let chatText = fullResponse.substring(0, jsonStartIndex).trim();
+          
+          // Clean up markdown code blocks from the chat response
+          chatText = chatText.replace(/```json/g, "").replace(/```/g, "").trim();
+          
           setChatResponse(chatText || ""); // Set empty string if no chat text
         } catch (e) {
           // If JSON parsing fails, treat everything as chat
-          setChatResponse(fullResponse);
+          // Clean up any markdown code blocks
+          const cleanedResponse = fullResponse.replace(/```json/g, "").replace(/```/g, "").trim();
+          setChatResponse(cleanedResponse);
           setPolicy("");
         }
       } else {
         // No JSON-like structure found, treat as chat
-        setChatResponse(fullResponse);
+        // Clean up any markdown code blocks
+        const cleanedResponse = fullResponse.replace(/```json/g, "").replace(/```/g, "").trim();
+        setChatResponse(cleanedResponse);
         setPolicy("");
       }
     } catch (error) {
@@ -224,17 +237,32 @@ function App() {
     navigator.clipboard.writeText(policy);
   };
 
-  // Changed to a functional component instead of dangerouslySetInnerHTML
-const JsonTextarea = ({ text, onChange }: { text: string; onChange: (value: string) => void }) => {
-  return (
-    <Textarea
-      className="policy-textbox w-full h-full font-mono"
-      value={text}
-      onChange={(e) => onChange(e.target.value)}
-      rows={10}
-    />
-  );
-};
+  // Memoize the textarea component to prevent re-renders that cause focus loss
+const JsonTextarea = React.memo(
+  ({ text, onChange }: { text: string; onChange: (value: string) => void }) => {
+    // Use useRef to maintain a reference to the textarea
+    const textareaRef = React.useRef<HTMLTextAreaElement>(null);
+    
+    // Track if this is a user edit
+    const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+      onChange(e.target.value);
+    };
+    
+    return (
+      <Textarea
+        ref={textareaRef}
+        className="policy-textbox w-full h-full font-mono"
+        value={text}
+        onChange={handleChange}
+        rows={10}
+        spellCheck={false}
+      />
+    );
+  },
+  // Custom comparison function to prevent unnecessary re-renders
+  // Only re-render if the text value actually changed
+  (prevProps, nextProps) => prevProps.text === nextProps.text
+);
 
   const isJsonString = (str: string): boolean => {
     try {
@@ -296,6 +324,8 @@ const JsonTextarea = ({ text, onChange }: { text: string; onChange: (value: stri
       const data = await response.json();
       console.log("Policy applied:", data);
       setChatResponse("Policy successfully applied to project!");
+      setPolicyApplied(true);
+      setOriginalPolicy(policy); // Update original policy to mark current as applied
     } catch (error) {
       console.error("Error applying policy:", error);
       setError(error instanceof Error ? error.message : "Unknown error applying policy");
@@ -308,7 +338,7 @@ const JsonTextarea = ({ text, onChange }: { text: string; onChange: (value: stri
     <div>
       <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
         {/* HEADER SECTION */}
-        <header className="fixed top-0 w-full  border-b bg-black">
+        <header className="fixed top-0 w-full mb-5 border-b bg-black">
           <div className="flex items-center justify-between w-full px-7.5 py-2">
             {/* Left side: Title */}
             {/* Left side: shield + title in a row */}
@@ -478,48 +508,63 @@ const JsonTextarea = ({ text, onChange }: { text: string; onChange: (value: stri
                 </div>
               )}
               {policy && (
-                <div className="policy-output mb-4 h-max">
-                  <div className="output-header">
-                    <h2>Generated Policy</h2>
-                    {policy && token && selectedProject && (
-                      <Button 
-                        variant="dark" 
-                        onClick={handleApplyPolicy} 
-                        disabled={loading || !token || !selectedProject}
-                      >
-                        <span role="img" aria-label="apply">
-                          🚀
-                        </span>{" "}
-                        Apply Policy
+                <Card className="mb-4 policy-output">
+                  <CardHeader className="output-header pb-2">
+                    <CardTitle>Generated Policy</CardTitle>
+                    <div className="flex space-x-2">
+                      {policy && token && selectedProject && (
+                        <Button 
+                          variant={policyApplied ? "outline" : "secondary"}
+                          onClick={handleApplyPolicy} 
+                          disabled={loading || !token || !selectedProject || policyApplied}
+                          className={policyApplied ? "text-green-600 border-green-600 bg-green-100/10 hover:bg-green-100/20 hover:text-green-600" : ""}
+                        >
+                          <span role="img" aria-label={policyApplied ? "applied" : "apply"} className="mr-2">
+                            {policyApplied ? "✅" : "🚀"}
+                          </span>
+                          {policyApplied ? "Policy Applied" : "Apply Policy"}
+                        </Button>
+                      )}
+                      <Button variant="secondary" onClick={handleCopy}>
+                        <span role="img" aria-label="copy" className="mr-2">
+                          📋
+                        </span>
+                        Copy
                       </Button>
-                    )}
-                    <Button variant="dark" onClick={handleCopy}>
-                      <span role="img" aria-label="copy">
-                        📋
-                      </span>{" "}
-                      Copy Policy
-                    </Button>
-                  </div>
-                  <div className="rounded-md border">
-                    {isJsonString(policy) ? (
-                      <JsonTextarea 
-                        text={policy} 
-                        onChange={(newValue) => setPolicy(newValue)} 
-                      />
-                    ) : (
-                      <pre className="policy-pre">{policy}</pre>
-                    )}
-                  </div>
-                </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="rounded-md border">
+                      {isJsonString(policy) ? (
+                        <JsonTextarea 
+                          text={policy} 
+                          onChange={(newValue) => {
+                            setPolicy(newValue);
+                            // If policy is changed, it's no longer applied
+                            if (newValue !== originalPolicy) {
+                              setPolicyApplied(false);
+                            }
+                          }} 
+                        />
+                      ) : (
+                        <pre className="policy-pre">{policy}</pre>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
               )}
 
               {chatResponse && (
-                <div className="chat-output">
-                  <h2>Chat Response</h2>
-                  <ScrollArea className="h-60">
-                    <pre className="chat-pre">{chatResponse}</pre>
-                  </ScrollArea>
-                </div>
+                <Card className="chat-output">
+                  <CardHeader className="output-header pb-2">
+                    <CardTitle>Chat Response</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <ScrollArea className="h-60">
+                      <pre className="chat-pre">{chatResponse}</pre>
+                    </ScrollArea>
+                  </CardContent>
+                </Card>
               )}
             </div>
           </div>
