@@ -129,9 +129,20 @@ async def apply_policy(request: Request):
         raise HTTPException(status_code=400, detail="Missing policy payload")
     try:
         import json
-        new_policy_bindings = json.loads(policy_str).get("bindings", [])
+        # Log the received policy for debugging
+        print(f"Received policy: {policy_str}")
+        
+        # Handle case where policy_str is already a JSON object
+        if isinstance(policy_str, dict):
+            policy_json = policy_str
+        else:
+            policy_json = json.loads(policy_str)
+            
+        new_policy_bindings = policy_json.get("bindings", [])
+        print(f"Parsed policy bindings: {new_policy_bindings}")
     except Exception as e:
-        raise HTTPException(status_code=400, detail="Invalid policy JSON")
+        print(f"Error parsing policy JSON: {e}")
+        raise HTTPException(status_code=400, detail=f"Invalid policy JSON: {str(e)}")
 
     # verify oauth token
     auth_header = request.headers.get("Authorization")
@@ -152,12 +163,13 @@ async def apply_policy(request: Request):
     if not PROJECT_ID:
         raise HTTPException(status_code=400, detail="Missing project-id")
     
-    # PROJECT_ID = os.getenv("GCLOUD_PROJECT_ID")
-    # if not PROJECT_ID:
-    #     raise HTTPException(status_code=500, detail="GCLOUD_PROJECT_ID not set in environment")
-
     try:
-        crm_service = discovery.build("cloudresourcemanager", "v1")
+        # Import google.auth here where it's used
+        import google.auth
+        # Create service with explicit no quota project
+        credentials, _ = google.auth.default(quota_project_id=None)
+        crm_service = discovery.build("cloudresourcemanager", "v1", credentials=credentials)
+        
         # fetch current iam policy
         current_policy = crm_service.projects().getIamPolicy(
             resource=PROJECT_ID, body={}
@@ -194,9 +206,24 @@ async def apply_policy(request: Request):
         print("Policy successfully applied:", updated_policy)
         return {"status": "Policy applied", "updated_policy": updated_policy}
     except HttpError as err:
-        error_message = f"Failed to apply policy: {err}"
-        print(error_message)
-        raise HTTPException(status_code=500, detail=error_message)
+        # Extract the meaningful error message for better user experience
+        error_message = str(err)
+        clean_message = "Failed to apply policy"
+        
+        # Parse out specific error info from Google's error messages
+        if "Details:" in error_message:
+            detail_section = error_message.split("Details:")[1].strip()
+            if detail_section.startswith('"') and detail_section.endswith('"'):
+                detail_section = detail_section[1:-1]  # Remove extra quotes
+            clean_message = f"Error: {detail_section}"
+        elif "returned" in error_message:
+            # Extract the part between 'returned' and 'Details' if present
+            returned_part = error_message.split('returned "')[1].split('".')[0]
+            clean_message = f"Error: {returned_part}"
+        
+        print(f"Original error: {error_message}")
+        print(f"Cleaned error for user: {clean_message}")
+        raise HTTPException(status_code=err.resp.status, detail=clean_message)
 
 @app.get("/get_projects")
 async def get_projects(request: Request):
@@ -209,17 +236,38 @@ async def get_projects(request: Request):
         raise HTTPException(status_code=401, detail=f"Missing or invalid token, Auth Header: {auth_header}, Request Headers: {request.headers}")
     token = auth_header.split("Bearer ")[1]
     try:
-        id_token.verify_oauth2_token(token, google_requests.Request(), GOOGLE_CLIENT_ID)
+        # Verify the token is valid
+        id_info = id_token.verify_oauth2_token(token, google_requests.Request(), GOOGLE_CLIENT_ID)
+        if not id_info:
+            raise HTTPException(status_code=401, detail="Invalid token")
     except Exception as e:
-        raise HTTPException(status_code=401, detail="Invalid token")
+        raise HTTPException(status_code=401, detail=f"Invalid token: {str(e)}")
     
     from googleapiclient import discovery
     from googleapiclient.errors import HttpError
+    import google.auth
+    import google.auth.transport.requests
 
     try:
-        crm_service = discovery.build("cloudresourcemanager", "v1")
+        # Use default credentials with Application Default Credentials
+        # Instead of trying to use the ID token as OAuth credentials
+        credentials, project_id = google.auth.default()
+        
+        # Create a request object for the credentials
+        auth_req = google.auth.transport.requests.Request()
+        
+        # Refresh the credentials
+        credentials.refresh(auth_req)
+        
+        # Build the service with these credentials 
+        crm_service = discovery.build(
+            "cloudresourcemanager", 
+            "v1", 
+            credentials=credentials
+        )
+        
+        # Make the list request
         request = crm_service.projects().list()
-        print(request)
         projects = []
 
         while request is not None:
@@ -227,9 +275,13 @@ async def get_projects(request: Request):
             projects.extend([{"id": project["projectId"], "name": project["name"]} for project in response.get("projects", [])])
             request = crm_service.projects().list_next(previous_request=request, previous_response=response)
 
-        print(projects)
+        print(f"Successfully fetched {len(projects)} projects")
         return projects
     except HttpError as err:
-        raise HTTPException(status_code=500, detail=f"HttpError: Failed to fetch projects: {err}")
+        error_detail = f"HttpError: Failed to fetch projects: {err}"
+        print(error_detail)
+        raise HTTPException(status_code=500, detail=error_detail)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"An error occurred: {e}")
+        error_detail = f"An error occurred: {str(e)}"
+        print(error_detail)
+        raise HTTPException(status_code=500, detail=error_detail)

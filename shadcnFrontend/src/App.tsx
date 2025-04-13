@@ -1,5 +1,5 @@
 import "./App.css";
-import { FormEvent, useEffect, useState } from "react";
+import React, { FormEvent, useEffect, useState } from "react";
 import { jwtDecode } from "jwt-decode";
 //------------ Shadcn Imports ------------
 import { Button } from "@/components/ui/button";
@@ -30,10 +30,9 @@ import {
   GoogleOAuthProvider,
   googleLogout,
 } from "@react-oauth/google";
-import { decode } from "punycode";
 import { ThemeProvider } from "./components/theme-provider";
 import { ModeToggle } from "./components/mode-toggle";
-
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const CLIENT_ID = import.meta.env.VITE_GOOGLE_OAUTH_CLIENT_ID;
 
@@ -41,23 +40,25 @@ function App() {
   const [prompt, setPrompt] = useState("");
   const [previousPrompt, setPreviousPrompt] = useState("");
   const [policy, setPolicy] = useState("");
+  const [originalPolicy, setOriginalPolicy] = useState(""); // To track if policy has been modified
   const [chatResponse, setChatResponse] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [policyApplied, setPolicyApplied] = useState(false);
   const [token, setToken] = useState("");
   const [userPicture, setUserPicture] = useState("");
   const [userName, setUserName] = useState("");
 
-  const [projects, setProjects] = useState<any []>([]);
+  const [projects, setProjects] = useState<any[]>([]);
   const [selectedProject, setSelectedProject] = useState("");
+  const [fetchingProjects, setFetchingProjects] = useState(false);
+  const [projectError, setProjectError] = useState("");
 
   // Fetch projects on component mount or when the token changes
   useEffect(() => {
-    const fetchProjects = async () => {
-      const projectsData = await getAllProjects();
-      setProjects(projectsData);
-    };
-    fetchProjects();
+    if (token) {
+      fetchProjects();
+    }
   }, [token]);
   
   useEffect(() => {
@@ -118,7 +119,53 @@ function App() {
     setToken("");
     setUserName("");
     setUserPicture("");
+    setProjects([]);
+    setSelectedProject("");
   };
+
+  const fetchProjects = async () => {
+    if (!token) return;
+    
+    setFetchingProjects(true);
+    setProjectError("");
+    
+    try {
+      console.log("Fetching projects with token:", token.substring(0, 10) + "...");
+      const response = await fetch("http://localhost:8000/get_projects", {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || "Failed to fetch projects");
+      }
+      
+      const data = await response.json();
+      console.log("Projects fetched successfully:", data);
+      
+      if (Array.isArray(data)) {
+        setProjects(data);
+        
+        // If we have projects and none selected, select the first one
+        if (data.length > 0 && !selectedProject) {
+          setSelectedProject(data[0].id);
+        }
+      } else {
+        console.error("Invalid projects data format:", data);
+        setProjectError("Received invalid projects data format");
+      }
+    } catch (error) {
+      console.error("Error fetching projects:", error);
+      setProjectError(error instanceof Error ? error.message : "Unknown error fetching projects");
+      setProjects([]);
+    } finally {
+      setFetchingProjects(false);
+    }
+  };
+  
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     setPreviousPrompt(prompt);
     setPrompt("");
@@ -153,18 +200,29 @@ function App() {
           // Try to parse it to validate it's actually JSON
           const parsedJson = JSON.parse(jsonStr);
           // If successful, set the policy and chat response
-          setPolicy(JSON.stringify(parsedJson, null, 2));
+          const formattedJson = JSON.stringify(parsedJson, null, 2);
+          setPolicy(formattedJson);
+          setOriginalPolicy(formattedJson); // Store original policy
+          setPolicyApplied(false); // Reset applied status for new policy
           // Get any text before the JSON as chat response
-          const chatText = fullResponse.substring(0, jsonStartIndex).trim();
+          let chatText = fullResponse.substring(0, jsonStartIndex).trim();
+          
+          // Clean up markdown code blocks from the chat response
+          chatText = chatText.replace(/```json/g, "").replace(/```/g, "").trim();
+          
           setChatResponse(chatText || ""); // Set empty string if no chat text
         } catch (e) {
           // If JSON parsing fails, treat everything as chat
-          setChatResponse(fullResponse);
+          // Clean up any markdown code blocks
+          const cleanedResponse = fullResponse.replace(/```json/g, "").replace(/```/g, "").trim();
+          setChatResponse(cleanedResponse);
           setPolicy("");
         }
       } else {
         // No JSON-like structure found, treat as chat
-        setChatResponse(fullResponse);
+        // Clean up any markdown code blocks
+        const cleanedResponse = fullResponse.replace(/```json/g, "").replace(/```/g, "").trim();
+        setChatResponse(cleanedResponse);
         setPolicy("");
       }
     } catch (error) {
@@ -179,29 +237,32 @@ function App() {
     navigator.clipboard.writeText(policy);
   };
 
-  const highlightJson = (text: string): string => {
-    try {
-      // Try to parse as JSON first
-      JSON.parse(text);
-      // If successful, apply syntax highlighting
-      return '<textarea class="policy-textbox">' + text + "</textarea>";
-      /*
-        .replace(/"([^"]+)":/g, '<span class="key">"$1"</span>:')
-        .replace(/"([^"]+)"/g, '<span class="string">"$1"</span>')
-        .replace(/\b(true|false)\b/g, '<span class="boolean">$1</span>')
-        .replace(/\b(null)\b/g, '<span class="null">$1</span>')
-        .replace(/\b(-?\d+\.?\d*)\b/g, '<span class="number">$1</span>')
-        .replace(/[{[]/g, '<span class="bracket">$&</span>')
-        .replace(/[}\]]/g, '<span class="bracket">$&</span>')
-        .replace(/\n/g, '<br/>')
-        .replace(/ /g, '&nbsp;')
-        .replace(/\t/g, '&nbsp;&nbsp;&nbsp;&nbsp;');
-    */
-    } catch (e) {
-      // If not valid JSON, return as plain text
-      return text;
-    }
-  };
+  // Memoize the textarea component to prevent re-renders that cause focus loss
+const JsonTextarea = React.memo(
+  ({ text, onChange }: { text: string; onChange: (value: string) => void }) => {
+    // Use useRef to maintain a reference to the textarea
+    const textareaRef = React.useRef<HTMLTextAreaElement>(null);
+    
+    // Track if this is a user edit
+    const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+      onChange(e.target.value);
+    };
+    
+    return (
+      <Textarea
+        ref={textareaRef}
+        className="policy-textbox w-full h-full font-mono"
+        value={text}
+        onChange={handleChange}
+        rows={10}
+        spellCheck={false}
+      />
+    );
+  },
+  // Custom comparison function to prevent unnecessary re-renders
+  // Only re-render if the text value actually changed
+  (prevProps, nextProps) => prevProps.text === nextProps.text
+);
 
   const isJsonString = (str: string): boolean => {
     try {
@@ -213,7 +274,36 @@ function App() {
   };
 
   const handleApplyPolicy = async () => {
+    if (!token) {
+      setError("You must be signed in to apply policies");
+      return;
+    }
+    
+    if (!selectedProject) {
+      setError("You must select a project before applying a policy");
+      return;
+    }
+    
     try {
+      setLoading(true);
+      console.log("Applying policy:", policy);
+      // Make sure we're sending properly formatted JSON
+      let policyToSend = policy;
+      try {
+        // If policy is already a string representation of JSON, parse and validate it
+        const parsed = JSON.parse(policy);
+        // Ensure we have bindings
+        if (!parsed.bindings) {
+          // If we don't have bindings, wrap it properly
+          policyToSend = JSON.stringify({ bindings: [] });
+        }
+      } catch (e) {
+        console.error("Policy is not valid JSON:", e);
+        setError("Policy is not valid JSON. Cannot apply.");
+        setLoading(false);
+        return;
+      }
+      
       const response = await fetch("http://localhost:8000/apply_policy", {
         method: "POST",
         headers: {
@@ -221,28 +311,26 @@ function App() {
           Authorization: `Bearer ${token}`,
           "project-id": selectedProject,
         },
-        body: JSON.stringify({ policy }),
+        body: JSON.stringify({ policy: policyToSend }),
       });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        const errorDetail = errorData.detail || "Failed to apply policy";
+        console.error("API error details:", errorData);
+        throw new Error(errorDetail);
+      }
+      
       const data = await response.json();
-      console.log("policy applied:", data);
+      console.log("Policy applied:", data);
+      setChatResponse("Policy successfully applied to project!");
+      setPolicyApplied(true);
+      setOriginalPolicy(policy); // Update original policy to mark current as applied
     } catch (error) {
-      console.error("error applying policy:", error);
-    }
-  };
-
-  const getAllProjects = async () => {
-    try {
-      const response = await fetch("http://localhost:8000/get_projects", {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      const data = await response.json();
-      return Array.from(data);
-    } catch (e) {
-      console.error("Error fetching projects:", e);
-      return [];
+      console.error("Error applying policy:", error);
+      setError(error instanceof Error ? error.message : "Unknown error applying policy");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -250,7 +338,7 @@ function App() {
     <div>
       <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
         {/* HEADER SECTION */}
-        <header className="fixed top-0 w-full  border-b bg-black">
+        <header className="fixed top-0 w-full mb-5 border-b bg-black">
           <div className="flex items-center justify-between w-full px-7.5 py-2">
             {/* Left side: Title */}
             {/* Left side: shield + title in a row */}
@@ -319,27 +407,39 @@ function App() {
             <div className="flex justify-end mb-4">
               {token ? (
                 // Show project selector if signed in
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="secondary">
-                      {selectedProject
-                        ? projects.find((p) => p.id === selectedProject)?.name
-                        : "Select Project"}
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuLabel>Select a Project</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    {projects.map((project) => (
-                      <DropdownMenuItem
-                        key={project.id}
-                        onClick={() => setSelectedProject(project.id)}
-                      >
-                        {project.name}
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                <>
+                  {fetchingProjects ? (
+                    <div className="bg-gray-100 border border-gray-300 rounded-md px-4 py-2 text-sm text-gray-700">
+                      Loading projects...
+                    </div>
+                  ) : (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="secondary">
+                          {selectedProject && projects.length > 0
+                            ? projects.find((p) => p.id === selectedProject)?.name || "Select Project"
+                            : projects.length > 0 ? "Select Project" : "No Projects Found"}
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>Select a Project</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        {projects.length > 0 ? (
+                          projects.map((project) => (
+                            <DropdownMenuItem
+                              key={project.id}
+                              onClick={() => setSelectedProject(project.id)}
+                            >
+                              {project.name}
+                            </DropdownMenuItem>
+                          ))
+                        ) : (
+                          <DropdownMenuItem disabled>No projects available</DropdownMenuItem>
+                        )}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )}
+                </>
               ) : (
                 // Show prompt to sign in
                 <div className="bg-gray-100 border border-gray-300 rounded-md px-4 py-2 text-sm text-gray-700">
@@ -347,6 +447,14 @@ function App() {
                 </div>
               )}
             </div>
+
+            {projectError && (
+              <Alert variant="destructive" className="mb-4">
+                <AlertDescription>
+                  {projectError}
+                </AlertDescription>
+              </Alert>
+            )}
 
             <Card className="text-left">
               <CardHeader>
@@ -384,58 +492,79 @@ function App() {
               </CardContent>
             </Card>
             {error && (
-              <div>
-                <span role="img" aria-label="error">
-                  ⚠️
-                </span>{" "}
-                {error}
-              </div>
+              <Alert variant="destructive" className="mt-4 mb-2">
+                <AlertDescription className="flex items-center">
+                  <span role="img" aria-label="error" className="mr-2">
+                    ⚠️
+                  </span>
+                  {error}
+                </AlertDescription>
+              </Alert>
             )}
-            <div className="response-container">
+            <div className="response-container h-auto">
               {previousPrompt && (
                 <div className="mb-2 text-left">
                   <strong>Prompt:</strong> {previousPrompt}
                 </div>
               )}
               {policy && (
-                <div className="policy-output">
-                  <div className="output-header">
-                    <h2>Generated Policy</h2>
-                    {policy && (
-                      <Button variant="dark" onClick={handleApplyPolicy}>
-                        <span role="img" aria-label="apply">
-                          🚀
-                        </span>{" "}
-                        Apply Policy
+                <Card className="mb-4 policy-output">
+                  <CardHeader className="output-header pb-2">
+                    <CardTitle>Generated Policy</CardTitle>
+                    <div className="flex space-x-2">
+                      {policy && token && selectedProject && (
+                        <Button 
+                          variant={policyApplied ? "outline" : "secondary"}
+                          onClick={handleApplyPolicy} 
+                          disabled={loading || !token || !selectedProject || policyApplied}
+                          className={policyApplied ? "text-green-600 border-green-600 bg-green-100/10 hover:bg-green-100/20 hover:text-green-600" : ""}
+                        >
+                          <span role="img" aria-label={policyApplied ? "applied" : "apply"} className="mr-2">
+                            {policyApplied ? "✅" : "🚀"}
+                          </span>
+                          {policyApplied ? "Policy Applied" : "Apply Policy"}
+                        </Button>
+                      )}
+                      <Button variant="secondary" onClick={handleCopy}>
+                        <span role="img" aria-label="copy" className="mr-2">
+                          📋
+                        </span>
+                        Copy
                       </Button>
-                    )}
-                    <Button variant="dark" onClick={handleCopy}>
-                      <span role="img" aria-label="copy">
-                        📋
-                      </span>{" "}
-                      Copy Policy
-                    </Button>
-                  </div>
-                  <ScrollArea className="h-60 rounded-md border">
-                    <pre
-                      className={`policy-pre ${
-                        isJsonString(policy) ? "json" : ""
-                      }`}
-                      dangerouslySetInnerHTML={{
-                        __html: highlightJson(policy),
-                      }}
-                    />
-                  </ScrollArea>
-                </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="rounded-md border">
+                      {isJsonString(policy) ? (
+                        <JsonTextarea 
+                          text={policy} 
+                          onChange={(newValue) => {
+                            setPolicy(newValue);
+                            // If policy is changed, it's no longer applied
+                            if (newValue !== originalPolicy) {
+                              setPolicyApplied(false);
+                            }
+                          }} 
+                        />
+                      ) : (
+                        <pre className="policy-pre">{policy}</pre>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
               )}
 
               {chatResponse && (
-                <div className="chat-output">
-                  <h2>Chat Response</h2>
-                  <ScrollArea className="h-60">
-                    <pre className="chat-pre">{chatResponse}</pre>
-                  </ScrollArea>
-                </div>
+                <Card className="chat-output">
+                  <CardHeader className="output-header pb-2">
+                    <CardTitle>Chat Response</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <ScrollArea className="h-60">
+                      <pre className="chat-pre">{chatResponse}</pre>
+                    </ScrollArea>
+                  </CardContent>
+                </Card>
               )}
             </div>
           </div>
