@@ -10,31 +10,9 @@
 .oauth-container {
   display: flex;
   justify-content: center;
+  align-items: center;
   gap: 1rem;
   margin: 2rem;
-}
-
-.oauth-success {
-    display: flex;
-    justify-content: center;
-    text-align: center;
-}
-
-.oauth-signout-button {
-    background: #1a73e8;
-    border: 1px solid #dadce0;
-    border-radius: 4px;
-    padding: 0.5rem 1rem;
-    font-size: 0.875rem;
-    outline: none;
-    color: #FFFFFF;
-    cursor: pointer;
-}
-
-.project-selector {
-    display:flex;
-    flex-direction: column;
-    padding: 1rem 0 0 1rem;
 }
 
 h1 {
@@ -117,6 +95,12 @@ h2 {
   box-shadow: 0 1px 2px 0 rgba(60, 64, 67, 0.3), 0 1px 3px 1px rgba(60, 64, 67, 0.15);
 }
 
+.project-selector {
+    display:flex;
+    flex-direction: column;
+    padding: 1rem 0 0 1rem;
+}
+
 .submit-btn:disabled {
   background: #dadce0;
   cursor: not-allowed;
@@ -137,10 +121,23 @@ h2 {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #e0e0e0;
 }
 
 .output-header h2 {
   margin: 0;
+  font-weight: 500;
+}
+
+/* Dark mode output headers */
+:root[class~="dark"] .output-header {
+  border-bottom: 1px solid hsl(var(--border));
+}
+
+:root[class~="dark"] .output-header h2 {
+  color: hsl(var(--primary));
+  font-weight: 600;
 }
 
 /* Policy output styling */
@@ -150,6 +147,27 @@ h2 {
   padding: 2rem;
   border-radius: 8px;
   box-shadow: 0 1px 2px 0 rgba(60, 64, 67, 0.3), 0 1px 3px 1px rgba(60, 64, 67, 0.15);
+}
+
+/* Dark mode policy output styling */
+:root[class~="dark"] .policy-output {
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  position: relative;
+}
+
+:root[class~="dark"] .policy-output::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 8px;
+  box-shadow: 0 0 15px rgba(59, 130, 246, 0.1);
+  pointer-events: none;
+  z-index: -1;
 }
 
 .policy-pre {
@@ -165,15 +183,29 @@ h2 {
   overflow-x: auto;
 }
 
+/* Dark mode policy-pre styling */
+:root[class~="dark"] .policy-pre {
+  background: hsl(var(--primary-foreground));
+  color: hsl(var(--primary));
+  border: 1px solid hsl(var(--border));
+}
+
 .policy-textbox {
-    background:#1e1e1e;
-    color:#d4d4d4;
-    border:none;
-    line-height: 1.5;
-    height: 100%;
-    resize:none;
-    field-sizing: content;
-    outline: none;
+  background: #1e1e1e;
+  color: #d4d4d4;
+  border: none;
+  line-height: 1.5;
+  height: 100%;
+  resize: none;
+  field-sizing: content;
+  outline: none;
+}
+
+/* Dark mode policy-textbox styling */
+:root[class~="dark"] .policy-textbox {
+  background: hsl(var(--secondary));
+  color: hsl(var(--secondary-foreground));
+  border: 1px solid hsl(var(--border));
 }
 
 /* Chat output styling */
@@ -183,6 +215,27 @@ h2 {
   padding: 2rem;
   border-radius: 8px;
   box-shadow: 0 1px 2px 0 rgba(60, 64, 67, 0.3), 0 1px 3px 1px rgba(60, 64, 67, 0.15);
+}
+
+/* Dark mode chat output styling */
+:root[class~="dark"] .chat-output {
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  position: relative;
+}
+
+:root[class~="dark"] .chat-output::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 8px;
+  box-shadow: 0 0 15px rgba(124, 58, 237, 0.1);
+  pointer-events: none;
+  z-index: -1;
 }
 
 .chat-pre {
@@ -196,6 +249,13 @@ h2 {
   line-height: 1.5;
   color: #202124;
   overflow-x: auto;
+}
+
+/* Dark mode chat-pre styling */
+:root[class~="dark"] .chat-pre {
+  background: hsl(var(--secondary));
+  color: hsl(var(--secondary-foreground));
+  border: 1px solid hsl(var(--border));
 }
 
 /* JSON syntax highlighting */

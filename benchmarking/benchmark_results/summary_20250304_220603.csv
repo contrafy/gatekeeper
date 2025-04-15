@@ -1,4 +1,0 @@
-Model,Success Rate,Valid JSON Rate,Correct Format Rate,Avg Similarity,Avg Latency (s)
-gemma2-9b-it-groq,40.00%,100.00%,100.00%,0.6365,0.294
-llama-3.3-70b-versatile-groq,50.00%,100.00%,100.00%,0.7426,0.729
-llama3-8b-8192-groq,40.00%,100.00%,100.00%,0.6667,0.207
