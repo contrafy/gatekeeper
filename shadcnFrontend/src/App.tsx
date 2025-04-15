@@ -34,33 +34,39 @@ import { ThemeProvider } from "./components/theme-provider";
 import { ModeToggle } from "./components/mode-toggle";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
+// Google OAuth client ID from environment variables
 const CLIENT_ID = import.meta.env.VITE_GOOGLE_OAUTH_CLIENT_ID;
 
 function App() {
-  const [prompt, setPrompt] = useState("");
-  const [previousPrompt, setPreviousPrompt] = useState("");
-  const [policy, setPolicy] = useState("");
-  const [originalPolicy, setOriginalPolicy] = useState(""); // To track if policy has been modified
-  const [chatResponse, setChatResponse] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [policyApplied, setPolicyApplied] = useState(false);
-  const [token, setToken] = useState("");
-  const [userPicture, setUserPicture] = useState("");
-  const [userName, setUserName] = useState("");
+  // User input and API response states
+  const [prompt, setPrompt] = useState(""); // Current user prompt input
+  const [previousPrompt, setPreviousPrompt] = useState(""); // Stores the last submitted prompt
+  const [policy, setPolicy] = useState(""); // Generated IAM policy JSON
+  const [originalPolicy, setOriginalPolicy] = useState(""); // Original policy for comparison with edits
+  const [chatResponse, setChatResponse] = useState(""); // Text response from the API
+  const [error, setError] = useState(""); // Error messages
+  const [loading, setLoading] = useState(false); // Loading state for API calls
+  const [policyApplied, setPolicyApplied] = useState(false); // Tracks if policy has been applied to project
 
-  const [projects, setProjects] = useState<any[]>([]);
-  const [selectedProject, setSelectedProject] = useState("");
-  const [fetchingProjects, setFetchingProjects] = useState(false);
-  const [projectError, setProjectError] = useState("");
+  // Authentication states
+  const [token, setToken] = useState(""); // JWT token from Google OAuth
+  const [userPicture, setUserPicture] = useState(""); // User profile picture URL
+  const [userName, setUserName] = useState(""); // User's name from Google profile
 
-  // Fetch projects on component mount or when the token changes
+  // Project management states
+  const [projects, setProjects] = useState<any[]>([]); // List of user's GCP projects
+  const [selectedProject, setSelectedProject] = useState(""); // Currently selected project ID
+  const [fetchingProjects, setFetchingProjects] = useState(false); // Loading state for project fetch
+  const [projectError, setProjectError] = useState(""); // Project-related error messages
+
+  // Fetch projects when the auth token changes or on initial load
   useEffect(() => {
     if (token) {
       fetchProjects();
     }
   }, [token]);
   
+  // Load saved auth data from localStorage on component mount
   useEffect(() => {
     const savedToken = localStorage.getItem("token");
     const savedUserName = localStorage.getItem("userName");
@@ -71,6 +77,7 @@ function App() {
     if (savedUserPicture) setUserPicture(savedUserPicture);
   }, []);
 
+  // Persist token to localStorage when it changes
   useEffect(() => {
     if (token) {
       localStorage.setItem("token", token);
@@ -79,6 +86,7 @@ function App() {
     }
   }, [token]);
 
+  // Persist userName to localStorage when it changes
   useEffect(() => {
     if (userName) {
       localStorage.setItem("userName", userName);
@@ -87,6 +95,7 @@ function App() {
     }
   }, [userName]);
 
+  // Persist userPicture to localStorage when it changes
   useEffect(() => {
     if (userPicture) {
       localStorage.setItem("userPicture", userPicture);
@@ -95,6 +104,10 @@ function App() {
     }
   }, [userPicture]);
 
+  /**
+   * Handles successful Google OAuth login
+   * Stores token and extracts user info from JWT
+   */
   const handleGoogleSuccess = (credentialResponse: CredentialResponse) => {
     if (!credentialResponse.credential) return;
 
@@ -112,6 +125,10 @@ function App() {
     }
   };
 
+  /**
+   * Handles user sign out
+   * Clears Google auth and resets all related state
+   */
   const handleSignOut = () => {
     console.debug("user is signing out");
     googleLogout();
@@ -123,6 +140,10 @@ function App() {
     setSelectedProject("");
   };
 
+  /**
+   * Fetches the user's GCP projects from the backend
+   * Uses the authorization token for authentication
+   */
   const fetchProjects = async () => {
     if (!token) return;
     
@@ -166,6 +187,11 @@ function App() {
     }
   };
   
+  /**
+   * Handles form submission to generate policy
+   * Sends the user prompt to the backend API
+   * Parses the response to separate JSON policy from text
+   */
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     setPreviousPrompt(prompt);
     setPrompt("");
@@ -233,37 +259,46 @@ function App() {
     }
   };
 
+  /**
+   * Copies the current policy to the clipboard
+   */
   const handleCopy = () => {
     navigator.clipboard.writeText(policy);
   };
 
-  // Memoize the textarea component to prevent re-renders that cause focus loss
-const JsonTextarea = React.memo(
-  ({ text, onChange }: { text: string; onChange: (value: string) => void }) => {
-    // Use useRef to maintain a reference to the textarea
-    const textareaRef = React.useRef<HTMLTextAreaElement>(null);
-    
-    // Track if this is a user edit
-    const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-      onChange(e.target.value);
-    };
-    
-    return (
-      <Textarea
-        ref={textareaRef}
-        className="policy-textbox w-full h-full font-mono"
-        value={text}
-        onChange={handleChange}
-        rows={10}
-        spellCheck={false}
-      />
-    );
-  },
-  // Custom comparison function to prevent unnecessary re-renders
-  // Only re-render if the text value actually changed
-  (prevProps, nextProps) => prevProps.text === nextProps.text
-);
+  /**
+   * Memoized textarea component to prevent focus loss during re-renders
+   * Used specifically for the JSON policy editing
+   */
+  const JsonTextarea = React.memo(
+    ({ text, onChange }: { text: string; onChange: (value: string) => void }) => {
+      // Use useRef to maintain a reference to the textarea
+      const textareaRef = React.useRef<HTMLTextAreaElement>(null);
+      
+      // Track if this is a user edit
+      const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+        onChange(e.target.value);
+      };
+      
+      return (
+        <Textarea
+          ref={textareaRef}
+          className="policy-textbox w-full h-full font-mono"
+          value={text}
+          onChange={handleChange}
+          rows={10}
+          spellCheck={false}
+        />
+      );
+    },
+    // Custom comparison function to prevent unnecessary re-renders
+    // Only re-render if the text value actually changed
+    (prevProps, nextProps) => prevProps.text === nextProps.text
+  );
 
+  /**
+   * Validates if a string is valid JSON
+   */
   const isJsonString = (str: string): boolean => {
     try {
       JSON.parse(str);
@@ -273,6 +308,10 @@ const JsonTextarea = React.memo(
     }
   };
 
+  /**
+   * Handles applying the current policy to the selected project
+   * Sends the policy to the backend API with auth token and project ID
+   */
   const handleApplyPolicy = async () => {
     if (!token) {
       setError("You must be signed in to apply policies");
@@ -328,7 +367,16 @@ const JsonTextarea = React.memo(
       setOriginalPolicy(policy); // Update original policy to mark current as applied
     } catch (error) {
       console.error("Error applying policy:", error);
-      setError(error instanceof Error ? error.message : "Unknown error applying policy");
+
+      // If it's an error from the API we have to parse it
+      // this is half-assed
+      if (error instanceof Error) {
+        // Remove any quotes and angle brackets from the error message
+        const cleanedMessage = error.message.replace(/["<>]/g, '');
+        setError(cleanedMessage);
+      } else {
+        setError("Unknown error applying policy");
+      }
     } finally {
       setLoading(false);
     }
@@ -340,8 +388,7 @@ const JsonTextarea = React.memo(
         {/* HEADER SECTION */}
         <header className="fixed top-0 w-full mb-5 border-b bg-black">
           <div className="flex items-center justify-between w-full px-7.5 py-2">
-            {/* Left side: Title */}
-            {/* Left side: shield + title in a row */}
+            {/* Left side: Title with shield icon */}
             <div className="flex items-center space-x-2">
               <span role="img" aria-label="shield" className="text-xl">
                 🛡️
@@ -350,12 +397,14 @@ const JsonTextarea = React.memo(
                 Google Cloud IAM Policy Generator
               </div>
             </div>
+            {/* Right side: Theme toggle and user authentication */}
             <div className="flex items-center space-x-4">
               <ModeToggle></ModeToggle>
               <GoogleOAuthProvider clientId={CLIENT_ID}>
                 <div>
                   <div className="w-fit mx-auto">
                     {token ? (
+                      // Show user avatar and dropdown when signed in
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Avatar className="cursor-pointer">
@@ -382,6 +431,7 @@ const JsonTextarea = React.memo(
                         </DropdownMenuContent>
                       </DropdownMenu>
                     ) : (
+                      // Show Google login button when not signed in
                       <GoogleLogin
                         shape="circle"
                         onSuccess={(credentialResponse) => {
@@ -403,7 +453,7 @@ const JsonTextarea = React.memo(
 
         <div className="min-h-screen flex items-center justify-center bg-background">
           <div className="w-full max-w-2xl shadow-lg mx-auto text-center px-6 py-[5%]">
-            {/* Project Selector Above Prompt Section */}
+            {/* Project Selector Section */}
             <div className="flex justify-end mb-4">
               {token ? (
                 // Show project selector if signed in
@@ -441,13 +491,14 @@ const JsonTextarea = React.memo(
                   )}
                 </>
               ) : (
-                // Show prompt to sign in
+                // Show sign-in prompt when not authenticated
                 <div className="bg-gray-100 border border-gray-300 rounded-md px-4 py-2 text-sm text-gray-700">
                   Please sign in with Google to select a project.
                 </div>
               )}
             </div>
 
+            {/* Project Error Alert */}
             {projectError && (
               <Alert variant="destructive" className="mb-4">
                 <AlertDescription>
@@ -456,6 +507,7 @@ const JsonTextarea = React.memo(
               </Alert>
             )}
 
+            {/* Prompt Input Card */}
             <Card className="text-left">
               <CardHeader>
                 <CardTitle>Enter prompt</CardTitle>
@@ -491,6 +543,8 @@ const JsonTextarea = React.memo(
                 </form>
               </CardContent>
             </Card>
+
+            {/* Error Alert */}
             {error && (
               <Alert variant="destructive" className="mt-4 mb-2">
                 <AlertDescription className="flex items-center">
@@ -501,17 +555,23 @@ const JsonTextarea = React.memo(
                 </AlertDescription>
               </Alert>
             )}
+
+            {/* Response Container */}
             <div className="response-container h-auto">
+              {/* Display previous prompt for context */}
               {previousPrompt && (
                 <div className="mb-2 text-left">
                   <strong>Prompt:</strong> {previousPrompt}
                 </div>
               )}
+
+              {/* Generated Policy Card */}
               {policy && (
                 <Card className="mb-4 policy-output">
                   <CardHeader className="output-header pb-2">
                     <CardTitle>Generated Policy</CardTitle>
                     <div className="flex space-x-2">
+                      {/* Apply Policy Button - conditionally rendered and styled */}
                       {policy && token && selectedProject && (
                         <Button 
                           variant={policyApplied ? "outline" : "secondary"}
@@ -525,6 +585,7 @@ const JsonTextarea = React.memo(
                           {policyApplied ? "Policy Applied" : "Apply Policy"}
                         </Button>
                       )}
+                      {/* Copy Button */}
                       <Button variant="secondary" onClick={handleCopy}>
                         <span role="img" aria-label="copy" className="mr-2">
                           📋
@@ -535,6 +596,7 @@ const JsonTextarea = React.memo(
                   </CardHeader>
                   <CardContent>
                     <div className="rounded-md border">
+                      {/* Conditionally render editable textarea or pre tag based on JSON validity */}
                       {isJsonString(policy) ? (
                         <JsonTextarea 
                           text={policy} 
@@ -554,6 +616,7 @@ const JsonTextarea = React.memo(
                 </Card>
               )}
 
+              {/* Chat Response Card */}
               {chatResponse && (
                 <Card className="chat-output">
                   <CardHeader className="output-header pb-2">
