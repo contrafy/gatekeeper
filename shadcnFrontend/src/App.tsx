@@ -1,5 +1,5 @@
 import "./App.css";
-import React, { FormEvent, useEffect, useState } from "react";
+import React, { FormEvent, useEffect, useState, useCallback } from "react";
 import { jwtDecode } from "jwt-decode";
 //------------ Shadcn Imports ------------
 import { Button } from "@/components/ui/button";
@@ -38,6 +38,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 const CLIENT_ID = import.meta.env.VITE_GOOGLE_OAUTH_CLIENT_ID;
 
 function App() {
+  const policyTextareaRef = React.useRef<HTMLTextAreaElement>(null);
+
   // User input and API response states
   const [prompt, setPrompt] = useState(""); // Current user prompt input
   const [previousPrompt, setPreviousPrompt] = useState(""); // Stores the last submitted prompt
@@ -266,19 +268,40 @@ function App() {
     navigator.clipboard.writeText(policy);
   };
 
+  // Then in your component, create a memoized onChange handler
+  const handlePolicyChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newValue = e.target.value;
+    setPolicy(newValue);
+    // If policy is changed, it's no longer applied
+    if (newValue !== originalPolicy) {
+      setPolicyApplied(false);
+    }
+  }, [originalPolicy]);
+
   /**
    * Memoized textarea component to prevent focus loss during re-renders
    * Used specifically for the JSON policy editing
    */
   const JsonTextarea = React.memo(
     ({ text, onChange }: { text: string; onChange: (value: string) => void }) => {
-      // Use useRef to maintain a reference to the textarea
       const textareaRef = React.useRef<HTMLTextAreaElement>(null);
       
-      // Track if this is a user edit
       const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         onChange(e.target.value);
       };
+      
+      // Use useEffect to restore focus after render if the element had focus before
+      useEffect(() => {
+        // Check if the textarea had focus before the update
+        const hasFocus = document.activeElement === textareaRef.current;
+        
+        // If it had focus, restore it after rendering
+        if (hasFocus && textareaRef.current) {
+          const cursorPosition = textareaRef.current.selectionStart;
+          textareaRef.current.focus();
+          textareaRef.current.setSelectionRange(cursorPosition, cursorPosition);
+        }
+      });
       
       return (
         <Textarea
@@ -290,10 +313,7 @@ function App() {
           spellCheck={false}
         />
       );
-    },
-    // Custom comparison function to prevent unnecessary re-renders
-    // Only re-render if the text value actually changed
-    (prevProps, nextProps) => prevProps.text === nextProps.text
+    }
   );
 
   /**
@@ -595,24 +615,21 @@ function App() {
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <div className="rounded-md border">
-                      {/* Conditionally render editable textarea or pre tag based on JSON validity */}
-                      {isJsonString(policy) ? (
-                        <JsonTextarea 
-                          text={policy} 
-                          onChange={(newValue) => {
-                            setPolicy(newValue);
-                            // If policy is changed, it's no longer applied
-                            if (newValue !== originalPolicy) {
-                              setPolicyApplied(false);
-                            }
-                          }} 
-                        />
-                      ) : (
-                        <pre className="policy-pre">{policy}</pre>
-                      )}
-                    </div>
-                  </CardContent>
+                  <div className="rounded-md border">
+                    {isJsonString(policy) ? (
+                      <Textarea
+                        ref={policyTextareaRef}
+                        className="policy-textbox w-full h-full font-mono"
+                        value={policy}
+                        onChange={handlePolicyChange}
+                        rows={10}
+                        spellCheck={false}
+                      />
+                    ) : (
+                      <pre className="policy-pre">{policy}</pre>
+                    )}
+                  </div>
+                </CardContent>
                 </Card>
               )}
 
