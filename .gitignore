@@ -2,6 +2,3 @@
 .vscode/
 venv/
 .DS_Store/
-
-vis.py
-scripts/vis.py

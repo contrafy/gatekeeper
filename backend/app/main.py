@@ -8,6 +8,8 @@ from dotenv import load_dotenv
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 
+# System prompt for OpenAI API that defines how the AI should generate IAM policies
+# Provides detailed instructions about formatting, security considerations, and examples
 SYSTEM_PROMPT = """You are a specialized AI assistant focused on generating Google Cloud IAM policies. Your task is to convert natural language requests into precise, secure, and valid Google Cloud IAM policy bindings.
 
 Key Requirements:
@@ -60,23 +62,26 @@ Example Response:
 }
 """
 
-# load env vars
+# Load environment variables from .env file
 load_dotenv()
 
+# Initialize FastAPI application
 app = FastAPI(title="Google Cloud IAM Policy Generator")
-# CORS middleware
+# Configure CORS middleware to allow requests from specified origins
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:5173"],
+    allow_origins=["http://localhost:3000", "http://localhost:5173"],  # Frontend dev servers
     allow_credentials=True,
     allow_methods=["*"],  # Allows all methods
     allow_headers=["*"],  # Allows all headers
 )
 
+# Initialize OpenAI client with API key from environment variables
 client = OpenAI(api_key = os.getenv("OPENAI_API_KEY"))
+# Get Google OAuth client ID for token verification
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
 
-# request body struct
+# Pydantic model for policy generation request payload
 # TODO: add context from users GCloud IAM project/organization data
 class PolicyRequest(BaseModel):
     prompt: str
@@ -87,15 +92,17 @@ class PolicyRequest(BaseModel):
 async def generate_policy(request: PolicyRequest):
     """
     Receives a plain English prompt and returns a generated Google Cloud IAM policy.
+    Sends the prompt to OpenAI API and processes the response to extract valid JSON.
     """
     try:
+        # Call OpenAI API with the system prompt and user's query
         response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
                 {"role": "system", "content": SYSTEM_PROMPT},
                 {"role": "user", "content": request.prompt}
             ],
-            temperature=0.1
+            temperature=0.1  # Low temperature for more deterministic outputs
         )
         policy_text = response.choices[0].message.content
         
@@ -103,6 +110,7 @@ async def generate_policy(request: PolicyRequest):
         try:
             import json
             # Clean up the response text to ensure it's valid JSON
+            # Remove markdown code block markers if present
             policy_text = policy_text.strip()
             if policy_text.startswith('```json'):
                 policy_text = policy_text[7:]
@@ -122,7 +130,11 @@ async def generate_policy(request: PolicyRequest):
 
 @app.post("/apply_policy")
 async def apply_policy(request: Request):
-    # parse the incoming policy payload
+    """
+    Applies a generated policy to a specified Google Cloud project.
+    Handles authentication, merges new policy with existing one, and updates the project.
+    """
+    # Parse the incoming policy payload from request body
     data = await request.json()
     policy_str = data.get("policy")
     if not policy_str:
@@ -144,7 +156,7 @@ async def apply_policy(request: Request):
         print(f"Error parsing policy JSON: {e}")
         raise HTTPException(status_code=400, detail=f"Invalid policy JSON: {str(e)}")
 
-    # verify oauth token
+    # Verify OAuth token from Authorization header
     auth_header = request.headers.get("Authorization")
     if not auth_header or not auth_header.startswith("Bearer "):
         raise HTTPException(status_code=401, detail="Missing or invalid token")
@@ -154,11 +166,11 @@ async def apply_policy(request: Request):
     except Exception as e:
         raise HTTPException(status_code=401, detail="Invalid token")
 
-    # apply the policy using the cloud resource manager client
+    # Apply the policy using the Google Cloud Resource Manager API
     from googleapiclient import discovery
     from googleapiclient.errors import HttpError
 
-    # get the project id from the headers
+    # Get the project ID from request headers
     PROJECT_ID = request.headers.get("project-id")
     if not PROJECT_ID:
         raise HTTPException(status_code=400, detail="Missing project-id")
@@ -170,35 +182,36 @@ async def apply_policy(request: Request):
         credentials, _ = google.auth.default(quota_project_id=None)
         crm_service = discovery.build("cloudresourcemanager", "v1", credentials=credentials)
         
-        # fetch current iam policy
+        # Fetch current IAM policy for the project
         current_policy = crm_service.projects().getIamPolicy(
             resource=PROJECT_ID, body={}
         ).execute()
 
-        # get existing bindings
+        # Get existing bindings from current policy
         existing_bindings = current_policy.get("bindings", [])
-        # merge new bindings into existing ones
+        # Merge new bindings into existing ones
         for new_binding in new_policy_bindings:
             role = new_binding.get("role")
             members_to_add = new_binding.get("members", [])
-            # check if binding for this role already exists
+            # Check if binding for this role already exists
             binding_found = False
             for binding in existing_bindings:
                 if binding.get("role") == role:
-                    # add any new members that aren't already in the binding
+                    # Add any new members that aren't already in the binding
                     for member in members_to_add:
                         if member not in binding.get("members", []):
                             binding["members"].append(member)
                     binding_found = True
                     break
-            # if no binding exists for the role, add the new binding as is
+            # If no binding exists for the role, add the new binding as is
             if not binding_found:
                 existing_bindings.append(new_binding)
 
-        # update policy without removing existing (e.g., owner) bindings
+        # Update policy without removing existing (e.g., owner) bindings
         updated_policy_body = current_policy.copy()
         updated_policy_body["bindings"] = existing_bindings
 
+        # Apply the updated policy to the project
         updated_policy = crm_service.projects().setIamPolicy(
             resource=PROJECT_ID, body={"policy": updated_policy_body}
         ).execute()
@@ -229,8 +242,9 @@ async def apply_policy(request: Request):
 async def get_projects(request: Request):
     """
     Returns a list of projects the authenticated user has access to.
+    Verifies the user's token and uses Google Cloud API to fetch projects.
     """
-    # verify oauth token
+    # Verify OAuth token from Authorization header
     auth_header = request.headers.get("Authorization")
     if not auth_header or not auth_header.startswith("Bearer "):
         raise HTTPException(status_code=401, detail=f"Missing or invalid token, Auth Header: {auth_header}, Request Headers: {request.headers}")
@@ -266,10 +280,11 @@ async def get_projects(request: Request):
             credentials=credentials
         )
         
-        # Make the list request
+        # Make the list request to get all projects the user has access to
         request = crm_service.projects().list()
         projects = []
 
+        # Handle pagination by fetching all pages of results
         while request is not None:
             response = request.execute()
             projects.extend([{"id": project["projectId"], "name": project["name"]} for project in response.get("projects", [])])
