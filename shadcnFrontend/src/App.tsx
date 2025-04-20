@@ -3,6 +3,7 @@ import React, { FormEvent, useEffect, useState, useCallback } from "react";
 import { jwtDecode } from "jwt-decode";
 //------------ Shadcn Imports ------------
 import { Button } from "@/components/ui/button";
+import { motion, AnimatePresence } from "framer-motion";
 import { Textarea } from "./components/ui/textarea";
 import {
   Card,
@@ -33,7 +34,8 @@ import {
   CheckCircle, 
   AlertTriangle,
   Loader2,
-  RefreshCw
+  RefreshCw,
+  PartyPopper
 } from "lucide-react";
 //------------------------
 import {
@@ -49,6 +51,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 // Google OAuth client ID from environment variables
 const CLIENT_ID = import.meta.env.VITE_GOOGLE_OAUTH_CLIENT_ID;
 
+const MotionDiv = motion.div;
+const MotionButton = motion(Button);
 function App() {
   const policyTextareaRef = React.useRef<HTMLTextAreaElement>(null);
 
@@ -66,6 +70,7 @@ function App() {
   const [showPolicyAnimation, setShowPolicyAnimation] = useState(false); // Controls policy reveal animation
   const [policyGenerated, setPolicyGenerated] = useState(false); // Tracks if policy was successfully generated
   const [policyGenerationFailed, setPolicyGenerationFailed] = useState(false); // Tracks if policy generation failed
+  const [policyCopied, setPolicyCopied] = useState(false); // Tracks if policy was copied to clipboard
 
   // Authentication states
   const [token, setToken] = useState(""); // JWT token from Google OAuth
@@ -314,6 +319,11 @@ function App() {
    */
   const handleCopy = () => {
     navigator.clipboard.writeText(policy);
+    setPolicyCopied(true);
+    // Hold 'Copied' state for 3000ms (0.5s fade-out + 0.5s fade-in, then 2s visible)
+    setTimeout(() => {
+      setPolicyCopied(false);
+    }, 3000);
   };
 
   const handlePolicyChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -322,6 +332,7 @@ function App() {
     // If policy is changed, it's no longer applied
     if (newValue !== originalPolicy) {
       setPolicyApplied(false);
+      setPolicyCopied(false);
     }
   }, [originalPolicy]);
   
@@ -334,6 +345,7 @@ function App() {
     setChatResponse("");
     setPreviousPrompt("");
     setError("");
+    setPolicyCopied(false);
   };
 
   /**
@@ -659,7 +671,8 @@ function App() {
                 <Card className={`mb-4 policy-output ${showPolicyAnimation ? 'slideUp' : ''}`}>
                   <CardHeader className="output-header pb-2">
                     <CardTitle className="text-[#0F9D58]">Generated Policy</CardTitle>
-                    <div className="flex space-x-2">
+                    {/* container animates layout changes (spring by default) */}
+                    <MotionDiv layout className="flex space-x-2">
                       {/* Apply Policy Button - conditionally rendered and styled */}
                       {policy && token && selectedProject && (
                         <Button 
@@ -678,16 +691,42 @@ function App() {
                           {policyApplied ? "Policy Applied" : "Apply Policy"}
                         </Button>
                       )}
-                      {/* Copy Button */}
-                      <Button 
-                        variant="secondary" 
+                      {/* Copy button: static container, inner content cross-fades */}
+                      <MotionButton
+                        layout
+                        variant="secondary"
                         onClick={handleCopy}
                         className=" text-white custom-orange-hover"
                       >
-                        <Copy className="h-4 w-4 mr-2" />
-                        Copy
-                      </Button>
-                    </div>
+                        <AnimatePresence mode="popLayout">
+                          {policyCopied ? (
+                            <motion.span
+                              key="copied"
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              exit={{ opacity: 0 }}
+                              transition={{ duration: 0.5 }}
+                              className="flex items-center"
+                            >
+                              <PartyPopper className="h-4 w-4 mr-2" />
+                              Copied!
+                            </motion.span>
+                          ) : (
+                            <motion.span
+                              key="copy"
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              exit={{ opacity: 0 }}
+                              transition={{ duration: 0.5 }}
+                              className="flex items-center"
+                            >
+                              <Copy className="h-4 w-4 mr-2" />
+                              Copy Policy
+                            </motion.span>
+                          )}
+                        </AnimatePresence>
+                      </MotionButton>
+                    </MotionDiv>
                   </CardHeader>
                   <CardContent>
                   <div className="rounded-md border">
