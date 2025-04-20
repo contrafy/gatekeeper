@@ -57,14 +57,14 @@ h2 {
 
 .prompt-input:focus {
   outline: none;
-  border-color: #1a73e8;
+  border-color: #4285F4;
 }
 
 .submit-btn {
   margin-top: 1.5rem;
   padding: 0.75rem 2rem;
   font-size: 0.875rem;
-  background: #1a73e8;
+  background: #4285F4;
   color: #fff;
   border: none;
   border-radius: 4px;
@@ -79,7 +79,7 @@ h2 {
   margin-top: 1.5rem;
   padding: 0.75rem 2rem;
   font-size: 0.875rem;
-  background: #1a73e8;
+  background: #0F9D58;
   color: #fff;
   border: none;
   border-radius: 4px;
@@ -91,7 +91,12 @@ h2 {
 }
 
 .submit-btn:hover {
-  background: #1557b0;
+  background: #3367D6;
+  box-shadow: 0 1px 2px 0 rgba(60, 64, 67, 0.3), 0 1px 3px 1px rgba(60, 64, 67, 0.15);
+}
+
+.apply-btn:hover {
+  background: #0C8A4E;
   box-shadow: 0 1px 2px 0 rgba(60, 64, 67, 0.3), 0 1px 3px 1px rgba(60, 64, 67, 0.15);
 }
 
@@ -295,7 +300,7 @@ h2 {
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  background: #34a853;
+  background: #0F9D58;
   color: #fff;
   transition: background 0.3s ease, box-shadow 0.3s ease;
   text-transform: uppercase;
@@ -307,16 +312,16 @@ h2 {
 }
 
 .action-btn:hover {
-  background: #2d8e47;
+  background: #0C8A4E;
   box-shadow: 0 1px 2px 0 rgba(60, 64, 67, 0.3), 0 1px 3px 1px rgba(60, 64, 67, 0.15);
 }
 
 /* Error message styling */
 .error-message {
-  color: #d93025;
+  color: #DB4437;
   margin: 1rem 0;
   padding: 0.75rem;
-  background: #fce8e6;
+  background: rgba(219, 68, 55, 0.1);
   border-radius: 4px;
   font-size: 0.875rem;
 }

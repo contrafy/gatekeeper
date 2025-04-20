@@ -23,6 +23,16 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
+//------------ Lucide Icon Imports ------------
+import { 
+  Shield, 
+  Sparkles, 
+  Zap, 
+  Copy, 
+  Rocket, 
+  CheckCircle, 
+  AlertTriangle 
+} from "lucide-react";
 //------------------------
 import {
   CredentialResponse,
@@ -279,44 +289,6 @@ function App() {
   }, [originalPolicy]);
 
   /**
-   * Memoized textarea component to prevent focus loss during re-renders
-   * Used specifically for the JSON policy editing
-   */
-  const JsonTextarea = React.memo(
-    ({ text, onChange }: { text: string; onChange: (value: string) => void }) => {
-      const textareaRef = React.useRef<HTMLTextAreaElement>(null);
-      
-      const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-        onChange(e.target.value);
-      };
-      
-      // Use useEffect to restore focus after render if the element had focus before
-      useEffect(() => {
-        // Check if the textarea had focus before the update
-        const hasFocus = document.activeElement === textareaRef.current;
-        
-        // If it had focus, restore it after rendering
-        if (hasFocus && textareaRef.current) {
-          const cursorPosition = textareaRef.current.selectionStart;
-          textareaRef.current.focus();
-          textareaRef.current.setSelectionRange(cursorPosition, cursorPosition);
-        }
-      });
-      
-      return (
-        <Textarea
-          ref={textareaRef}
-          className="policy-textbox w-full h-full font-mono"
-          value={text}
-          onChange={handleChange}
-          rows={10}
-          spellCheck={false}
-        />
-      );
-    }
-  );
-
-  /**
    * Validates if a string is valid JSON
    */
   const isJsonString = (str: string): boolean => {
@@ -410,10 +382,8 @@ function App() {
           <div className="flex items-center justify-between w-full px-7.5 py-2">
             {/* Left side: Title with shield icon */}
             <div className="flex items-center space-x-2">
-              <span role="img" aria-label="shield" className="text-xl">
-                🛡️
-              </span>
-              <div className=" font-semibold text-white text-base">
+              <Shield className="h-5 w-5 text-[#4285F4]" />
+              <div className="font-semibold text-white text-base">
                 Google Cloud IAM Policy Generator
               </div>
             </div>
@@ -433,14 +403,13 @@ function App() {
                           </Avatar>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent>
-                          <DropdownMenuLabel>
-                            {" "}
-                            Signed in as {userName}{" "}
+                          <DropdownMenuLabel className="text-[#4285F4]">
+                            Signed in as {userName}
                           </DropdownMenuLabel>
                           <DropdownMenuSeparator />
                           <DropdownMenuGroup>
                             <DropdownMenuItem
-                              className="cursor-pointer hover:bg-gray-200"
+                              className="cursor-pointer hover:bg-[#DB4437]/10 text-[#DB4437]"
                               onClick={() => {
                                 handleSignOut();
                               }}
@@ -485,20 +454,24 @@ function App() {
                   ) : (
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="secondary">
+                        <Button 
+                          variant="secondary"
+                          className="bg-[#4285F4] hover:bg-[#3367D6] text-white"
+                        >
                           {selectedProject && projects.length > 0
                             ? projects.find((p) => p.id === selectedProject)?.name || "Select Project"
                             : projects.length > 0 ? "Select Project" : "No Projects Found"}
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Select a Project</DropdownMenuLabel>
+                        <DropdownMenuLabel className="text-[#4285F4]">Select a Project</DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         {projects.length > 0 ? (
                           projects.map((project) => (
                             <DropdownMenuItem
                               key={project.id}
                               onClick={() => setSelectedProject(project.id)}
+                              className="hover:bg-[#4285F4]/10 hover:text-[#4285F4]"
                             >
                               {project.name}
                             </DropdownMenuItem>
@@ -520,8 +493,9 @@ function App() {
 
             {/* Project Error Alert */}
             {projectError && (
-              <Alert variant="destructive" className="mb-4">
-                <AlertDescription>
+              <Alert variant="destructive" className="mb-4 border-[#DB4437]">
+                <AlertDescription className="flex items-center">
+                  <AlertTriangle className="h-4 w-4 mr-2 text-[#DB4437]" />
                   {projectError}
                 </AlertDescription>
               </Alert>
@@ -530,7 +504,7 @@ function App() {
             {/* Prompt Input Card */}
             <Card className="text-left">
               <CardHeader>
-                <CardTitle>Enter prompt</CardTitle>
+                <CardTitle className="text-[#F4B400]">Enter prompt</CardTitle>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleSubmit}>
@@ -540,21 +514,23 @@ function App() {
                     onChange={(e) => setPrompt(e.target.value)}
                     rows={6}
                     className="prompt-input"
+                    style={{ borderColor: "#4285F4" }}
                   />
                   <div className="py-2.5 flex justify-center">
-                    <Button variant="dark" type="submit" disabled={loading}>
+                    <Button 
+                      variant="dark" 
+                      type="submit" 
+                      disabled={loading}
+                      className={loading ? "bg-[#F4B400] text-black hover:bg-[#E5A800]" : "bg-[#4285F4] hover:bg-[#3367D6]"}
+                    >
                       {loading ? (
                         <>
-                          <span role="img" aria-label="loading">
-                            ⚡
-                          </span>{" "}
+                          <Zap className="h-4 w-4 mr-2" />{" "}
                           Generating...
                         </>
                       ) : (
                         <>
-                          <span role="img" aria-label="generate">
-                            ✨
-                          </span>{" "}
+                          <Sparkles className="h-4 w-4 mr-2" />{" "}
                           Generate Policy
                         </>
                       )}
@@ -566,11 +542,9 @@ function App() {
 
             {/* Error Alert */}
             {error && (
-              <Alert variant="destructive" className="mt-4 mb-2">
+              <Alert variant="destructive" className="mt-4 mb-2 border-[#DB4437]">
                 <AlertDescription className="flex items-center">
-                  <span role="img" aria-label="error" className="mr-2">
-                    ⚠️
-                  </span>
+                  <AlertTriangle className="h-4 w-4 mr-2 text-[#DB4437]" />
                   {error}
                 </AlertDescription>
               </Alert>
@@ -589,7 +563,7 @@ function App() {
               {policy && (
                 <Card className="mb-4 policy-output">
                   <CardHeader className="output-header pb-2">
-                    <CardTitle>Generated Policy</CardTitle>
+                    <CardTitle className="text-[#0F9D58]">Generated Policy</CardTitle>
                     <div className="flex space-x-2">
                       {/* Apply Policy Button - conditionally rendered and styled */}
                       {policy && token && selectedProject && (
@@ -597,19 +571,25 @@ function App() {
                           variant={policyApplied ? "outline" : "secondary"}
                           onClick={handleApplyPolicy} 
                           disabled={loading || !token || !selectedProject || policyApplied}
-                          className={policyApplied ? "text-green-600 border-green-600 bg-green-100/10 hover:bg-green-100/20 hover:text-green-600" : ""}
+                          className={policyApplied ? 
+                            "text-[#0F9D58] border-[#0F9D58] bg-[#0F9D58]/10 hover:bg-[#0F9D58]/20 hover:text-[#0F9D58]" : 
+                            "bg-[#0F9D58] hover:bg-[#0C8A4E] text-white"}
                         >
-                          <span role="img" aria-label={policyApplied ? "applied" : "apply"} className="mr-2">
-                            {policyApplied ? "✅" : "🚀"}
-                          </span>
+                          {policyApplied ? (
+                            <CheckCircle className="h-4 w-4 mr-2" />
+                          ) : (
+                            <Rocket className="h-4 w-4 mr-2" />
+                          )}
                           {policyApplied ? "Policy Applied" : "Apply Policy"}
                         </Button>
                       )}
                       {/* Copy Button */}
-                      <Button variant="secondary" onClick={handleCopy}>
-                        <span role="img" aria-label="copy" className="mr-2">
-                          📋
-                        </span>
+                      <Button 
+                        variant="secondary" 
+                        onClick={handleCopy}
+                        className="bg-[#F4B400] hover:bg-[#E5A800] text-black"
+                      >
+                        <Copy className="h-4 w-4 mr-2" />
                         Copy
                       </Button>
                     </div>
@@ -624,6 +604,7 @@ function App() {
                         onChange={handlePolicyChange}
                         rows={10}
                         spellCheck={false}
+                        style={{ borderColor: "#4285F4" }}
                       />
                     ) : (
                       <pre className="policy-pre">{policy}</pre>
@@ -637,11 +618,11 @@ function App() {
               {chatResponse && (
                 <Card className="chat-output">
                   <CardHeader className="output-header pb-2">
-                    <CardTitle>Chat Response</CardTitle>
+                    <CardTitle className="text-[#4285F4]">Chat Response</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <ScrollArea className="h-60">
-                      <pre className="chat-pre">{chatResponse}</pre>
+                      <pre className="chat-pre" style={{ borderColor: "#4285F4" }}>{chatResponse}</pre>
                     </ScrollArea>
                   </CardContent>
                 </Card>
