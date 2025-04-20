@@ -6,3 +6,4 @@ venv/
 
 vis.py
 scripts/vis.py
+__pycache__/
