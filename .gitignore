@@ -2,6 +2,8 @@
 .vscode/
 venv/
 .DS_Store/
+.DS_Store
 
 vis.py
 scripts/vis.py
+__pycache__/
