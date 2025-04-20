@@ -29,6 +29,10 @@ h2 {
   margin-bottom: 1rem;
 }
 
+button {
+    border: none;
+}
+
 /* Main container styling */
 .container {
   max-width: 800px;
@@ -443,4 +447,31 @@ h2 {
   background: rgba(219, 68, 55, 0.1);
   border-radius: 4px;
   font-size: 0.875rem;
+}
+
+.custom-orange-hover:hover {
+    /* background-color: #E5A800 !important; */
+    color: white !important;
+    outline: #E5A800 solid 1px !important;
+    transition: outline 0.25s;
+}
+
+.custom-blue-hover:hover { 
+    /* background-color: #4285F4 !important; */
+    color: white !important;
+    outline: #4285F4 solid 1px !important;
+    transition: outline 0.25s;
+}
+
+.custom-red-hover:hover { 
+    /* background-color: #DB4437 !important; */
+    color: white !important;
+    outline: #DB4437 solid 1px !important;
+    transition: outline 0.25s;
+}
+.custom-green-hover:hover { 
+    /* background-color: #0F9D58 !important; */
+    color: white !important;
+    outline: #0F9D58 solid 1px !important;
+    transition: outline 0.25s;
 }
