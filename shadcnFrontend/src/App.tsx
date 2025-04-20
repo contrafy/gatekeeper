@@ -33,7 +33,8 @@ import {
   CheckCircle, 
   AlertTriangle,
   Loader2,
-  RefreshCw
+  RefreshCw,
+  PartyPopper
 } from "lucide-react";
 //------------------------
 import {
@@ -66,6 +67,8 @@ function App() {
   const [showPolicyAnimation, setShowPolicyAnimation] = useState(false); // Controls policy reveal animation
   const [policyGenerated, setPolicyGenerated] = useState(false); // Tracks if policy was successfully generated
   const [policyGenerationFailed, setPolicyGenerationFailed] = useState(false); // Tracks if policy generation failed
+  const [copyAnimation, setCopyAnimation] = useState(false); // Tracks if copy animation is active
+  const [policyCopied, setPolicyCopied] = useState(false); // Tracks if policy was copied to clipboard
 
   // Authentication states
   const [token, setToken] = useState(""); // JWT token from Google OAuth
@@ -313,7 +316,15 @@ function App() {
    * Copies the current policy to the clipboard
    */
   const handleCopy = () => {
+    setCopyAnimation(true);
+    setPolicyCopied(true);
     navigator.clipboard.writeText(policy);
+    setTimeout(() => {
+        setCopyAnimation(false);
+    }, 600); // same as animation duration
+    setTimeout(() => {
+        setPolicyCopied(false);
+    }, 780); // reset just before animation finishes for cleaner finish
   };
 
   const handlePolicyChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -322,6 +333,7 @@ function App() {
     // If policy is changed, it's no longer applied
     if (newValue !== originalPolicy) {
       setPolicyApplied(false);
+      setPolicyCopied(false);
     }
   }, [originalPolicy]);
   
@@ -334,6 +346,7 @@ function App() {
     setChatResponse("");
     setPreviousPrompt("");
     setError("");
+    setPolicyCopied(false);
   };
 
   /**
@@ -682,10 +695,17 @@ function App() {
                       <Button 
                         variant="secondary" 
                         onClick={handleCopy}
-                        className="bg-[#F4B400] hover:bg-[#E5A800] text-black"
+                        disabled = {copyAnimation}
+                        className={`bg-[#F4B400] hover:bg-[#E5A800] text-black ${copyAnimation ? 'pingOnce' : ''}`}
                       >
-                        <Copy className="h-4 w-4 mr-2" />
-                        Copy
+                        {policyCopied ? (
+                            <PartyPopper className="h-4 w-4 mr-2" />
+    
+                        ) : (
+                            <Copy className="h-4 w-4 mr-2" />
+                        )}
+                        {policyCopied ? "Copied!" : "Copy Policy"}
+                        
                       </Button>
                     </div>
                   </CardHeader>
