@@ -559,7 +559,21 @@ function App() {
                   <Textarea
                     placeholder="Describe your IAM policy requirements in plain English..."
                     value={prompt}
-                    onChange={(e) => setPrompt(e.target.value)}
+                    onChange={(e) => {
+                      setPrompt(e.target.value);
+                      // Reset the generation states when user starts typing
+                      if (policyGenerated || policyGenerationFailed) {
+                        setPolicyGenerated(false);
+                        setPolicyGenerationFailed(false);
+                      }
+                    }}
+                    onFocus={() => {
+                      // Reset the generation states when user focuses on input
+                      if (policyGenerated || policyGenerationFailed) {
+                        setPolicyGenerated(false);
+                        setPolicyGenerationFailed(false);
+                      }
+                    }}
                     rows={6}
                     className="prompt-input"
                     style={{ borderColor: "#4285F4" }}
@@ -579,14 +593,12 @@ function App() {
                         </div>
                       </div>
                     ) : policyGenerated ? (
-                      <Button 
-                        variant="outline"
-                        onClick={handleReset}
-                        className="text-[#0F9D58] border-[#0F9D58] bg-[#0F9D58]/10 hover:bg-[#0F9D58]/20 hover:text-[#0F9D58]"
+                      <div 
+                        className="flex items-center justify-center px-4 py-2 rounded-md text-[#0F9D58] border border-[#0F9D58] bg-[#0F9D58]/10 cursor-not-allowed"
                       >
                         <CheckCircle className="h-4 w-4 mr-2" />
                         Policy Generated
-                      </Button>
+                      </div>
                     ) : policyGenerationFailed ? (
                       <div className="flex flex-col items-center gap-2">
                         <div className="text-sm text-[#DB4437] mb-1">
