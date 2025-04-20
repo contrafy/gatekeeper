@@ -31,7 +31,9 @@ import {
   Copy, 
   Rocket, 
   CheckCircle, 
-  AlertTriangle 
+  AlertTriangle,
+  Loader2,
+  RefreshCw
 } from "lucide-react";
 //------------------------
 import {
@@ -59,6 +61,8 @@ function App() {
   const [error, setError] = useState(""); // Error messages
   const [loading, setLoading] = useState(false); // Loading state for API calls
   const [policyApplied, setPolicyApplied] = useState(false); // Tracks if policy has been applied to project
+  const [showLoadingAnimation, setShowLoadingAnimation] = useState(false); // Controls loading animation display
+  const [showPolicyAnimation, setShowPolicyAnimation] = useState(false); // Controls policy reveal animation
 
   // Authentication states
   const [token, setToken] = useState(""); // JWT token from Google OAuth
@@ -209,7 +213,10 @@ function App() {
     setPrompt("");
     e.preventDefault();
     setLoading(true);
+    setShowLoadingAnimation(true);
+    setShowPolicyAnimation(false);
     setError("");
+    
     try {
       const response = await fetch("http://localhost:8000/generate_policy", {
         method: "POST",
@@ -263,11 +270,21 @@ function App() {
         setChatResponse(cleanedResponse);
         setPolicy("");
       }
+      
+      // Show animation for policy reveal
+      setShowLoadingAnimation(false);
+      setShowPolicyAnimation(true);
+      
     } catch (error) {
       console.error("Error generating policy:", error);
       setError("Failed to generate policy. Please try again.");
+      setShowLoadingAnimation(false);
     } finally {
       setLoading(false);
+      // After a short delay, hide the loading animation
+      setTimeout(() => {
+        setShowPolicyAnimation(false);
+      }, 1500); // 1.5 seconds for the animation to complete
     }
   };
 
@@ -278,7 +295,6 @@ function App() {
     navigator.clipboard.writeText(policy);
   };
 
-  // Then in your component, create a memoized onChange handler
   const handlePolicyChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newValue = e.target.value;
     setPolicy(newValue);
@@ -517,24 +533,39 @@ function App() {
                     style={{ borderColor: "#4285F4" }}
                   />
                   <div className="py-2.5 flex justify-center">
-                    <Button 
-                      variant="dark" 
-                      type="submit" 
-                      disabled={loading}
-                      className={loading ? "bg-[#F4B400] text-black hover:bg-[#E5A800]" : "bg-[#4285F4] hover:bg-[#3367D6]"}
-                    >
-                      {loading ? (
-                        <>
-                          <Zap className="h-4 w-4 mr-2" />{" "}
-                          Generating...
-                        </>
-                      ) : (
-                        <>
-                          <Sparkles className="h-4 w-4 mr-2" />{" "}
-                          Generate Policy
-                        </>
-                      )}
-                    </Button>
+                    {showLoadingAnimation ? (
+                      <div className="loading-container">
+                        <div className="loading-text">Generating Policy</div>
+                        <div className="flex items-center gap-2">
+                          <Loader2 className="h-5 w-5 text-[#4285F4] loading-spinner" />
+                          <div className="loading-circles">
+                            <div className="loading-circle loading-circle-1"></div>
+                            <div className="loading-circle loading-circle-2"></div>
+                            <div className="loading-circle loading-circle-3"></div>
+                            <div className="loading-circle loading-circle-4"></div>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <Button 
+                        variant="dark" 
+                        type="submit" 
+                        disabled={loading}
+                        className={loading ? "bg-[#F4B400] text-black hover:bg-[#E5A800]" : "bg-[#4285F4] hover:bg-[#3367D6]"}
+                      >
+                        {loading && !showLoadingAnimation ? (
+                          <>
+                            <RefreshCw className="h-4 w-4 mr-2 animate-spin" />{" "}
+                            Processing...
+                          </>
+                        ) : (
+                          <>
+                            <Sparkles className="h-4 w-4 mr-2" />{" "}
+                            Generate Policy
+                          </>
+                        )}
+                      </Button>
+                    )}
                   </div>
                 </form>
               </CardContent>
@@ -561,7 +592,7 @@ function App() {
 
               {/* Generated Policy Card */}
               {policy && (
-                <Card className="mb-4 policy-output">
+                <Card className={`mb-4 policy-output ${showPolicyAnimation ? 'slideUp' : ''}`}>
                   <CardHeader className="output-header pb-2">
                     <CardTitle className="text-[#0F9D58]">Generated Policy</CardTitle>
                     <div className="flex space-x-2">
@@ -616,7 +647,7 @@ function App() {
 
               {/* Chat Response Card */}
               {chatResponse && (
-                <Card className="chat-output">
+                <Card className={`chat-output ${showPolicyAnimation ? 'slideUp' : ''}`}>
                   <CardHeader className="output-header pb-2">
                     <CardTitle className="text-[#4285F4]">Chat Response</CardTitle>
                   </CardHeader>
