@@ -504,7 +504,7 @@ function App() {
                       <DropdownMenuTrigger asChild>
                         <Button 
                           variant="secondary"
-                          className="bg-[#4285F4] hover:bg-[#3367D6] text-white"
+                          className="custom-green-hover"
                         >
                           {selectedProject && projects.length > 0
                             ? projects.find((p) => p.id === selectedProject)?.name || "Select Project"
@@ -615,7 +615,7 @@ function App() {
                         variant="dark" 
                         type="submit" 
                         disabled={loading}
-                        className={loading ? "bg-[#F4B400] text-black hover:bg-[#E5A800]" : "bg-[#4285F4] hover:bg-[#3367D6]"}
+                        className={loading ? "bg-[#F4B400] text-black hover:bg-[#E5A800]" : "custom-blue-hover"}
                       >
                         {loading && !showLoadingAnimation ? (
                           <>
@@ -668,7 +668,7 @@ function App() {
                           disabled={loading || !token || !selectedProject || policyApplied}
                           className={policyApplied ? 
                             "text-[#0F9D58] border-[#0F9D58] bg-[#0F9D58]/10 hover:bg-[#0F9D58]/20 hover:text-[#0F9D58]" : 
-                            "bg-[#0F9D58] hover:bg-[#0C8A4E] text-white"}
+                            "custom-red-hover"}
                         >
                           {policyApplied ? (
                             <CheckCircle className="h-4 w-4 mr-2" />
@@ -682,7 +682,7 @@ function App() {
                       <Button 
                         variant="secondary" 
                         onClick={handleCopy}
-                        className="bg-[#F4B400] hover:bg-[#E5A800] text-black"
+                        className=" text-white custom-orange-hover"
                       >
                         <Copy className="h-4 w-4 mr-2" />
                         Copy
