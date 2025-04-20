@@ -31,7 +31,9 @@ import {
   Copy, 
   Rocket, 
   CheckCircle, 
-  AlertTriangle 
+  AlertTriangle,
+  Loader2,
+  RefreshCw
 } from "lucide-react";
 //------------------------
 import {
@@ -59,6 +61,11 @@ function App() {
   const [error, setError] = useState(""); // Error messages
   const [loading, setLoading] = useState(false); // Loading state for API calls
   const [policyApplied, setPolicyApplied] = useState(false); // Tracks if policy has been applied to project
+  const [showLoadingAnimation, setShowLoadingAnimation] = useState(false); // Controls loading animation display
+  const [fadeOutLoading, setFadeOutLoading] = useState(false); // Controls loading animation fade out
+  const [showPolicyAnimation, setShowPolicyAnimation] = useState(false); // Controls policy reveal animation
+  const [policyGenerated, setPolicyGenerated] = useState(false); // Tracks if policy was successfully generated
+  const [policyGenerationFailed, setPolicyGenerationFailed] = useState(false); // Tracks if policy generation failed
 
   // Authentication states
   const [token, setToken] = useState(""); // JWT token from Google OAuth
@@ -206,10 +213,15 @@ function App() {
    */
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     setPreviousPrompt(prompt);
-    setPrompt("");
+    // Don't clear the prompt so users can edit it if needed
     e.preventDefault();
     setLoading(true);
+    setShowLoadingAnimation(true);
+    setShowPolicyAnimation(false);
+    setPolicyGenerated(false);
+    setPolicyGenerationFailed(false);
     setError("");
+    
     try {
       const response = await fetch("http://localhost:8000/generate_policy", {
         method: "POST",
@@ -242,6 +254,7 @@ function App() {
           setPolicy(formattedJson);
           setOriginalPolicy(formattedJson); // Store original policy
           setPolicyApplied(false); // Reset applied status for new policy
+          setPolicyGenerated(true); // Mark policy as successfully generated
           // Get any text before the JSON as chat response
           let chatText = fullResponse.substring(0, jsonStartIndex).trim();
           
@@ -255,6 +268,7 @@ function App() {
           const cleanedResponse = fullResponse.replace(/```json/g, "").replace(/```/g, "").trim();
           setChatResponse(cleanedResponse);
           setPolicy("");
+          setPolicyGenerationFailed(true); // Mark policy generation as failed
         }
       } else {
         // No JSON-like structure found, treat as chat
@@ -262,12 +276,36 @@ function App() {
         const cleanedResponse = fullResponse.replace(/```json/g, "").replace(/```/g, "").trim();
         setChatResponse(cleanedResponse);
         setPolicy("");
+        setPolicyGenerationFailed(true); // Mark policy generation as failed
       }
+      
+      // Show animations simultaneously - fade out loading and reveal policy
+      setFadeOutLoading(true);
+      setShowPolicyAnimation(true);
+      
+      // After animation completes, reset the loading state
+      setTimeout(() => {
+        setShowLoadingAnimation(false);
+        setFadeOutLoading(false);
+      }, 600); // Match the animation duration
+      
     } catch (error) {
       console.error("Error generating policy:", error);
       setError("Failed to generate policy. Please try again.");
+      setPolicyGenerationFailed(true);
+      setFadeOutLoading(true);
+      
+      // After animation completes, reset the loading state
+      setTimeout(() => {
+        setShowLoadingAnimation(false);
+        setFadeOutLoading(false);
+      }, 600); // Match the animation duration
     } finally {
       setLoading(false);
+      // After a short delay, hide the loading animation
+      setTimeout(() => {
+        setShowPolicyAnimation(false);
+      }, 750); // 0.75 seconds for the animation to complete
     }
   };
 
@@ -278,7 +316,6 @@ function App() {
     navigator.clipboard.writeText(policy);
   };
 
-  // Then in your component, create a memoized onChange handler
   const handlePolicyChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newValue = e.target.value;
     setPolicy(newValue);
@@ -287,6 +324,17 @@ function App() {
       setPolicyApplied(false);
     }
   }, [originalPolicy]);
+  
+  // Reset form for a new policy generation
+  const handleReset = () => {
+    setPrompt("");
+    setPolicyGenerated(false);
+    setPolicyGenerationFailed(false);
+    setPolicy("");
+    setChatResponse("");
+    setPreviousPrompt("");
+    setError("");
+  };
 
   /**
    * Validates if a string is valid JSON
@@ -502,39 +550,86 @@ function App() {
             )}
 
             {/* Prompt Input Card */}
-            <Card className="text-left">
-              <CardHeader>
-                <CardTitle className="text-[#F4B400]">Enter prompt</CardTitle>
-              </CardHeader>
+            <Card className="text-left space-y-4">
               <CardContent>
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={handleSubmit} className="flex flex-col space-y-4">
                   <Textarea
                     placeholder="Describe your IAM policy requirements in plain English..."
                     value={prompt}
-                    onChange={(e) => setPrompt(e.target.value)}
+                    onChange={(e) => {
+                      setPrompt(e.target.value);
+                      // Reset the generation states when user starts typing
+                      if (policyGenerated || policyGenerationFailed) {
+                        setPolicyGenerated(false);
+                        setPolicyGenerationFailed(false);
+                      }
+                    }}
+                    onFocus={() => {
+                      // Reset the generation states when user focuses on input
+                      if (policyGenerated || policyGenerationFailed) {
+                        setPolicyGenerated(false);
+                        setPolicyGenerationFailed(false);
+                      }
+                    }}
                     rows={6}
                     className="prompt-input"
                     style={{ borderColor: "#4285F4" }}
                   />
-                  <div className="py-2.5 flex justify-center">
-                    <Button 
-                      variant="dark" 
-                      type="submit" 
-                      disabled={loading}
-                      className={loading ? "bg-[#F4B400] text-black hover:bg-[#E5A800]" : "bg-[#4285F4] hover:bg-[#3367D6]"}
-                    >
-                      {loading ? (
-                        <>
-                          <Zap className="h-4 w-4 mr-2" />{" "}
-                          Generating...
-                        </>
-                      ) : (
-                        <>
-                          <Sparkles className="h-4 w-4 mr-2" />{" "}
-                          Generate Policy
-                        </>
-                      )}
-                    </Button>
+                  <div className="flex items-center justify-center" style={{ minHeight: '60px' }}>
+                    {showLoadingAnimation ? (
+                      <div className={`loading-container ${fadeOutLoading ? 'fade-out' : ''}`}>
+                        <div className="loading-text">Generating your policy</div>
+                        <div className="flex items-center gap-2">
+                          <Loader2 className="h-5 w-5 text-[#4285F4] loading-spinner" />
+                          <div className="loading-circles">
+                            <div className="loading-circle loading-circle-1"></div>
+                            <div className="loading-circle loading-circle-2"></div>
+                            <div className="loading-circle loading-circle-3"></div>
+                            <div className="loading-circle loading-circle-4"></div>
+                          </div>
+                        </div>
+                      </div>
+                    ) : policyGenerated ? (
+                      <div 
+                        className="flex items-center justify-center px-4 py-2 rounded-md text-[#0F9D58] border border-[#0F9D58] bg-[#0F9D58]/10 cursor-not-allowed"
+                      >
+                        <CheckCircle className="h-4 w-4 mr-2" />
+                        Policy Generated
+                      </div>
+                    ) : policyGenerationFailed ? (
+                      <div className="flex flex-col items-center gap-2">
+                        <div className="text-sm text-[#DB4437] mb-1">
+                          There was an issue with your prompt. Please review the chat response and try again.
+                        </div>
+                        <Button 
+                          variant="outline"
+                          onClick={handleReset}
+                          className="text-[#DB4437] border-[#DB4437] bg-[#DB4437]/10 hover:bg-[#DB4437]/20 hover:text-[#DB4437]"
+                        >
+                          <AlertTriangle className="h-4 w-4 mr-2" />
+                          Try Again
+                        </Button>
+                      </div>
+                    ) : (
+                      <Button 
+                        variant="dark" 
+                        type="submit" 
+                        disabled={loading}
+                        className={loading ? "bg-[#F4B400] text-black hover:bg-[#E5A800]" : "bg-[#4285F4] hover:bg-[#3367D6]"}
+                      >
+                        {loading && !showLoadingAnimation ? (
+                          <>
+                            <RefreshCw className="h-4 w-4 mr-2 animate-spin" />{" "}
+                            Processing...
+                          </>
+                        ) : (
+                          <>
+                            <Sparkles className="h-4 w-4 mr-2" />{" "}
+                            Generate Policy
+                          </>
+                        )}
+                      </Button>
+                    )}
                   </div>
                 </form>
               </CardContent>
@@ -561,7 +656,7 @@ function App() {
 
               {/* Generated Policy Card */}
               {policy && (
-                <Card className="mb-4 policy-output">
+                <Card className={`mb-4 policy-output ${showPolicyAnimation ? 'slideUp' : ''}`}>
                   <CardHeader className="output-header pb-2">
                     <CardTitle className="text-[#0F9D58]">Generated Policy</CardTitle>
                     <div className="flex space-x-2">
@@ -616,7 +711,7 @@ function App() {
 
               {/* Chat Response Card */}
               {chatResponse && (
-                <Card className="chat-output">
+                <Card className={`chat-output ${showPolicyAnimation ? 'slideUp' : ''}`}>
                   <CardHeader className="output-header pb-2">
                     <CardTitle className="text-[#4285F4]">Chat Response</CardTitle>
                   </CardHeader>

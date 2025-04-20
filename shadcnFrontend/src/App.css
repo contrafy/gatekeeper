@@ -120,6 +120,125 @@ h2 {
   margin-top: 2rem;
 }
 
+/* Loading animation styling */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  height: 38px; /* Match button height */
+  opacity: 0;
+  transform: scale(0.95);
+  animation: fadeInScale 0.6s ease-in-out forwards;
+}
+
+.loading-container.fade-out {
+  animation: fadeOutScale 0.6s ease-in-out forwards;
+}
+
+.loading-text {
+  font-size: 1rem;
+  font-weight: 500;
+  margin-bottom: 1rem;
+  color: #4285F4;
+}
+
+.loading-spinner {
+  animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-circles {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.loading-circle {
+  height: 8px;
+  width: 8px;
+  border-radius: 50%;
+  animation: pulse 1.5s infinite ease-in-out;
+}
+
+.loading-circle-1 {
+  background-color: #4285F4;
+  animation-delay: 0s;
+}
+
+.loading-circle-2 {
+  background-color: #DB4437;
+  animation-delay: 0.3s;
+}
+
+.loading-circle-3 {
+  background-color: #F4B400;
+  animation-delay: 0.6s;
+}
+
+.loading-circle-4 {
+  background-color: #0F9D58;
+  animation-delay: 0.9s;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(0.5); opacity: 0.5; }
+  50% { transform: scale(1.2); opacity: 1; }
+}
+
+@keyframes fadeInScale {
+  0% { 
+    opacity: 0; 
+    transform: scale(0.95); 
+  }
+  100% { 
+    opacity: 1; 
+    transform: scale(1); 
+  }
+}
+
+@keyframes fadeOutScale {
+  0% { 
+    opacity: 1; 
+    transform: scale(1); 
+  }
+  100% { 
+    opacity: 0; 
+    transform: scale(0.95); 
+  }
+}
+
+.fadeIn {
+  animation: fadeIn 0.6s ease-in-out forwards;
+}
+
+.slideUp {
+  opacity: 0;
+  transform: translateY(30px);
+  animation: slideUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  0% { 
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* Output headers */
 .output-header {
   display: flex;
