@@ -13,6 +13,7 @@ google-auth==2.38.0
 google-auth-httplib2==0.2.0
 google-cloud-iam==2.18.3
 googleapis-common-protos==1.69.2
+groq==0.22.0
 grpc-google-iam-v1==0.14.2
 grpcio==1.71.0
 grpcio-status==1.71.0

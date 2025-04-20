@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from openai import OpenAI
 import os
+from groq import Groq
 from dotenv import load_dotenv
 
 from google.oauth2 import id_token
@@ -72,8 +73,12 @@ app.add_middleware(
     allow_headers=["*"],  # Allows all headers
 )
 
-# Initialize OpenAI client with API key from environment variables
-client = OpenAI(api_key = os.getenv("OPENAI_API_KEY"))
+# Initialize Groq and OpenAI clients
+# Does this need to be validated?
+# client = OpenAI(api_key = os.getenv("OPENAI_API_KEY"))
+# GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+client = Groq()
+
 # Get Google OAuth client ID for token verification
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
 
@@ -93,7 +98,7 @@ async def generate_policy(request: PolicyRequest):
     try:
         # Call OpenAI API with the system prompt and user's query
         response = client.chat.completions.create(
-            model="gpt-3.5-turbo",
+            model="llama-3.3-70b-versatile",
             messages=[
                 {"role": "system", "content": SYSTEM_PROMPT},
                 {"role": "user", "content": request.prompt}
