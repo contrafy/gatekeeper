@@ -279,44 +279,6 @@ function App() {
   }, [originalPolicy]);
 
   /**
-   * Memoized textarea component to prevent focus loss during re-renders
-   * Used specifically for the JSON policy editing
-   */
-  const JsonTextarea = React.memo(
-    ({ text, onChange }: { text: string; onChange: (value: string) => void }) => {
-      const textareaRef = React.useRef<HTMLTextAreaElement>(null);
-      
-      const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-        onChange(e.target.value);
-      };
-      
-      // Use useEffect to restore focus after render if the element had focus before
-      useEffect(() => {
-        // Check if the textarea had focus before the update
-        const hasFocus = document.activeElement === textareaRef.current;
-        
-        // If it had focus, restore it after rendering
-        if (hasFocus && textareaRef.current) {
-          const cursorPosition = textareaRef.current.selectionStart;
-          textareaRef.current.focus();
-          textareaRef.current.setSelectionRange(cursorPosition, cursorPosition);
-        }
-      });
-      
-      return (
-        <Textarea
-          ref={textareaRef}
-          className="policy-textbox w-full h-full font-mono"
-          value={text}
-          onChange={handleChange}
-          rows={10}
-          spellCheck={false}
-        />
-      );
-    }
-  );
-
-  /**
    * Validates if a string is valid JSON
    */
   const isJsonString = (str: string): boolean => {
