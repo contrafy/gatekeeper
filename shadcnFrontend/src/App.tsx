@@ -64,6 +64,8 @@ function App() {
   const [showLoadingAnimation, setShowLoadingAnimation] = useState(false); // Controls loading animation display
   const [fadeOutLoading, setFadeOutLoading] = useState(false); // Controls loading animation fade out
   const [showPolicyAnimation, setShowPolicyAnimation] = useState(false); // Controls policy reveal animation
+  const [policyGenerated, setPolicyGenerated] = useState(false); // Tracks if policy was successfully generated
+  const [policyGenerationFailed, setPolicyGenerationFailed] = useState(false); // Tracks if policy generation failed
 
   // Authentication states
   const [token, setToken] = useState(""); // JWT token from Google OAuth
@@ -211,11 +213,13 @@ function App() {
    */
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     setPreviousPrompt(prompt);
-    setPrompt("");
+    // Don't clear the prompt so users can edit it if needed
     e.preventDefault();
     setLoading(true);
     setShowLoadingAnimation(true);
     setShowPolicyAnimation(false);
+    setPolicyGenerated(false);
+    setPolicyGenerationFailed(false);
     setError("");
     
     try {
@@ -250,6 +254,7 @@ function App() {
           setPolicy(formattedJson);
           setOriginalPolicy(formattedJson); // Store original policy
           setPolicyApplied(false); // Reset applied status for new policy
+          setPolicyGenerated(true); // Mark policy as successfully generated
           // Get any text before the JSON as chat response
           let chatText = fullResponse.substring(0, jsonStartIndex).trim();
           
@@ -263,6 +268,7 @@ function App() {
           const cleanedResponse = fullResponse.replace(/```json/g, "").replace(/```/g, "").trim();
           setChatResponse(cleanedResponse);
           setPolicy("");
+          setPolicyGenerationFailed(true); // Mark policy generation as failed
         }
       } else {
         // No JSON-like structure found, treat as chat
@@ -270,6 +276,7 @@ function App() {
         const cleanedResponse = fullResponse.replace(/```json/g, "").replace(/```/g, "").trim();
         setChatResponse(cleanedResponse);
         setPolicy("");
+        setPolicyGenerationFailed(true); // Mark policy generation as failed
       }
       
       // Show animations simultaneously - fade out loading and reveal policy
@@ -285,6 +292,7 @@ function App() {
     } catch (error) {
       console.error("Error generating policy:", error);
       setError("Failed to generate policy. Please try again.");
+      setPolicyGenerationFailed(true);
       setFadeOutLoading(true);
       
       // After animation completes, reset the loading state
@@ -316,6 +324,17 @@ function App() {
       setPolicyApplied(false);
     }
   }, [originalPolicy]);
+  
+  // Reset form for a new policy generation
+  const handleReset = () => {
+    setPrompt("");
+    setPolicyGenerated(false);
+    setPolicyGenerationFailed(false);
+    setPolicy("");
+    setChatResponse("");
+    setPreviousPrompt("");
+    setError("");
+  };
 
   /**
    * Validates if a string is valid JSON
@@ -558,6 +577,29 @@ function App() {
                             <div className="loading-circle loading-circle-4"></div>
                           </div>
                         </div>
+                      </div>
+                    ) : policyGenerated ? (
+                      <Button 
+                        variant="outline"
+                        onClick={handleReset}
+                        className="text-[#0F9D58] border-[#0F9D58] bg-[#0F9D58]/10 hover:bg-[#0F9D58]/20 hover:text-[#0F9D58]"
+                      >
+                        <CheckCircle className="h-4 w-4 mr-2" />
+                        Policy Generated
+                      </Button>
+                    ) : policyGenerationFailed ? (
+                      <div className="flex flex-col items-center gap-2">
+                        <div className="text-sm text-[#DB4437] mb-1">
+                          There was an issue with your prompt. Please review the chat response and try again.
+                        </div>
+                        <Button 
+                          variant="outline"
+                          onClick={handleReset}
+                          className="text-[#DB4437] border-[#DB4437] bg-[#DB4437]/10 hover:bg-[#DB4437]/20 hover:text-[#DB4437]"
+                        >
+                          <AlertTriangle className="h-4 w-4 mr-2" />
+                          Try Again
+                        </Button>
                       </div>
                     ) : (
                       <Button 
