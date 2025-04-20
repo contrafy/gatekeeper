@@ -550,12 +550,9 @@ function App() {
             )}
 
             {/* Prompt Input Card */}
-            <Card className="text-left">
-              <CardHeader>
-                <CardTitle className="text-[#F4B400]">Enter prompt</CardTitle>
-              </CardHeader>
+            <Card className="text-left space-y-4">
               <CardContent>
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={handleSubmit} className="flex flex-col space-y-4">
                   <Textarea
                     placeholder="Describe your IAM policy requirements in plain English..."
                     value={prompt}
@@ -578,7 +575,7 @@ function App() {
                     className="prompt-input"
                     style={{ borderColor: "#4285F4" }}
                   />
-                  <div className="py-2.5 flex justify-center">
+                  <div className="flex items-center justify-center" style={{ minHeight: '60px' }}>
                     {showLoadingAnimation ? (
                       <div className={`loading-container ${fadeOutLoading ? 'fade-out' : ''}`}>
                         <div className="loading-text">Generating your policy</div>
