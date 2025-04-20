@@ -73,11 +73,10 @@ app.add_middleware(
     allow_headers=["*"],  # Allows all headers
 )
 
-# Initialize Groq and OpenAI clients
-# Does this need to be validated?
-# client = OpenAI(api_key = os.getenv("OPENAI_API_KEY"))
-# GROQ_API_KEY = os.getenv("GROQ_API_KEY")
-client = Groq()
+# Initialize API clients
+openai_client = OpenAI(api_key = os.getenv("OPENAI_API_KEY"))
+# By default this constructor uses: os.getenv("GROQ_API_KEY") for the key
+groq_client = Groq()
 
 # Get Google OAuth client ID for token verification
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
@@ -97,7 +96,7 @@ async def generate_policy(request: PolicyRequest):
     """
     try:
         # Call OpenAI API with the system prompt and user's query
-        response = client.chat.completions.create(
+        response = groq_client.chat.completions.create(
             model="llama-3.3-70b-versatile",
             messages=[
                 {"role": "system", "content": SYSTEM_PROMPT},
