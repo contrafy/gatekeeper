@@ -403,14 +403,13 @@ function App() {
                           </Avatar>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent>
-                          <DropdownMenuLabel>
-                            {" "}
-                            Signed in as {userName}{" "}
+                          <DropdownMenuLabel className="text-[#4285F4]">
+                            Signed in as {userName}
                           </DropdownMenuLabel>
                           <DropdownMenuSeparator />
                           <DropdownMenuGroup>
                             <DropdownMenuItem
-                              className="cursor-pointer hover:bg-gray-200"
+                              className="cursor-pointer hover:bg-[#DB4437]/10 text-[#DB4437]"
                               onClick={() => {
                                 handleSignOut();
                               }}
@@ -465,13 +464,14 @@ function App() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Select a Project</DropdownMenuLabel>
+                        <DropdownMenuLabel className="text-[#4285F4]">Select a Project</DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         {projects.length > 0 ? (
                           projects.map((project) => (
                             <DropdownMenuItem
                               key={project.id}
                               onClick={() => setSelectedProject(project.id)}
+                              className="hover:bg-[#4285F4]/10 hover:text-[#4285F4]"
                             >
                               {project.name}
                             </DropdownMenuItem>
@@ -504,7 +504,7 @@ function App() {
             {/* Prompt Input Card */}
             <Card className="text-left">
               <CardHeader>
-                <CardTitle>Enter prompt</CardTitle>
+                <CardTitle className="text-[#F4B400]">Enter prompt</CardTitle>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleSubmit}>
@@ -514,6 +514,7 @@ function App() {
                     onChange={(e) => setPrompt(e.target.value)}
                     rows={6}
                     className="prompt-input"
+                    style={{ borderColor: "#4285F4" }}
                   />
                   <div className="py-2.5 flex justify-center">
                     <Button 
@@ -562,7 +563,7 @@ function App() {
               {policy && (
                 <Card className="mb-4 policy-output">
                   <CardHeader className="output-header pb-2">
-                    <CardTitle>Generated Policy</CardTitle>
+                    <CardTitle className="text-[#0F9D58]">Generated Policy</CardTitle>
                     <div className="flex space-x-2">
                       {/* Apply Policy Button - conditionally rendered and styled */}
                       {policy && token && selectedProject && (
@@ -603,6 +604,7 @@ function App() {
                         onChange={handlePolicyChange}
                         rows={10}
                         spellCheck={false}
+                        style={{ borderColor: "#4285F4" }}
                       />
                     ) : (
                       <pre className="policy-pre">{policy}</pre>
@@ -616,11 +618,11 @@ function App() {
               {chatResponse && (
                 <Card className="chat-output">
                   <CardHeader className="output-header pb-2">
-                    <CardTitle>Chat Response</CardTitle>
+                    <CardTitle className="text-[#4285F4]">Chat Response</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <ScrollArea className="h-60">
-                      <pre className="chat-pre">{chatResponse}</pre>
+                      <pre className="chat-pre" style={{ borderColor: "#4285F4" }}>{chatResponse}</pre>
                     </ScrollArea>
                   </CardContent>
                 </Card>
