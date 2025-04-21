@@ -7,3 +7,5 @@ venv/
 vis.py
 scripts/vis.py
 __pycache__/
+
+node_modules/
