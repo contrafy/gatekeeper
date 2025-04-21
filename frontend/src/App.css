@@ -40,11 +40,6 @@ button {
   padding: 2rem;
 }
 
-.body-container{
-  padding-top: 4.5rem;
-
-}
-
 .prompt-form {
   margin-bottom: 2rem;
   background: #ffffff;
@@ -477,12 +472,9 @@ button {
 
 .custom-orange-hover:hover {
     /* background-color: #E5A800 !important; */
+    color: white !important;
     outline: #E5A800 solid 1px !important;
     transition: outline 0.25s;
-}
-/* but only turn the text white when in dark mode */
-:root[class~="dark"] .custom-orange-hover:hover {
-  color: white !important;
 }
 
 .custom-blue-hover:hover { 
@@ -494,19 +486,13 @@ button {
 
 .custom-red-hover:hover { 
     /* background-color: #DB4437 !important; */
+    color: white !important;
     outline: #DB4437 solid 1px !important;
     transition: outline 0.25s;
 }
-/* but only turn the text white when in dark mode */
-:root[class~="dark"] .custom-red-hover:hover {
-  color: white !important;
-}
-
 .custom-green-hover:hover { 
     /* background-color: #0F9D58 !important; */
+    color: white !important;
     outline: #0F9D58 solid 1px !important;
     transition: outline 0.25s;
-}
-:root[class~="dark"] .custom-green-hover:hover {
-  color: white !important;
 }

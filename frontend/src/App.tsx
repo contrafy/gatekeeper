@@ -438,7 +438,7 @@ function App() {
     <div>
       <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
         {/* HEADER SECTION */}
-        <header className=" top-0 w-full mb-5 border-b bg-black">
+        <header className="fixed top-0 w-full mb-5 border-b bg-black">
           <div className="flex items-center justify-between w-full px-7.5 py-2">
             {/* Left side: Title with shield icon */}
             <div className="flex items-center space-x-2">
@@ -500,7 +500,7 @@ function App() {
           </div>
         </header>
 
-        <div className="body-container min-h-screen flex items-center justify-center bg-background">
+        <div className="min-h-screen flex items-center justify-center bg-background">
           <div className="w-full max-w-2xl shadow-lg mx-auto text-center px-6 py-[5%]">
             {/* Project Selector Section */}
             <div className="flex justify-end mb-4">
@@ -696,7 +696,7 @@ function App() {
                         layout
                         variant="secondary"
                         onClick={handleCopy}
-                        className="custom-orange-hover"
+                        className=" text-white custom-orange-hover"
                       >
                         <AnimatePresence mode="popLayout">
                           {policyCopied ? (
