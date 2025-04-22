@@ -594,7 +594,7 @@ function App() {
                     {/* Generating Policy Animation */}
                     {showLoadingAnimation ? (
                       <div className={`loading-container ${fadeOutLoading ? 'fade-out' : ''}`}>
-                        <div className="loading-text">Generating your policy</div>
+                        <div className="loading-text">Generating Policy</div>
                         <div className="flex items-center gap-2">
                           <Loader2 className="h-5 w-5 text-[#4285F4] loading-spinner" />
                           <div className="loading-circles">
