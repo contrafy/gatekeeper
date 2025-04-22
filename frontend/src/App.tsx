@@ -687,7 +687,7 @@ function App() {
                           onClick={handleApplyPolicy} 
                           disabled={loading || !token || !selectedProject || policyApplied}
                           className={policyApplied ? 
-                            "text-[#0F9D58] border-[#0F9D58] bg-[#0F9D58]/10 disabled:bg-[#0F9D58]/10 dark:disabled:bg-[#0F9D58]/20 dark:text-[#0F9D58] hover:bg-[#0F9D58]/20 hover:text-[#0F9D58]"
+                            "text-[#0F9D58] dark:text-[#0F9D58]"
                             : "custom-red-hover disabled:bg-[#DB4437]/25"}
                         >
                           {policyApplied ? (
@@ -703,6 +703,7 @@ function App() {
                         layout
                         variant="secondary"
                         onClick={handleCopy}
+                        disabled={loading || policyCopied}
                         className="custom-orange-hover"
                       >
                         <AnimatePresence mode="popLayout">
