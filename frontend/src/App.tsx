@@ -47,6 +47,8 @@ import {
 import { ThemeProvider } from "./components/theme-provider";
 import { ModeToggle } from "./components/mode-toggle";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import TextareaAutosize from "react-textarea-autosize";
+
 
 // Google OAuth client ID from environment variables
 const CLIENT_ID = import.meta.env.VITE_GOOGLE_OAUTH_CLIENT_ID;
@@ -565,7 +567,7 @@ function App() {
             <Card className="text-left space-y-4">
               <CardContent>
                 <form onSubmit={handleSubmit} className="flex flex-col space-y-4">
-                  <Textarea
+                  <TextareaAutosize
                     placeholder="Describe your IAM policy requirements in plain English..."
                     value={prompt}
                     onChange={(e) => {
@@ -583,7 +585,8 @@ function App() {
                         setPolicyGenerationFailed(false);
                       }
                     }}
-                    rows={6}
+                    minRows={1}
+                    maxRows={5}
                     className="prompt-input"
                     style={{ borderColor: "#4285F4" }}
                   />
