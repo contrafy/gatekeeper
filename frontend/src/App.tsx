@@ -47,6 +47,8 @@ import {
 import { ThemeProvider } from "./components/theme-provider";
 import { ModeToggle } from "./components/mode-toggle";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import TextareaAutosize from "react-textarea-autosize";
+
 
 // Google OAuth client ID from environment variables
 const CLIENT_ID = import.meta.env.VITE_GOOGLE_OAUTH_CLIENT_ID;
@@ -438,12 +440,12 @@ function App() {
     <div>
       <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
         {/* HEADER SECTION */}
-        <header className="fixed top-0 w-full mb-5 border-b bg-black">
+        <header className="fixed top-0 w-full mb-5 border-b bg-white dark:bg-black">
           <div className="flex items-center justify-between w-full px-7.5 py-2">
             {/* Left side: Title with shield icon */}
             <div className="flex items-center space-x-2">
               <Shield className="h-5 w-5 text-[#4285F4]" />
-              <div className="font-semibold text-white text-base">
+              <div className="font-semibold text-[#202124] dark:text-white text-base">
                 Google Cloud IAM Policy Generator
               </div>
             </div>
@@ -565,7 +567,7 @@ function App() {
             <Card className="text-left space-y-4">
               <CardContent>
                 <form onSubmit={handleSubmit} className="flex flex-col space-y-4">
-                  <Textarea
+                  <TextareaAutosize
                     placeholder="Describe your IAM policy requirements in plain English..."
                     value={prompt}
                     onChange={(e) => {
@@ -583,14 +585,16 @@ function App() {
                         setPolicyGenerationFailed(false);
                       }
                     }}
-                    rows={6}
+                    minRows={1}
+                    maxRows={5}
                     className="prompt-input"
                     style={{ borderColor: "#4285F4" }}
                   />
                   <div className="flex items-center justify-center" style={{ minHeight: '60px' }}>
+                    {/* Generating Policy Animation */}
                     {showLoadingAnimation ? (
                       <div className={`loading-container ${fadeOutLoading ? 'fade-out' : ''}`}>
-                        <div className="loading-text">Generating your policy</div>
+                        <div className="loading-text">Generating Policy</div>
                         <div className="flex items-center gap-2">
                           <Loader2 className="h-5 w-5 text-[#4285F4] loading-spinner" />
                           <div className="loading-circles">
@@ -602,6 +606,7 @@ function App() {
                         </div>
                       </div>
                     ) : policyGenerated ? (
+                      // Policy generated successfully
                       <div 
                         className="flex items-center justify-center px-4 py-2 rounded-md text-[#0F9D58] border border-[#0F9D58] bg-[#0F9D58]/10 cursor-not-allowed"
                       >
@@ -609,6 +614,7 @@ function App() {
                         Policy Generated
                       </div>
                     ) : policyGenerationFailed ? (
+                      // Policy generation failed
                       <div className="flex flex-col items-center gap-2">
                         <div className="text-sm text-[#DB4437] mb-1">
                           There was an issue with your prompt. Please review the chat response and try again.
@@ -623,8 +629,9 @@ function App() {
                         </Button>
                       </div>
                     ) : (
+                      // Default button to generate policy
                       <Button 
-                        variant="dark" 
+                        variant="secondary" 
                         type="submit" 
                         disabled={loading}
                         className={loading ? "bg-[#F4B400] text-black hover:bg-[#E5A800]" : "custom-blue-hover"}
@@ -676,12 +683,12 @@ function App() {
                       {/* Apply Policy Button - conditionally rendered and styled */}
                       {policy && token && selectedProject && (
                         <Button 
-                          variant={policyApplied ? "outline" : "secondary"}
+                          variant={"secondary"}
                           onClick={handleApplyPolicy} 
                           disabled={loading || !token || !selectedProject || policyApplied}
                           className={policyApplied ? 
-                            "text-[#0F9D58] border-[#0F9D58] bg-[#0F9D58]/10 hover:bg-[#0F9D58]/20 hover:text-[#0F9D58]" : 
-                            "custom-red-hover"}
+                            "text-[#0F9D58] dark:text-[#0F9D58]"
+                            : "custom-red-hover disabled:bg-[#DB4437]/25"}
                         >
                           {policyApplied ? (
                             <CheckCircle className="h-4 w-4 mr-2" />
@@ -696,7 +703,8 @@ function App() {
                         layout
                         variant="secondary"
                         onClick={handleCopy}
-                        className=" text-white custom-orange-hover"
+                        disabled={loading || policyCopied}
+                        className="custom-orange-hover"
                       >
                         <AnimatePresence mode="popLayout">
                           {policyCopied ? (
@@ -705,7 +713,7 @@ function App() {
                               initial={{ opacity: 0 }}
                               animate={{ opacity: 1 }}
                               exit={{ opacity: 0 }}
-                              transition={{ duration: 0.5 }}
+                              transition={{ duration: 0 }}
                               className="flex items-center"
                             >
                               <PartyPopper className="h-4 w-4 mr-2" />
@@ -717,7 +725,7 @@ function App() {
                               initial={{ opacity: 0 }}
                               animate={{ opacity: 1 }}
                               exit={{ opacity: 0 }}
-                              transition={{ duration: 0.5 }}
+                              transition={{ duration: 0 }}
                               className="flex items-center"
                             >
                               <Copy className="h-4 w-4 mr-2" />
