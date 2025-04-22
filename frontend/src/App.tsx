@@ -440,12 +440,12 @@ function App() {
     <div>
       <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
         {/* HEADER SECTION */}
-        <header className="fixed top-0 w-full mb-5 border-b bg-black">
+        <header className="fixed top-0 w-full mb-5 border-b bg-white dark:bg-black">
           <div className="flex items-center justify-between w-full px-7.5 py-2">
             {/* Left side: Title with shield icon */}
             <div className="flex items-center space-x-2">
               <Shield className="h-5 w-5 text-[#4285F4]" />
-              <div className="font-semibold text-white text-base">
+              <div className="font-semibold text-[#202124] dark:text-white text-base">
                 Google Cloud IAM Policy Generator
               </div>
             </div>
@@ -591,6 +591,7 @@ function App() {
                     style={{ borderColor: "#4285F4" }}
                   />
                   <div className="flex items-center justify-center" style={{ minHeight: '60px' }}>
+                    {/* Generating Policy Animation */}
                     {showLoadingAnimation ? (
                       <div className={`loading-container ${fadeOutLoading ? 'fade-out' : ''}`}>
                         <div className="loading-text">Generating your policy</div>
@@ -605,6 +606,7 @@ function App() {
                         </div>
                       </div>
                     ) : policyGenerated ? (
+                      // Policy generated successfully
                       <div 
                         className="flex items-center justify-center px-4 py-2 rounded-md text-[#0F9D58] border border-[#0F9D58] bg-[#0F9D58]/10 cursor-not-allowed"
                       >
@@ -612,6 +614,7 @@ function App() {
                         Policy Generated
                       </div>
                     ) : policyGenerationFailed ? (
+                      // Policy generation failed
                       <div className="flex flex-col items-center gap-2">
                         <div className="text-sm text-[#DB4437] mb-1">
                           There was an issue with your prompt. Please review the chat response and try again.
@@ -626,8 +629,9 @@ function App() {
                         </Button>
                       </div>
                     ) : (
+                      // Default button to generate policy
                       <Button 
-                        variant="dark" 
+                        variant="secondary" 
                         type="submit" 
                         disabled={loading}
                         className={loading ? "bg-[#F4B400] text-black hover:bg-[#E5A800]" : "custom-blue-hover"}
@@ -679,12 +683,12 @@ function App() {
                       {/* Apply Policy Button - conditionally rendered and styled */}
                       {policy && token && selectedProject && (
                         <Button 
-                          variant={policyApplied ? "outline" : "secondary"}
+                          variant={"secondary"}
                           onClick={handleApplyPolicy} 
                           disabled={loading || !token || !selectedProject || policyApplied}
                           className={policyApplied ? 
-                            "text-[#0F9D58] border-[#0F9D58] bg-[#0F9D58]/10 hover:bg-[#0F9D58]/20 hover:text-[#0F9D58]" : 
-                            "custom-red-hover"}
+                            "text-[#0F9D58] border-[#0F9D58] bg-[#0F9D58]/10 disabled:bg-[#0F9D58]/10 dark:disabled:bg-[#0F9D58]/20 dark:text-[#0F9D58] hover:bg-[#0F9D58]/20 hover:text-[#0F9D58]"
+                            : "custom-red-hover disabled:bg-[#DB4437]/25"}
                         >
                           {policyApplied ? (
                             <CheckCircle className="h-4 w-4 mr-2" />
@@ -699,7 +703,7 @@ function App() {
                         layout
                         variant="secondary"
                         onClick={handleCopy}
-                        className=" text-white custom-orange-hover"
+                        className="custom-orange-hover"
                       >
                         <AnimatePresence mode="popLayout">
                           {policyCopied ? (
