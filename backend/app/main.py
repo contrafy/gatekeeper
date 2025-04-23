@@ -42,9 +42,9 @@ Your response must be a valid JSON object with the following structure:
 Key Requirements:
 1. Always output valid JSON that follows Google Cloud IAM binding structure
 2. Include only recognized Google Cloud predefined roles or custom roles (starting with 'custom.')
-3. Use exact role names from Google Cloud's role hierarchy (e.g., 'roles/viewer', 'roles/editor')
+3. Use exact role names from Google Cloud's role hierarchy (e.g., 'roles/resource.dataViewer' or 'roles/resource.admin')
 4. Support various member types: user:, serviceAccount:, group:, domain:
-5. Follow principle of least privilege
+5. Follow principle of least privilege, however if there is no ambiguity about the level of privilege requested (e.g. user explicitly says admin), then assume the user understands what they are asking for and provide the policy. However, in these cases you should also include a chat_response notifying the user of the specific risk.
 6. Generate policies for the specific resource mentioned or default to project level
 7. Validate all role names against Google Cloud's standard nomenclature
 8. Include NO pleasantries or unnecessary text
@@ -63,7 +63,7 @@ Additional Instructions:
 - For project-level policies, include 'projects/[PROJECT_ID]' in the resource
 - For folder-level policies, include 'folders/[FOLDER_ID]' in the resource
 
-If you cannot generate a valid policy because you need more information, omit the "policy" field entirely and use "chat_response" to ask for the required information.
+If you cannot generate a valid policy because you need more information, omit the "policy" field entirely and use "chat_response" to ask for the required information. Do not respond with any policies that are not 100% what the user is asking for.
 """
 
 # System prompt for validator model that outputs in JSON mode

@@ -63,9 +63,9 @@ function App() {
   const [chatResponse, setChatResponse] = useState(""); // Text response from the API
   const [error, setError] = useState(""); // Error messages
   const [loading, setLoading] = useState(false); // Loading state for API calls
+  const [applyLoading, setApplyLoading] = useState(false); // Separate loading state for Apply Policy button
   const [policyApplied, setPolicyApplied] = useState(false); // Tracks if policy has been applied to project
   const [showLoadingAnimation, setShowLoadingAnimation] = useState(false); // Controls loading animation display
-  const [fadeOutLoading, setFadeOutLoading] = useState(false); // Controls loading animation fade out
   const [showPolicyAnimation, setShowPolicyAnimation] = useState(false); // Controls policy reveal animation
   const [policyGenerated, setPolicyGenerated] = useState(false); // Tracks if policy was successfully generated
   const [policyGenerationFailed, setPolicyGenerationFailed] = useState(false); // Tracks if policy generation failed
@@ -283,33 +283,29 @@ function App() {
         setPolicyGenerationFailed(true); // Mark policy generation as failed
       }
       
-      // Show animations simultaneously - fade out loading and reveal policy
-      setFadeOutLoading(true);
+      // Show policy animation and reset loading states
       setShowPolicyAnimation(true);
       
       // After animation completes, reset the loading state
       setTimeout(() => {
         setShowLoadingAnimation(false);
-        setFadeOutLoading(false);
-      }, 600); // Match the animation duration
+      }, 400); // Shorter delay for a smoother transition
       
     } catch (error) {
       console.error("Error generating policy:", error);
       setError("Failed to generate policy. Please try again.");
       setPolicyGenerationFailed(true);
-      setFadeOutLoading(true);
       
       // After animation completes, reset the loading state
       setTimeout(() => {
         setShowLoadingAnimation(false);
-        setFadeOutLoading(false);
-      }, 600); // Match the animation duration
+      }, 400); // Shorter delay for a smoother transition
     } finally {
       setLoading(false);
-      // After a short delay, hide the loading animation
+      // Reset animation flags after everything is done
       setTimeout(() => {
         setShowPolicyAnimation(false);
-      }, 750); // 0.75 seconds for the animation to complete
+      }, 600); // Wait for animations to complete
     }
   };
 
@@ -375,8 +371,11 @@ function App() {
     }
     
     try {
-      setLoading(true);
+      // Set apply loading state for the button animation
+      setApplyLoading(true);
+      setError(""); // Clear any previous errors
       console.log("Applying policy:", policy);
+      
       // Make sure we're sending properly formatted JSON
       let policyToSend = policy;
       try {
@@ -390,7 +389,7 @@ function App() {
       } catch (e) {
         console.error("Policy is not valid JSON:", e);
         setError("Policy is not valid JSON. Cannot apply.");
-        setLoading(false);
+        setApplyLoading(false);
         return;
       }
       
@@ -413,14 +412,14 @@ function App() {
       
       const data = await response.json();
       console.log("Policy applied:", data);
-      setChatResponse("Policy successfully applied to project!");
+      
+      // Update state to show success
       setPolicyApplied(true);
       setOriginalPolicy(policy); // Update original policy to mark current as applied
     } catch (error) {
       console.error("Error applying policy:", error);
 
       // If it's an error from the API we have to parse it
-      // this is half-assed
       if (error instanceof Error) {
         // Remove any quotes and angle brackets from the error message
         const cleanedMessage = error.message.replace(/["<>]/g, '');
@@ -428,8 +427,14 @@ function App() {
       } else {
         setError("Unknown error applying policy");
       }
+      
+      // When error occurs, make sure we're back to normal state
+      setPolicyApplied(false);
     } finally {
-      setLoading(false);
+      // Short delay before resetting loading state for button animation to complete
+      setTimeout(() => {
+        setApplyLoading(false);
+      }, 300);
     }
   };
 
@@ -480,17 +485,19 @@ function App() {
                       </DropdownMenu>
                     ) : (
                       // Show Google login button when not signed in
-                      <GoogleLogin
-                        shape="circle"
-                        onSuccess={(credentialResponse) => {
-                          console.debug("oauth success:", credentialResponse);
-                          handleGoogleSuccess(credentialResponse);
-                          if (credentialResponse.credential) {
-                            setToken(credentialResponse.credential);
-                          }
-                        }}
-                        onError={() => console.error("login failed")}
-                      />
+                      <div className="google-login-container dark:bg-gray-800 dark:border dark:border-gray-700 dark:rounded-full">
+                        <GoogleLogin
+                          shape="circle"
+                          onSuccess={(credentialResponse) => {
+                            console.debug("oauth success:", credentialResponse);
+                            handleGoogleSuccess(credentialResponse);
+                            if (credentialResponse.credential) {
+                              setToken(credentialResponse.credential);
+                            }
+                          }}
+                          onError={() => console.error("login failed")}
+                        />
+                      </div>
                     )}
                   </div>
                 </div>
@@ -507,7 +514,7 @@ function App() {
                 // Show project selector if signed in
                 <>
                   {fetchingProjects ? (
-                    <div className="bg-gray-100 border border-gray-300 rounded-md px-4 py-2 text-sm text-gray-700">
+                    <div className="bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md px-4 py-2 text-sm text-gray-700 dark:text-gray-300">
                       Loading projects...
                     </div>
                   ) : (
@@ -544,7 +551,7 @@ function App() {
                 </>
               ) : (
                 // Show sign-in prompt when not authenticated
-                <div className="bg-gray-100 border border-gray-300 rounded-md px-4 py-2 text-sm text-gray-700">
+                <div className="bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md px-4 py-2 text-sm text-gray-700 dark:text-gray-300">
                   Please sign in with Google to select a project.
                 </div>
               )}
@@ -590,7 +597,13 @@ function App() {
                   <div className="flex items-center justify-center" style={{ minHeight: '60px' }}>
                     {/* Generating Policy Animation */}
                     {showLoadingAnimation ? (
-                      <div className={`loading-container ${fadeOutLoading ? 'fade-out' : ''}`}>
+                      <motion.div 
+                        className="loading-container"
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        transition={{ duration: 0.6, ease: "easeInOut" }}
+                      >
                         <div className="loading-text">Generating Policy</div>
                         <div className="flex items-center gap-2">
                           <Loader2 className="h-5 w-5 text-[#4285F4] loading-spinner" />
@@ -601,18 +614,26 @@ function App() {
                             <div className="loading-circle loading-circle-4"></div>
                           </div>
                         </div>
-                      </div>
+                      </motion.div>
                     ) : policyGenerated ? (
                       // Policy generated successfully
-                      <div 
+                      <motion.div 
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.4, ease: "easeOut" }}
                         className="flex items-center justify-center px-4 py-2 rounded-md text-[#0F9D58] border border-[#0F9D58] bg-[#0F9D58]/10 cursor-not-allowed"
                       >
                         <CheckCircle className="h-4 w-4 mr-2" />
                         Policy Generated
-                      </div>
+                      </motion.div>
                     ) : policyGenerationFailed ? (
                       // Policy generation failed
-                      <div className="flex flex-col items-center gap-2">
+                      <motion.div 
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.4, ease: "easeOut" }}
+                        className="flex flex-col items-center gap-2"
+                      >
                         <div className="text-sm text-[#DB4437] mb-1">
                           There was an issue with your prompt. Please review the chat response and try again.
                         </div>
@@ -624,7 +645,7 @@ function App() {
                           <AlertTriangle className="h-4 w-4 mr-2" />
                           Try Again
                         </Button>
-                      </div>
+                      </motion.div>
                     ) : (
                       // Default button to generate policy
                       <Button 
@@ -653,12 +674,21 @@ function App() {
 
             {/* Error Alert */}
             {error && (
-              <Alert variant="destructive" className="mt-4 mb-2 border-[#DB4437]">
-                <AlertDescription className="flex items-center">
-                  <AlertTriangle className="h-4 w-4 mr-2 text-[#DB4437]" />
-                  {error}
-                </AlertDescription>
-              </Alert>
+              <AnimatePresence>
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.3, ease: "easeInOut" }}
+                >
+                  <Alert variant="destructive" className="mt-4 mb-2 border-[#DB4437]">
+                    <AlertDescription className="flex items-center">
+                      <AlertTriangle className="h-4 w-4 mr-2 text-[#DB4437]" />
+                      {error}
+                    </AlertDescription>
+                  </Alert>
+                </motion.div>
+              </AnimatePresence>
             )}
 
             {/* Response Container */}
@@ -672,28 +702,71 @@ function App() {
 
               {/* Generated Policy Card */}
               {policy && (
-                <Card className={`mb-4 policy-output ${showPolicyAnimation ? 'slideUp' : ''}`}>
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ 
+                    duration: 0.6, 
+                    ease: [0.22, 1, 0.36, 1], 
+                    delay: showPolicyAnimation ? 0.1 : 0 
+                  }}
+                >
+                <Card className="mb-4 policy-output">
                   <CardHeader className="output-header pb-2">
-                    <CardTitle className="text-[#0F9D58]">Generated Policy</CardTitle>
+                    <CardTitle className="font-semibold text-[#0F9D58]">Generated Policy</CardTitle>
                     {/* container animates layout changes (spring by default) */}
                     <MotionDiv layout className="flex space-x-2">
                       {/* Apply Policy Button - conditionally rendered and styled */}
                       {policy && token && selectedProject && (
-                        <Button 
+                        <MotionButton 
+                          layout
                           variant={"secondary"}
                           onClick={handleApplyPolicy} 
-                          disabled={loading || !token || !selectedProject || policyApplied}
+                          disabled={loading || applyLoading || !token || !selectedProject || policyApplied}
                           className={policyApplied ? 
                             "text-[#0F9D58] dark:text-[#0F9D58]"
                             : "custom-red-hover disabled:bg-[#DB4437]/25"}
                         >
-                          {policyApplied ? (
-                            <CheckCircle className="h-4 w-4 mr-2" />
-                          ) : (
-                            <Rocket className="h-4 w-4 mr-2" />
-                          )}
-                          {policyApplied ? "Policy Applied" : "Apply Policy"}
-                        </Button>
+                          <AnimatePresence mode="popLayout">
+                            {applyLoading ? (
+                              <motion.span
+                                key="verifying"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                transition={{ duration: 0, ease: "easeInOut" }}
+                                className="flex items-center"
+                              >
+                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                Verifying
+                              </motion.span>
+                            ) : policyApplied ? (
+                              <motion.span
+                                key="applied"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                transition={{ duration: 0, ease: "easeInOut" }}
+                                className="flex items-center"
+                              >
+                                <CheckCircle className="h-4 w-4 mr-2" />
+                                Policy Applied
+                              </motion.span>
+                            ) : (
+                              <motion.span
+                                key="apply"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                transition={{ duration: 0, ease: "easeInOut" }}
+                                className="flex items-center"
+                              >
+                                <Rocket className="h-4 w-4 mr-2" />
+                                Apply Policy
+                              </motion.span>
+                            )}
+                          </AnimatePresence>
+                        </MotionButton>
                       )}
                       {/* Copy button: static container, inner content cross-fades */}
                       <MotionButton
@@ -710,7 +783,7 @@ function App() {
                               initial={{ opacity: 0 }}
                               animate={{ opacity: 1 }}
                               exit={{ opacity: 0 }}
-                              transition={{ duration: 0 }}
+                              transition={{ duration: 0, ease: "easeInOut" }}
                               className="flex items-center"
                             >
                               <PartyPopper className="h-4 w-4 mr-2" />
@@ -722,7 +795,7 @@ function App() {
                               initial={{ opacity: 0 }}
                               animate={{ opacity: 1 }}
                               exit={{ opacity: 0 }}
-                              transition={{ duration: 0 }}
+                              transition={{ duration: 0, ease: "easeInOut" }}
                               className="flex items-center"
                             >
                               <Copy className="h-4 w-4 mr-2" />
@@ -736,14 +809,15 @@ function App() {
                   <CardContent>
                   <div className="rounded-md border">
                     {isJsonString(policy) ? (
-                      <Textarea
+                      <TextareaAutosize
                         ref={policyTextareaRef}
-                        className="policy-textbox w-full h-full font-mono"
+                        className="policy-textbox w-full font-mono"
                         value={policy}
                         onChange={handlePolicyChange}
-                        rows={10}
+                        minRows={4}
+                        maxRows={20}
                         spellCheck={false}
-                        style={{ borderColor: "#4285F4" }}
+                        style={{ borderColor: "#4285F4", resize: "none", padding: "0.5rem" }}
                       />
                     ) : (
                       <pre className="policy-pre">{policy}</pre>
@@ -751,20 +825,31 @@ function App() {
                   </div>
                 </CardContent>
                 </Card>
+                </motion.div>
               )}
 
               {/* Chat Response Card */}
               {chatResponse && (
-                <Card className={`chat-output ${showPolicyAnimation ? 'slideUp' : ''}`}>
-                  <CardHeader className="output-header pb-2">
-                    <CardTitle className="text-[#4285F4]">Chat Response</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <ScrollArea className="h-60">
-                      <pre className="chat-pre" style={{ borderColor: "#4285F4" }}>{chatResponse}</pre>
-                    </ScrollArea>
-                  </CardContent>
-                </Card>
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ 
+                    duration: 0.6, 
+                    ease: [0.22, 1, 0.36, 1], 
+                    delay: showPolicyAnimation ? 0.3 : 0 
+                  }}
+                >
+                  <Card className="chat-output">
+                    <CardHeader className="output-header pb-2">
+                      <CardTitle className="font-semibold text-[#4285F4]">Chat Response</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ScrollArea className="h-60">
+                        <pre className="chat-pre" style={{ borderColor: "#4285F4" }}>{chatResponse}</pre>
+                      </ScrollArea>
+                    </CardContent>
+                  </Card>
+                </motion.div>
               )}
             </div>
           </div>
