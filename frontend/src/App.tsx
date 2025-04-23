@@ -8,8 +8,6 @@ import { Textarea } from "./components/ui/textarea";
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -28,7 +26,6 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
   Shield, 
   Sparkles, 
-  Zap, 
   Copy, 
   Rocket, 
   CheckCircle, 
