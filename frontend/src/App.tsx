@@ -252,8 +252,25 @@ function App() {
 
       const data = await response.json();
 
+      // Check if we have a policy or just a chat response
+      if (data.chat_response && !data.policy) {
+        // We only have a chat response, no policy to parse
+        setChatResponse(data.chat_response);
+        setPolicy("");
+        setPolicyGenerationFailed(false); // Don't mark as failed, just no policy
+        
+        // Show policy animation and reset loading states
+        setShowPolicyAnimation(true);
+        setTimeout(() => setShowLoadingAnimation(false), 400);
+        return;
+      }
+      
       // Extract the JSON part from the response
       const fullResponse = data.policy;
+      if (!fullResponse) {
+        throw new Error("No policy data received from server");
+      }
+      
       const jsonStartIndex = fullResponse.indexOf("{");
       const jsonEndIndex = fullResponse.lastIndexOf("}") + 1;
 
@@ -269,26 +286,39 @@ function App() {
           setOriginalPolicy(formattedJson); // Store original policy
           setPolicyApplied(false); // Reset applied status for new policy
           setPolicyGenerated(true); // Mark policy as successfully generated
-          // Get any text before the JSON as chat response
-          let chatText = fullResponse.substring(0, jsonStartIndex).trim();
-          
-          // Clean up markdown code blocks from the chat response
-          chatText = chatText.replace(/```json/g, "").replace(/```/g, "").trim();
-          
-          setChatResponse(chatText || ""); // Set empty string if no chat text
+          // Set chat response from the API response if it exists
+          if (data.chat_response) {
+            setChatResponse(data.chat_response);
+          } else {
+            // No chat response in API response, try to extract from policy as fallback
+            let chatText = fullResponse.substring(0, jsonStartIndex).trim();
+            
+            // Clean up markdown code blocks from the chat response
+            chatText = chatText.replace(/```json/g, "").replace(/```/g, "").trim();
+            
+            setChatResponse(chatText || ""); // Set empty string if no chat text
+          }
         } catch (e) {
-          // If JSON parsing fails, treat everything as chat
-          // Clean up any markdown code blocks
-          const cleanedResponse = fullResponse.replace(/```json/g, "").replace(/```/g, "").trim();
-          setChatResponse(cleanedResponse);
+          // If JSON parsing fails, check if we have a chat_response directly
+          if (data.chat_response) {
+            setChatResponse(data.chat_response);
+          } else {
+            // Clean up any markdown code blocks as fallback
+            const cleanedResponse = fullResponse.replace(/```json/g, "").replace(/```/g, "").trim();
+            setChatResponse(cleanedResponse);
+          }
           setPolicy("");
           setPolicyGenerationFailed(true); // Mark policy generation as failed
         }
       } else {
-        // No JSON-like structure found, treat as chat
-        // Clean up any markdown code blocks
-        const cleanedResponse = fullResponse.replace(/```json/g, "").replace(/```/g, "").trim();
-        setChatResponse(cleanedResponse);
+        // No JSON-like structure found, check if we have a chat_response directly
+        if (data.chat_response) {
+          setChatResponse(data.chat_response);
+        } else {
+          // Clean up any markdown code blocks as fallback
+          const cleanedResponse = fullResponse.replace(/```json/g, "").replace(/```/g, "").trim();
+          setChatResponse(cleanedResponse);
+        }
         setPolicy("");
         setPolicyGenerationFailed(true); // Mark policy generation as failed
       }
