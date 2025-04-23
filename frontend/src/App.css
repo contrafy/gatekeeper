@@ -15,6 +15,17 @@
   margin: 2rem;
 }
 
+/* Dark mode fixes for GoogleLogin */
+.google-login-container {
+  border-radius: 50%;
+  overflow: hidden;
+  display: inline-flex;
+}
+
+:root[class~="dark"] .google-login-container iframe {
+  filter: invert(0.85) hue-rotate(180deg);
+}
+
 h1 {
   color: #202124;
   font-size: 2.5rem;
@@ -132,13 +143,6 @@ button {
   justify-content: center;
   margin: 0;
   height: 38px; /* Match button height */
-  opacity: 0;
-  transform: scale(0.95);
-  animation: fadeInScale 0.6s ease-in-out forwards;
-}
-
-.loading-container.fade-out {
-  animation: fadeOutScale 0.6s ease-in-out forwards;
 }
 
 .loading-text {
@@ -195,27 +199,7 @@ button {
   50% { transform: scale(1.2); opacity: 1; }
 }
 
-@keyframes fadeInScale {
-  0% { 
-    opacity: 0; 
-    transform: scale(0.95); 
-  }
-  100% { 
-    opacity: 1; 
-    transform: scale(1); 
-  }
-}
-
-@keyframes fadeOutScale {
-  0% { 
-    opacity: 1; 
-    transform: scale(1); 
-  }
-  100% { 
-    opacity: 0; 
-    transform: scale(0.95); 
-  }
-}
+/* Using Framer Motion for scale animations instead */
 
 .fadeIn {
   animation: fadeIn 0.6s ease-in-out forwards;
@@ -348,10 +332,12 @@ button {
   color: #d4d4d4;
   border: none;
   line-height: 1.5;
-  height: 100%;
+  width: 100%;
   resize: none;
-  field-sizing: content;
   outline: none;
+  min-height: 100px;
+  font-size: 0.875rem;
+  box-sizing: border-box;
 }
 
 /* Dark mode policy-textbox styling */
@@ -499,4 +485,28 @@ button {
     /* color: white !important; */
     outline: #0F9D58 solid 1px !important;
     transition: outline 0.25s;
+}
+
+/* Enhanced Framer Motion animation utilities */
+.fade-in {
+  animation: fadeIn 0.3s ease-in-out forwards;
+}
+
+.fade-out {
+  animation: fadeOut 0.3s ease-in-out forwards;
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+/* Standard easing for consistency */
+.ease-standard {
+  transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Button text animation - cross-fade effect */
+.button-text-transition span {
+  transition: opacity 0.3s ease-in-out;
 }
