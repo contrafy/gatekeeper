@@ -70,6 +70,7 @@ function App() {
   const [policyGenerated, setPolicyGenerated] = useState(false); // Tracks if policy was successfully generated
   const [policyGenerationFailed, setPolicyGenerationFailed] = useState(false); // Tracks if policy generation failed
   const [policyCopied, setPolicyCopied] = useState(false); // Tracks if policy was copied to clipboard
+  const [emptyPromptShake, setEmptyPromptShake] = useState(false); // Tracks if we should show the empty prompt animation
 
   // Authentication states
   const [token, setToken] = useState(""); // JWT token from Google OAuth
@@ -216,9 +217,18 @@ function App() {
    * Parses the response to separate JSON policy from text
    */
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    setPreviousPrompt(prompt);
     // Don't clear the prompt so users can edit it if needed
     e.preventDefault();
+    
+    // Check for empty prompt
+    if (!prompt.trim()) {
+      setEmptyPromptShake(true);
+      // Reset the shake animation after it completes
+      setTimeout(() => setEmptyPromptShake(false), 820);
+      return;
+    }
+    
+    setPreviousPrompt(prompt);
     setLoading(true);
     setShowLoadingAnimation(true);
     setShowPolicyAnimation(false);
@@ -571,12 +581,13 @@ function App() {
             <Card className="text-left space-y-4">
               <CardContent>
                 <form onSubmit={handleSubmit} className="flex flex-col space-y-4">
-                  <TextareaAutosize
-                    placeholder="Describe your IAM policy requirements in plain English..."
-                    value={prompt}
-                    onChange={(e) => {
-                      setPrompt(e.target.value);
-                      // Reset the generation states when user starts typing
+                  <div className={emptyPromptShake ? "shake-animation" : ""}>
+                    <TextareaAutosize
+                      placeholder="Describe your IAM policy requirements in plain English..."
+                      value={prompt}
+                      onChange={(e) => {
+                        setPrompt(e.target.value);
+                        // Reset the generation states when user starts typing
                       if (policyGenerated || policyGenerationFailed) {
                         setPolicyGenerated(false);
                         setPolicyGenerationFailed(false);
@@ -593,7 +604,8 @@ function App() {
                     maxRows={5}
                     className="prompt-input"
                     style={{ borderColor: "#4285F4" }}
-                  />
+                    />
+                  </div>
                   <div className="flex items-center justify-center" style={{ minHeight: '60px' }}>
                     {/* Generating Policy Animation */}
                     {showLoadingAnimation ? (
