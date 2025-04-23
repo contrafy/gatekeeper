@@ -44,7 +44,7 @@ Key Requirements:
 2. Include only recognized Google Cloud predefined roles or custom roles (starting with 'custom.')
 3. Use exact role names from Google Cloud's role hierarchy (e.g., 'roles/resource.dataViewer' or 'roles/resource.admin')
 4. Support various member types: user:, serviceAccount:, group:, domain:
-5. Follow principle of least privilege, however if there is no ambiguity about the level of privilege requested (e.g. user explicitly says admin), then assume the user understands what they are asking for and provide the policy. However, in these cases you should also include a chat_response notifying the user of the specific risk.
+5. Follow principle of least privilege.
 6. Generate policies for the specific resource mentioned or default to project level
 7. Validate all role names against Google Cloud's standard nomenclature
 8. Include NO pleasantries or unnecessary text
@@ -75,6 +75,7 @@ Your response must be a valid JSON object with the following structure:
 {
   "valid": boolean, // true if the policy is valid, false otherwise
   "feedback": "string", // Detailed feedback on policy issues (only if valid is false)
+  "chat_response": "string", // IMPORTANT: Always preserve the original chat_response if provided to you
   "suggested_fixes": { // Optional suggested policy fixes (only if valid is false)
     "bindings": [
       {
@@ -97,7 +98,9 @@ Validate policies against these criteria:
 7. Logical consistency
 8. Security best practices
 
-If the policy is valid, return {"valid": true} with no additional fields.
+IMPORTANT: You will receive any chat_response from the first model in your input. ALWAYS preserve this in your "chat_response" field.
+
+If the policy is valid, return {"valid": true, "chat_response": "original chat response here"}.
 If invalid, provide specific feedback explaining all issues and suggested fixes if possible.
 """
 
@@ -210,7 +213,11 @@ async def generate_policy(request: PolicyRequest):
         validation_feedback = None
         if policy and validated:
             logger.info("Policy generated, validating with second model")
-            validation_result = await validate_policy_with_model(policy, request.prompt)
+            validation_result = await validate_policy_with_model(policy, request.prompt, chat_response)
+            
+            # Preserve the chat_response from validation result if it exists
+            if "chat_response" in validation_result:
+                chat_response = validation_result["chat_response"]
             
             # If policy is invalid, send feedback to generation model
             if not validation_result.get("valid", False):
@@ -221,7 +228,8 @@ async def generate_policy(request: PolicyRequest):
                 regeneration_response = await regenerate_policy_with_feedback(
                     request.prompt, 
                     validation_feedback,
-                    policy
+                    policy,
+                    chat_response
                 )
                 
                 # Update policy and chat response with regenerated values
@@ -230,14 +238,14 @@ async def generate_policy(request: PolicyRequest):
                     policy = json.dumps(policy_json, indent=2)
                 
                 if "chat_response" in regeneration_response:
-                    # Append validation feedback to chat response
-                    if chat_response:
-                        chat_response = f"{chat_response}\n\nValidation feedback: {validation_feedback}\n\n"
-                    else:
-                        chat_response = f"Validation feedback: {validation_feedback}\n\n"
+                    chat_response = regeneration_response["chat_response"]
                     
-                    # Add regeneration chat response
-                    chat_response += regeneration_response.get("chat_response", "")
+                    # Add validation feedback if not already included
+                    if validation_feedback and validation_feedback not in chat_response:
+                        if chat_response:
+                            chat_response = f"{chat_response}\n\nValidation feedback: {validation_feedback}"
+                        else:
+                            chat_response = f"Validation feedback: {validation_feedback}"
         
         logger.info(f"Returning response: policy_exists={policy is not None}, chat_response_exists={chat_response is not None}")
         return {"policy": policy, "chat_response": chat_response}
@@ -271,17 +279,20 @@ async def generate_policy_with_model(prompt: str):
         logger.error(f"Error in generate_policy_with_model: {str(e)}", exc_info=True)
         return {"chat_response": f"An error occurred: {str(e)}"}
 
-async def validate_policy_with_model(policy: str, original_prompt: str):
+async def validate_policy_with_model(policy: str, original_prompt: str, chat_response: str = None):
     """Validate a policy using the second model with JSON mode."""
     try:
         validation_prompt = f"""
-                            Original request: {original_prompt}
+Original request: {original_prompt}
 
-                            Policy to validate:
-                            {policy}
+Policy to validate:
+{policy}
 
-                            Please validate this policy against Google Cloud IAM best practices and the principle of least privilege.
-                            """
+Original chat_response: {chat_response or ""}
+
+Please validate this policy against Google Cloud IAM best practices and the principle of least privilege.
+IMPORTANT: Preserve the original chat_response in your response.
+"""
         
         response = groq_client.chat.completions.create(
             model="llama-3.3-70b-versatile",  # Using the same model for validation
@@ -305,7 +316,7 @@ async def validate_policy_with_model(policy: str, original_prompt: str):
         logger.error(f"Error in validate_policy_with_model: {str(e)}", exc_info=True)
         return {"valid": False, "feedback": f"An error occurred during validation: {str(e)}"}
 
-async def regenerate_policy_with_feedback(prompt: str, feedback: str, original_policy: str):
+async def regenerate_policy_with_feedback(prompt: str, feedback: str, original_policy: str, chat_response: str = None):
     """Regenerate a policy with validation feedback."""
     try:
         regeneration_prompt = f"""
@@ -314,10 +325,13 @@ Original request: {prompt}
 I generated this policy:
 {original_policy}
 
+Original chat_response: {chat_response or ""}
+
 However, validation identified these issues:
 {feedback}
 
 Please generate an improved policy that addresses these concerns.
+IMPORTANT: Preserve the original chat_response in your response.
 """
         
         response = groq_client.chat.completions.create(

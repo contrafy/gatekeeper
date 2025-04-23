@@ -70,6 +70,7 @@ function App() {
   const [policyGenerated, setPolicyGenerated] = useState(false); // Tracks if policy was successfully generated
   const [policyGenerationFailed, setPolicyGenerationFailed] = useState(false); // Tracks if policy generation failed
   const [policyCopied, setPolicyCopied] = useState(false); // Tracks if policy was copied to clipboard
+  const [emptyPromptShake, setEmptyPromptShake] = useState(false); // Tracks if we should show the empty prompt animation
 
   // Authentication states
   const [token, setToken] = useState(""); // JWT token from Google OAuth
@@ -216,9 +217,18 @@ function App() {
    * Parses the response to separate JSON policy from text
    */
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    setPreviousPrompt(prompt);
     // Don't clear the prompt so users can edit it if needed
     e.preventDefault();
+    
+    // Check for empty prompt
+    if (!prompt.trim()) {
+      setEmptyPromptShake(true);
+      // Reset the shake animation after it completes
+      setTimeout(() => setEmptyPromptShake(false), 820);
+      return;
+    }
+    
+    setPreviousPrompt(prompt);
     setLoading(true);
     setShowLoadingAnimation(true);
     setShowPolicyAnimation(false);
@@ -242,8 +252,25 @@ function App() {
 
       const data = await response.json();
 
+      // Check if we have a policy or just a chat response
+      if (data.chat_response && !data.policy) {
+        // We only have a chat response, no policy to parse
+        setChatResponse(data.chat_response);
+        setPolicy("");
+        setPolicyGenerationFailed(false); // Don't mark as failed, just no policy
+        
+        // Show policy animation and reset loading states
+        setShowPolicyAnimation(true);
+        setTimeout(() => setShowLoadingAnimation(false), 400);
+        return;
+      }
+      
       // Extract the JSON part from the response
       const fullResponse = data.policy;
+      if (!fullResponse) {
+        throw new Error("No policy data received from server");
+      }
+      
       const jsonStartIndex = fullResponse.indexOf("{");
       const jsonEndIndex = fullResponse.lastIndexOf("}") + 1;
 
@@ -259,26 +286,39 @@ function App() {
           setOriginalPolicy(formattedJson); // Store original policy
           setPolicyApplied(false); // Reset applied status for new policy
           setPolicyGenerated(true); // Mark policy as successfully generated
-          // Get any text before the JSON as chat response
-          let chatText = fullResponse.substring(0, jsonStartIndex).trim();
-          
-          // Clean up markdown code blocks from the chat response
-          chatText = chatText.replace(/```json/g, "").replace(/```/g, "").trim();
-          
-          setChatResponse(chatText || ""); // Set empty string if no chat text
+          // Set chat response from the API response if it exists
+          if (data.chat_response) {
+            setChatResponse(data.chat_response);
+          } else {
+            // No chat response in API response, try to extract from policy as fallback
+            let chatText = fullResponse.substring(0, jsonStartIndex).trim();
+            
+            // Clean up markdown code blocks from the chat response
+            chatText = chatText.replace(/```json/g, "").replace(/```/g, "").trim();
+            
+            setChatResponse(chatText || ""); // Set empty string if no chat text
+          }
         } catch (e) {
-          // If JSON parsing fails, treat everything as chat
-          // Clean up any markdown code blocks
-          const cleanedResponse = fullResponse.replace(/```json/g, "").replace(/```/g, "").trim();
-          setChatResponse(cleanedResponse);
+          // If JSON parsing fails, check if we have a chat_response directly
+          if (data.chat_response) {
+            setChatResponse(data.chat_response);
+          } else {
+            // Clean up any markdown code blocks as fallback
+            const cleanedResponse = fullResponse.replace(/```json/g, "").replace(/```/g, "").trim();
+            setChatResponse(cleanedResponse);
+          }
           setPolicy("");
           setPolicyGenerationFailed(true); // Mark policy generation as failed
         }
       } else {
-        // No JSON-like structure found, treat as chat
-        // Clean up any markdown code blocks
-        const cleanedResponse = fullResponse.replace(/```json/g, "").replace(/```/g, "").trim();
-        setChatResponse(cleanedResponse);
+        // No JSON-like structure found, check if we have a chat_response directly
+        if (data.chat_response) {
+          setChatResponse(data.chat_response);
+        } else {
+          // Clean up any markdown code blocks as fallback
+          const cleanedResponse = fullResponse.replace(/```json/g, "").replace(/```/g, "").trim();
+          setChatResponse(cleanedResponse);
+        }
         setPolicy("");
         setPolicyGenerationFailed(true); // Mark policy generation as failed
       }
@@ -571,12 +611,13 @@ function App() {
             <Card className="text-left space-y-4">
               <CardContent>
                 <form onSubmit={handleSubmit} className="flex flex-col space-y-4">
-                  <TextareaAutosize
-                    placeholder="Describe your IAM policy requirements in plain English..."
-                    value={prompt}
-                    onChange={(e) => {
-                      setPrompt(e.target.value);
-                      // Reset the generation states when user starts typing
+                  <div className={emptyPromptShake ? "shake-animation" : ""}>
+                    <TextareaAutosize
+                      placeholder="Describe your IAM policy requirements in plain English..."
+                      value={prompt}
+                      onChange={(e) => {
+                        setPrompt(e.target.value);
+                        // Reset the generation states when user starts typing
                       if (policyGenerated || policyGenerationFailed) {
                         setPolicyGenerated(false);
                         setPolicyGenerationFailed(false);
@@ -593,7 +634,8 @@ function App() {
                     maxRows={5}
                     className="prompt-input"
                     style={{ borderColor: "#4285F4" }}
-                  />
+                    />
+                  </div>
                   <div className="flex items-center justify-center" style={{ minHeight: '60px' }}>
                     {/* Generating Policy Animation */}
                     {showLoadingAnimation ? (
