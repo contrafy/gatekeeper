@@ -6,8 +6,11 @@ import os
 from groq import Groq
 from dotenv import load_dotenv
 
-from google.oauth2 import id_token
+from google.oauth2 import id_token as google_id_token
 from google.auth.transport import requests as google_requests
+from googleapiclient import discovery
+from googleapiclient.errors import HttpError
+import google.auth
 
 # System prompt for OpenAI API that defines how the AI should generate IAM policies
 # Provides detailed instructions about formatting, security considerations, and examples
@@ -162,81 +165,89 @@ async def apply_policy(request: Request):
         raise HTTPException(status_code=401, detail="Missing or invalid token")
     token = auth_header.split("Bearer ")[1]
     try:
-        id_token.verify_oauth2_token(token, google_requests.Request(), GOOGLE_CLIENT_ID)
+        google_id_token.verify_oauth2_token(token, google_requests.Request(), GOOGLE_CLIENT_ID)
     except Exception as e:
         raise HTTPException(status_code=401, detail="Invalid token")
-
-    # Apply the policy using the Google Cloud Resource Manager API
-    from googleapiclient import discovery
-    from googleapiclient.errors import HttpError
-
+    
     # Get the project ID from request headers
     PROJECT_ID = request.headers.get("project-id")
     if not PROJECT_ID:
         raise HTTPException(status_code=400, detail="Missing project-id")
+
+    # Lint policy before applying
+    credentials, _ = google.auth.default(quota_project_id=None)
+    iam_service = discovery.build("iam", "v1", credentials=credentials, cache_discovery=False)
+
+    full_resource_name = f"//cloudresourcemanager.googleapis.com/projects/{PROJECT_ID}"
+    lint_issues = []
+
+    for binding in new_policy_bindings:
+        condition = binding.get("condition")
+        if not condition:
+            continue                                     # nothing to lint here
+
+        lint_body = {
+            "fullResourceName": full_resource_name,
+            "condition": condition,
+        }
+        try:
+            lint_resp = iam_service.iamPolicies().lintPolicy(body=lint_body).execute()
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Failed to lint policy: {e}")
+
+        lint_results = lint_resp.get("lintResults", [])
+        if lint_results:    
+            print(lint_results)                             # anything other than an empty list
+            lint_issues.extend(lint_results)
+
+    if lint_issues:
+        # Convert results into a compact human-readable string expected by the frontend
+        pretty = " | ".join(
+            f"[{r.get('severity')}] {r.get('debugMessage')} (field: {r.get('fieldName')})"
+            for r in lint_issues
+        )
+        raise HTTPException(status_code=400, detail=pretty)
+    
     
     try:
-        # Import google.auth here where it's used
-        import google.auth
-        # Create service with explicit no quota project
-        credentials, _ = google.auth.default(quota_project_id=None)
-        crm_service = discovery.build("cloudresourcemanager", "v1", credentials=credentials)
-        
-        # Fetch current IAM policy for the project
+        crm_service = discovery.build("cloudresourcemanager", "v1",
+                                      credentials=credentials, cache_discovery=False)
+
         current_policy = crm_service.projects().getIamPolicy(
             resource=PROJECT_ID, body={}
         ).execute()
 
-        # Get existing bindings from current policy
         existing_bindings = current_policy.get("bindings", [])
-        # Merge new bindings into existing ones
+
+        # merge
         for new_binding in new_policy_bindings:
             role = new_binding.get("role")
             members_to_add = new_binding.get("members", [])
-            # Check if binding for this role already exists
-            binding_found = False
             for binding in existing_bindings:
                 if binding.get("role") == role:
-                    # Add any new members that aren't already in the binding
-                    for member in members_to_add:
-                        if member not in binding.get("members", []):
-                            binding["members"].append(member)
-                    binding_found = True
+                    binding["members"] = list(set(binding.get("members", []) + members_to_add))
                     break
-            # If no binding exists for the role, add the new binding as is
-            if not binding_found:
+            else:
                 existing_bindings.append(new_binding)
 
-        # Update policy without removing existing (e.g., owner) bindings
         updated_policy_body = current_policy.copy()
         updated_policy_body["bindings"] = existing_bindings
 
-        # Apply the updated policy to the project
         updated_policy = crm_service.projects().setIamPolicy(
-            resource=PROJECT_ID, body={"policy": updated_policy_body}
+            resource=PROJECT_ID,
+            body={"policy": updated_policy_body}
         ).execute()
 
-        print("Policy successfully applied:", updated_policy)
         return {"status": "Policy applied", "updated_policy": updated_policy}
+
     except HttpError as err:
-        # Extract the meaningful error message for better user experience
-        error_message = str(err)
-        clean_message = "Failed to apply policy"
-        
-        # Parse out specific error info from Google's error messages
-        if "Details:" in error_message:
-            detail_section = error_message.split("Details:")[1].strip()
-            if detail_section.startswith('"') and detail_section.endswith('"'):
-                detail_section = detail_section[1:-1]  # Remove extra quotes
-            clean_message = f"Error: {detail_section}"
-        elif "returned" in error_message:
-            # Extract the part between 'returned' and 'Details' if present
-            returned_part = error_message.split('returned "')[1].split('".')[0]
-            clean_message = f"Error: {returned_part}"
-        
-        print(f"Original error: {error_message}")
-        print(f"Cleaned error for user: {clean_message}")
-        raise HTTPException(status_code=err.resp.status, detail=clean_message)
+        # surface a concise message back to the UI
+        msg = str(err)
+        if 'returned "' in msg:
+            msg = msg.split('returned "')[1].split('".')[0]
+        raise HTTPException(status_code=err.resp.status, detail=msg)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/get_projects")
 async def get_projects(request: Request):
