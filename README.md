@@ -109,7 +109,6 @@ A detailed and current list of known issues and feature requests can be found on
 ---
 
 ## Contributing
-We welcome contributions from the open-source community with open arms! Feel free to open issues, propose enhancements, or submit pull requests and a team member will take a look.
 
 ---
 
@@ -124,7 +123,5 @@ We extend heartfelt thanks to our hard-working mentors:
 ### Project Team
 - **Ahmad Raaiyan** *(Project Lead)*
 - **Aum Palande** *(Technical Lead)*
-- **John-Carlos Breck Ortiz** *(Software Engineer)*
-- **David-Tyler Ighedosa** *(Software Engineer)*
-
-Each team member significantly contributed to the vision and development of Gatekeeper.
+- **David-Tyler Ighedosa** *(Developer)*
+- **John-Carlos Breck Ortiz** *(Developer)*
