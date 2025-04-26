@@ -76,11 +76,47 @@ TODO
 
 ---
 
-## Getting Started
+# Getting Started
 
-### Quick Start with Docker Compose (Recommended)
+## 🐳 Running with Docker (recommended)
 
-TODO
+This project provides a Docker setup to run both the backend and frontend together in a single container.
+
+---
+
+### 1. Set Required Environment Variables
+
+Before building or running the container, ensure you have the following API keys and credentials:
+
+| Variable | Description |
+|:---------|:------------|
+| `GOOGLE_CLIENT_SECRET` | Obtain from [Google Cloud Console](#link) |
+| `GOOGLE_CLIENT_ID` | Obtain from [Google Cloud Console](#link) |
+| `GROQ_API_KEY` | Obtain from [Groq API Portal](#link) |
+| `VITE_GOOGLE_OAUTH_CLIENT_ID` | Same as your `GOOGLE_CLIENT_ID` |
+
+You will pass these in when running the container.
+
+---
+
+### 2. Build the Docker Image
+
+```bash
+docker build -t policies-llm-app .
+```
+
+### 3. Run the container
+```bash
+docker run -d \
+  -p 8000:8000 \
+  -p 4173:4173 \
+  -e GOOGLE_CLIENT_SECRET="your-google-client-secret" \
+  -e GOOGLE_CLIENT_ID="your-google-client-id" \
+  -e GROQ_API_KEY="your-groq-api-key" \
+  -e VITE_GOOGLE_OAUTH_CLIENT_ID="your-google-client-id" \
+  --name policies-llm-app \
+  policies-llm-app
+```
 
 ### Local Development Setup
 
