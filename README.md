@@ -72,7 +72,7 @@ We chose to use llama-3.3-70b-versatile via Groq as the default model mainly due
 
 ## Project Screenshots
 
-TODO
+![image](gatekeeperUIscreenshot.png)
 
 ---
 
