@@ -9,6 +9,7 @@ from groq import Groq
 from dotenv import load_dotenv
 
 from google.oauth2 import id_token
+from google.oauth2.credentials import Credentials
 from google.auth.transport import requests as google_requests
 from googleapiclient import discovery
 from googleapiclient.errors import HttpError
@@ -17,6 +18,56 @@ import google.auth
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+# ---------------------------------------------------------------------------
+# Context-gathering helpers
+# ---------------------------------------------------------------------------
+
+def gather_gcp_context(project_id: str) -> dict:                      # ⇦ context
+    """
+    Collects useful IAM context for the given project and prints it.   # ⇦ context
+    Currently just logs the data; later you can feed it into the LLM.  # ⇦ context
+    """                                                                # ⇦ context
+    try:                                                               # ⇦ context
+        credentials, _ = google.auth.default()                         # ⇦ context
+
+        iam_service = discovery.build("iam", "v1", credentials=credentials,   # ⇦ context
+                                       cache_discovery=False)          # ⇦ context
+        crm_service = discovery.build("cloudresourcemanager", "v1",           # ⇦ context
+                                       credentials=credentials,        # ⇦ context
+                                       cache_discovery=False)          # ⇦ context
+
+        # ---- custom roles --------------------------------------------------# ⇦ context
+        custom_roles_resp = iam_service.projects().roles().list(       # ⇦ context
+            parent=f"projects/{project_id}"                            # ⇦ context
+        ).execute()                                                    # ⇦ context
+        custom_roles = [r["name"] for r in custom_roles_resp.get("roles", [])]# ⇦ context
+
+        # ---- service accounts --------------------------------------------- # ⇦ context
+        sa_resp = iam_service.projects().serviceAccounts().list(       # ⇦ context
+            name=f"projects/{project_id}"                              # ⇦ context
+        ).execute()                                                    # ⇦ context
+        service_accounts = [sa["email"] for sa in sa_resp.get("accounts", [])]# ⇦ context
+
+        # ---- existing bindings -------------------------------------------- # ⇦ context
+        iam_policy = crm_service.projects().getIamPolicy(              # ⇦ context
+            resource=project_id, body={}                               # ⇦ context
+        ).execute()                                                    # ⇦ context
+        bindings = iam_policy.get("bindings", [])                      # ⇦ context
+
+        context_blob = {                                               # ⇦ context
+            "customRoles": custom_roles,                               # ⇦ context
+            "serviceAccounts": service_accounts,                       # ⇦ context
+            "existingBindings": bindings                               # ⇦ context
+        }                                                              # ⇦ context
+
+        logger.info("🔍 GCP context collected → %s",                   # ⇦ context
+                    json.dumps(context_blob, indent=2))                # ⇦ context
+        return context_blob                                            # ⇦ context
+
+    except Exception as ctx_err:                                       # ⇦ context
+        logger.warning("Failed to collect GCP context: %s", ctx_err)   # ⇦ context
+        return {}                                                      # ⇦ context
 
 # System prompt for generator model that outputs in JSON mode
 def generate_system_prompt():
@@ -182,18 +233,29 @@ class PolicyRequest(BaseModel):
 
 # TODO: response body struct to validate before returning to frontend
 
-@app.post("/generate_policy")
-async def generate_policy(request: PolicyRequest):
+@app.post("/generate_policy")                                          # ⇦ context
+async def generate_policy(request_body: PolicyRequest,                 # ⇦ context
+                          request: Request):                           # ⇦ context
     """
     Receives a plain English prompt and returns a generated Google Cloud IAM policy.
     Uses a two-model approach for generation and validation.
     """
+
     try:
-        logger.info(f"Received policy generation request: {request.prompt[:50]}...")
+        prompt = request_body.prompt                                   # ⇦ context
+        logger.info("Received policy generation request: %s...", prompt[:50])
+
+        # ── NEW: harvest project context if header present ──────────── # ⇦ context
+        project_id = request.headers.get("project-id")                 # ⇦ context
+        if project_id:                                                 # ⇦ context
+            gather_gcp_context(project_id)                             # ⇦ context
+        else:                                                          # ⇦ context
+            logger.info("No project-id header supplied; skipping context harvest")
+
         
         # First model call: Generate policy with JSON mode
         logger.info("Making initial call to policy generation model")
-        generation_response = await generate_policy_with_model(request.prompt)
+        generation_response = await generate_policy_with_model(prompt)
         
         # Extract policy and chat response from generation model
         policy_json = None
@@ -213,7 +275,7 @@ async def generate_policy(request: PolicyRequest):
         validation_feedback = None
         if policy and validated:
             logger.info("Policy generated, validating with second model")
-            validation_result = await validate_policy_with_model(policy, request.prompt, chat_response)
+            validation_result = await validate_policy_with_model(policy, prompt, chat_response)
             
             # Preserve the chat_response from validation result if it exists
             if "chat_response" in validation_result:
@@ -226,7 +288,7 @@ async def generate_policy(request: PolicyRequest):
                 
                 # Second generation with validation feedback
                 regeneration_response = await regenerate_policy_with_feedback(
-                    request.prompt, 
+                    prompt, 
                     validation_feedback,
                     policy,
                     chat_response
@@ -389,10 +451,28 @@ async def apply_policy(request: Request):
     if not auth_header or not auth_header.startswith("Bearer "):
         raise HTTPException(status_code=401, detail="Missing or invalid token")
     token = auth_header.split("Bearer ")[1]
+    # support token refresh using refresh token header
+    refresh_token = request.headers.get("Refresh-Token")
     try:
         id_token.verify_oauth2_token(token, google_requests.Request(), GOOGLE_CLIENT_ID)
     except Exception as e:
-        raise HTTPException(status_code=401, detail="Invalid token")
+        if refresh_token:
+            creds = Credentials(
+                token=None,
+                refresh_token=refresh_token,
+                token_uri=os.getenv("GOOGLE_OAUTH2_TOKEN_URI", "https://oauth2.googleapis.com/token"),
+                client_id=os.getenv("GOOGLE_CLIENT_ID"),
+                client_secret=os.getenv("GOOGLE_CLIENT_SECRET"),
+                scopes=["openid", "email", "profile"],
+            )
+            try:
+                creds.refresh(google_requests.Request())
+                token = creds.id_token
+                id_token.verify_oauth2_token(token, google_requests.Request(), GOOGLE_CLIENT_ID)
+            except Exception as refresh_err:
+                raise HTTPException(status_code=401, detail=f"Invalid token after refresh: {refresh_err}")
+        else:
+            raise HTTPException(status_code=401, detail="Invalid token")
     
     # Get the project ID from request headers
     PROJECT_ID = request.headers.get("project-id")
@@ -487,13 +567,31 @@ async def get_projects(request: Request):
     if not auth_header or not auth_header.startswith("Bearer "):
         raise HTTPException(status_code=401, detail=f"Missing or invalid token, Auth Header: {auth_header}, Request Headers: {request.headers}")
     token = auth_header.split("Bearer ")[1]
+    # support token refresh using refresh token header
+    refresh_token = request.headers.get("Refresh-Token")
     try:
         # Verify the token is valid
         id_info = id_token.verify_oauth2_token(token, google_requests.Request(), GOOGLE_CLIENT_ID)
-        if not id_info:
-            raise HTTPException(status_code=401, detail="Invalid token")
     except Exception as e:
-        raise HTTPException(status_code=401, detail=f"Invalid token: {str(e)}")
+        if refresh_token:
+            creds = Credentials(
+                token=None,
+                refresh_token=refresh_token,
+                token_uri=os.getenv("GOOGLE_OAUTH2_TOKEN_URI", "https://oauth2.googleapis.com/token"),
+                client_id=os.getenv("GOOGLE_CLIENT_ID"),
+                client_secret=os.getenv("GOOGLE_CLIENT_SECRET"),
+                scopes=["openid", "email", "profile"],
+            )
+            try:
+                creds.refresh(google_requests.Request())
+                token = creds.id_token
+                id_info = id_token.verify_oauth2_token(token, google_requests.Request(), GOOGLE_CLIENT_ID)
+            except Exception as refresh_err:
+                raise HTTPException(status_code=401, detail=f"Invalid token after refresh: {refresh_err}")
+        else:
+            raise HTTPException(status_code=401, detail=f"Invalid token: {str(e)}")
+    if not id_info:
+        raise HTTPException(status_code=401, detail="Invalid token")
     
     from googleapiclient import discovery
     from googleapiclient.errors import HttpError

@@ -3,8 +3,8 @@ import React, { FormEvent, useEffect, useState, useCallback } from "react";
 import { jwtDecode } from "jwt-decode";
 //------------ Shadcn Imports ------------
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner"
 import { motion, AnimatePresence } from "framer-motion";
-import { Textarea } from "./components/ui/textarea";
 import {
   Card,
   CardContent,
@@ -242,6 +242,8 @@ function App() {
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json",
+          ...(selectedProject && { "project-id": selectedProject }),
+          ...(token && { Authorization: `Bearer ${token}` })
         },
         body: JSON.stringify({ prompt }),
       });
@@ -455,6 +457,7 @@ function App() {
       
       // Update state to show success
       setPolicyApplied(true);
+      toast("Policy applied successfully!")
       setOriginalPolicy(policy); // Update original policy to mark current as applied
     } catch (error) {
       console.error("Error applying policy:", error);
