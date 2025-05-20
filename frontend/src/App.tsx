@@ -10,11 +10,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -23,7 +21,6 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 //------------ Lucide Icon Imports ------------
 import { 
-  Shield, 
   Sparkles, 
   Copy, 
   Rocket, 
@@ -36,19 +33,14 @@ import {
 //------------------------
 import {
   CredentialResponse,
-  GoogleLogin,
-  GoogleOAuthProvider,
   googleLogout,
 } from "@react-oauth/google";
 import { ThemeProvider } from "./components/theme-provider";
-import { ModeToggle } from "./components/mode-toggle";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import TextareaAutosize from "react-textarea-autosize";
 import Header from "./components/Header";
+import ProjectSelector from "./components/ProjectSelector";
 
-
-// Google OAuth client ID from environment variables
-const CLIENT_ID = import.meta.env.VITE_GOOGLE_OAUTH_CLIENT_ID;
 
 const MotionDiv = motion.div;
 const MotionButton = motion(Button);
@@ -493,53 +485,15 @@ function App() {
         <div className="min-h-screen flex items-center justify-center bg-background">
           <div className="w-full max-w-2xl shadow-lg mx-auto text-center px-6 py-[5%]">
             {/* Project Selector Section */}
-            <div className="flex justify-end mb-4">
-              {token ? (
-                // Show project selector if signed in
-                <>
-                  {fetchingProjects ? (
-                    <div className="bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md px-4 py-2 text-sm text-gray-700 dark:text-gray-300">
-                      Loading projects...
-                    </div>
-                  ) : (
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button 
-                          variant="secondary"
-                          className="custom-green-hover"
-                        >
-                          {selectedProject && projects.length > 0
-                            ? projects.find((p) => p.id === selectedProject)?.name || "Select Project"
-                            : projects.length > 0 ? "Select Project" : "No Projects Found"}
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuLabel className="text-[#4285F4]">Select a Project</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        {projects.length > 0 ? (
-                          projects.map((project) => (
-                            <DropdownMenuItem
-                              key={project.id}
-                              onClick={() => setSelectedProject(project.id)}
-                              className="hover:bg-[#4285F4]/10 hover:text-[#4285F4]"
-                            >
-                              {project.name}
-                            </DropdownMenuItem>
-                          ))
-                        ) : (
-                          <DropdownMenuItem disabled>No projects available</DropdownMenuItem>
-                        )}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  )}
-                </>
-              ) : (
-                // Show sign-in prompt when not authenticated
-                <div className="bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md px-4 py-2 text-sm text-gray-700 dark:text-gray-300">
-                  Please sign in with Google to select a project.
-                </div>
-              )}
-            </div>
+            <ProjectSelector
+              token={token}
+              projects={projects}
+              selectedProject={selectedProject}
+              setSelectedProject={setSelectedProject}
+              fetchingProjects={fetchingProjects}
+              projectError={projectError}
+              >
+            </ProjectSelector>
 
             {/* Project Error Alert */}
             {projectError && (
