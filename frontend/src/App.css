@@ -17,7 +17,6 @@
 
 /* Dark mode fixes for GoogleLogin */
 .google-login-container {
-  border-radius: 50%;
   overflow: hidden;
   display: inline-flex;
 }
