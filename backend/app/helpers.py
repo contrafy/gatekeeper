@@ -10,13 +10,11 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Initialize API clients
 openai_client = OpenAI(api_key = os.getenv("OPENAI_API_KEY"))
-# By default this constructor uses: os.getenv("GROQ_API_KEY") for the key
+# check for GROQ_API_KEY
 groq_client = Groq()
 
 async def generate_policy_with_model(prompt: str):

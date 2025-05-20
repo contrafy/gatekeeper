@@ -4,7 +4,6 @@ import { jwtDecode } from "jwt-decode";
 //------------ Shadcn Imports ------------
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
-import { Textarea } from "./components/ui/textarea";
 import {
   Card,
   CardContent,
