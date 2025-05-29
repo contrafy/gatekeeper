@@ -50,33 +50,34 @@ const PromptContainer: React.FC<PromptProps> = ({ onResult }) => {
       return;
     }
 
-    setLoading(true);
-    setShowLoadingAnimation(true);
-    setPolicyGenerated(false);
-    setPolicyGenerationFailed(false);
-    setError("");
+      setLoading(true);
+      setShowLoadingAnimation(true);
+      setPolicyGenerated(false);
+      setPolicyGenerationFailed(false);
+      setError("");
 
-    try {
-      const res = await fetch("http://localhost:8000/generate_policy", {
+      try {
+        const backendUrl = import.meta.env.BACKEND_BASE_URL || "http://localhost:8000";
+        const res = await fetch(`${backendUrl}/generate_policy`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
         body: JSON.stringify({ prompt }),
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
 
-      /* ---- parse the backend payload exactly like before --- */
-      let policy      = "";
-      let chatText    = "";
-      const full      = data.policy;
-      const chatFromB = data.chat_response ?? "";
+        /* ---- parse the backend payload exactly like before --- */
+        let policy      = "";
+        let chatText    = "";
+        const full      = data.policy;
+        const chatFromB = data.chat_response ?? "";
 
-      if (full) {
+        if (full) {
         const jStart = full.indexOf("{");
         const jEnd   = full.lastIndexOf("}") + 1;
         if (jStart !== -1 && jEnd !== -1) {
           try {
-            const obj = JSON.parse(full.substring(jStart, jEnd));
+          const obj = JSON.parse(full.substring(jStart, jEnd));
             policy   = JSON.stringify(obj, null, 2);
             chatText = chatFromB || full.substring(0, jStart).replace(/```json|```/g, "");
           } catch {
@@ -101,6 +102,7 @@ const PromptContainer: React.FC<PromptProps> = ({ onResult }) => {
       });
     } catch (e) {
       setError("Failed to generate policy. Please try again.");
+      console.log("Error generating policy:", e);
       setPolicyGenerationFailed(true);
     } finally {
       setLoading(false);
@@ -130,35 +132,79 @@ const PromptContainer: React.FC<PromptProps> = ({ onResult }) => {
               />
             </div>
 
-            {/* ------ big button / animations (unchanged) ------- */}
+            {/* ------ big button / animations ------- */}
             <div className="flex items-center justify-center" style={{ minHeight: "60px" }}>
+              <AnimatePresence mode="wait">
               {showLoadingAnimation ? (
-                /* ... identical loading markup ... */
-                <motion.div /* … same as before … */ />
+                <motion.div
+                key="loading"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{ duration: 0.2 }}
+                >
+                <Button
+                  variant="secondary"
+                  type="submit"
+                  disabled={true}
+                  className="bg-[#F4B400] text-black hover:bg-[#E5A800]"
+                >
+                  <RefreshCw className="h-4 w-4 mr-2 animate-spin" /> Processing…
+                </Button>
+                </motion.div>
               ) : policyGenerated ? (
-                <motion.div /* success pill */ />
+                <motion.div
+                key="success"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{ duration: 0.2 }}
+                >
+                <Button
+                  variant="default"
+                  type="submit"
+                  disabled={loading}
+                  className="bg-green-600 text-white hover:bg-green-700"
+                >
+                  <Sparkles className="h-4 w-4 mr-2" /> Generate New Policy
+                </Button>
+                </motion.div>
               ) : policyGenerationFailed ? (
-                <motion.div /* failed pill + reset btn */ />
+                <motion.div
+                key="error"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{ duration: 0.2 }}
+                >
+                <Button
+                  variant="destructive"
+                  type="submit"
+                  disabled={loading}
+                  className="bg-red-600 text-white hover:bg-red-700"
+                >
+                  <RefreshCw className="h-4 w-4 mr-2" /> Try Again
+                </Button>
+                </motion.div>
               ) : (
+                <motion.div
+                key="default"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{ duration: 0.2 }}
+                >
                 <Button
                   variant="secondary"
                   type="submit"
                   disabled={loading}
-                  className={
-                    loading ? "bg-[#F4B400] text-black hover:bg-[#E5A800]" : "custom-blue-hover"
-                  }
+                  className="custom-blue-hover"
                 >
-                  {loading && !showLoadingAnimation ? (
-                    <>
-                      <RefreshCw className="h-4 w-4 mr-2 animate-spin" /> Processing…
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="h-4 w-4 mr-2" /> Generate Policy
-                    </>
-                  )}
+                  <Sparkles className="h-4 w-4 mr-2" /> Generate Policy
                 </Button>
+                </motion.div>
               )}
+              </AnimatePresence>
             </div>
           </form>
         </CardContent>

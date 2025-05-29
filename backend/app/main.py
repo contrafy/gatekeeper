@@ -2,14 +2,14 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 
-import routes
+from routes import router
 
 # Load environment variables from .env file
 load_dotenv()
 
 # Initialize FastAPI application
 app = FastAPI(title="Google Cloud IAM Policy Generator")
-app.include_router(routes.router)
+app.include_router(router)
 
 # Configure CORS middleware to allow requests from specified origins
 app.add_middleware(
