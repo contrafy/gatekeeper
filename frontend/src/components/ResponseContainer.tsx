@@ -140,39 +140,45 @@ const ResponseContainer: React.FC<ResponseProps> = ({ data, token, selectedProje
                     </AnimatePresence>
                   </Button>
                 )}
-
-                <Button
-                  variant="secondary"
-                  onClick={copyToClipboard}
-                  disabled={policyCopied}
-                  className="custom-orange-hover"
-                >
-                  <AnimatePresence mode="popLayout">
-                    {policyCopied ? (
-                      <motion.span
-                        key="copied"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="flex items-center"
-                      >
-                        <PartyPopper className="h-4 w-4 mr-2" />
-                        Copied!
-                      </motion.span>
-                    ) : (
-                      <motion.span
-                        key="copy"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="flex items-center"
-                      >
-                        <Copy className="h-4 w-4 mr-2" />
-                        Copy Policy
-                      </motion.span>
-                    )}
-                  </AnimatePresence>
-                </Button>
+                <AnimatePresence mode="wait">
+                      {policyCopied ? (
+                        <motion.div
+                          key="copied"
+                          initial={{ opacity: 0, scale: 0.9 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.9 }}
+                          transition={{ duration: 0.2 }}
+                          className="flex items-center"
+                        >
+                          <Button
+                          variant="secondary"
+                          onClick={copyToClipboard}
+                          disabled={policyCopied}
+                          className="custom-orange-hover">
+                            <PartyPopper className="h-4 w-4 mr-2" />
+                            Copied!
+                          </Button>
+                        </motion.div>
+                      ) : (
+                        <motion.div
+                          key="copy"
+                          initial={{ opacity: 0, scale: 0.9 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.9 }}
+                          transition={{ duration: 0.2 }}
+                          className="flex items-center"
+                        >
+                          <Button
+                          variant="secondary"
+                          onClick={copyToClipboard}
+                          disabled={policyCopied}
+                          className="custom-orange-hover">
+                            <Copy className="h-4 w-4 mr-2" />
+                            Copy Policy
+                          </Button>
+                        </motion.div>
+                      )}
+                </AnimatePresence>
               </motion.div>
             </CardHeader>
 
