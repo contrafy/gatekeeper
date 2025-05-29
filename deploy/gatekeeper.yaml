@@ -1,0 +1,105 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: personal-page
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: personal-page
+  template:
+    metadata:
+      labels:
+        app: personal-page
+    spec:
+      volumes:
+        - name: nginx-conf
+          configMap:
+            name: personal-page-nginx
+      containers:
+        - name: web
+          imagePullPolicy: Always
+          image: ghcr.io/contrafy/personal-page:latest
+          ports:
+            - containerPort: 80
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              cpu: "200m"
+              memory: "128Mi"
+          volumeMounts:
+            - name: nginx-conf
+              mountPath: /etc/nginx/conf.d
+      imagePullSecrets:
+        - name: ghcr-creds
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: personal-page
+spec:
+  selector:
+    app: personal-page
+  ports:
+    - port: 80
+      targetPort: 80
+  type: ClusterIP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: personal-page
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: web
+spec:
+  rules:
+    - host: contrafy.me
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: personal-page
+                port:
+                  number: 80
+    - host: www.contrafy.me
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: personal-page
+                port:
+                  number: 80
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: personal-page-nginx
+data:
+  default.conf: |
+    server {
+      listen 80 default_server;
+      listen [::]:80 default_server;
+
+      # Root where Vite put the build output
+      root /usr/share/nginx/html;
+      index index.html;
+
+      # 1. Long‑lived caching for static assets that have content‑hashed names
+      location /assets/ {
+          try_files $uri =404;
+          add_header Cache-Control "public, max-age=31536000, immutable";
+      }
+
+      # 2. Everything else → index.html (SPA fallback)
+      location / {
+          try_files $uri $uri/ /index.html;
+      }
+    }
+
+
