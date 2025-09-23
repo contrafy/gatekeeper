@@ -2,7 +2,6 @@
 import React, { useState, FormEvent } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { motion, AnimatePresence } from "framer-motion";
 import TextareaAutosize from "react-textarea-autosize";
 import {
   RefreshCw,
@@ -134,15 +133,7 @@ const PromptContainer: React.FC<PromptProps> = ({ onResult }) => {
 
             {/* ------ big button / animations ------- */}
             <div className="flex items-center justify-center" style={{ minHeight: "60px" }}>
-              <AnimatePresence mode="wait">
               {showLoadingAnimation ? (
-                <motion.div
-                key="loading"
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                transition={{ duration: 0.2 }}
-                >
                 <Button
                   variant="secondary"
                   type="submit"
@@ -151,15 +142,7 @@ const PromptContainer: React.FC<PromptProps> = ({ onResult }) => {
                 >
                   <RefreshCw className="h-4 w-4 mr-2 animate-spin" /> Processing…
                 </Button>
-                </motion.div>
               ) : policyGenerated ? (
-                <motion.div
-                key="success"
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                transition={{ duration: 0.2 }}
-                >
                 <Button
                   variant="default"
                   type="submit"
@@ -168,15 +151,7 @@ const PromptContainer: React.FC<PromptProps> = ({ onResult }) => {
                 >
                   <Sparkles className="h-4 w-4 mr-2" /> Generate New Policy
                 </Button>
-                </motion.div>
               ) : policyGenerationFailed ? (
-                <motion.div
-                key="error"
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                transition={{ duration: 0.2 }}
-                >
                 <Button
                   variant="destructive"
                   type="submit"
@@ -185,15 +160,7 @@ const PromptContainer: React.FC<PromptProps> = ({ onResult }) => {
                 >
                   <RefreshCw className="h-4 w-4 mr-2" /> Try Again
                 </Button>
-                </motion.div>
               ) : (
-                <motion.div
-                key="default"
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                transition={{ duration: 0.2 }}
-                >
                 <Button
                   variant="secondary"
                   type="submit"
@@ -202,32 +169,21 @@ const PromptContainer: React.FC<PromptProps> = ({ onResult }) => {
                 >
                   <Sparkles className="h-4 w-4 mr-2" /> Generate Policy
                 </Button>
-                </motion.div>
               )}
-              </AnimatePresence>
             </div>
           </form>
         </CardContent>
       </Card>
 
       {/* Error banner (kept local) */}
-      <AnimatePresence>
-        {error && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.3 }}
-          >
-            <Alert variant="destructive" className="mt-4 mb-2 border-[#DB4437]">
-              <AlertDescription className="flex items-center">
-                <AlertTriangle className="h-4 w-4 mr-2 text-[#DB4437]" />
-                {error}
-              </AlertDescription>
-            </Alert>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {error && (
+        <Alert variant="destructive" className="mt-4 mb-2 border-[#DB4437]">
+          <AlertDescription className="flex items-center">
+            <AlertTriangle className="h-4 w-4 mr-2 text-[#DB4437]" />
+            {error}
+          </AlertDescription>
+        </Alert>
+      )}
     </>
   );
 };

@@ -4,7 +4,6 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import TextareaAutosize from "react-textarea-autosize";
 import { Button } from "@/components/ui/button";
-import { motion, AnimatePresence } from "framer-motion";
 import { Loader2, CheckCircle, Rocket, Copy, PartyPopper } from "lucide-react";
 
 interface Payload {
@@ -80,17 +79,13 @@ const ResponseContainer: React.FC<ResponseProps> = ({ data, token, selectedProje
 
       {/* –––––––––––––––––– Policy Card –––––––––––––––––– */}
       {policy && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.6, delay: showPolicyAnimation ? 0.1 : 0 }}
-        >
+        <div>
           <Card className="mb-4 policy-output">
             <CardHeader className="output-header pb-2">
               <CardTitle className="font-semibold text-[#0F9D58]">Generated Policy</CardTitle>
 
               {/* button stack */}
-              <motion.div layout className="flex space-x-2">
+              <div className="flex space-x-2">
                 {!!token && !!selectedProject && (
                   <Button
                     variant="secondary"
@@ -102,42 +97,22 @@ const ResponseContainer: React.FC<ResponseProps> = ({ data, token, selectedProje
                         : "custom-red-hover disabled:bg-[#DB4437]/25"
                     }
                   >
-                    <AnimatePresence mode="popLayout">
-                      {applyLoading ? (
-                        <motion.span
-                          key="verifying"
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          exit={{ opacity: 0 }}
-                          className="flex items-center"
-                        >
-                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                          Verifying
-                        </motion.span>
-                      ) : policyApplied ? (
-                        <motion.span
-                          key="applied"
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          exit={{ opacity: 0 }}
-                          className="flex items-center"
-                        >
-                          <CheckCircle className="h-4 w-4 mr-2" />
-                          Policy Applied
-                        </motion.span>
-                      ) : (
-                        <motion.span
-                          key="apply"
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          exit={{ opacity: 0 }}
-                          className="flex items-center"
-                        >
-                          <Rocket className="h-4 w-4 mr-2" />
-                          Apply Policy
-                        </motion.span>
-                      )}
-                    </AnimatePresence>
+                    {applyLoading ? (
+                      <span className="flex items-center">
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Verifying
+                      </span>
+                    ) : policyApplied ? (
+                      <span className="flex items-center">
+                        <CheckCircle className="h-4 w-4 mr-2" />
+                        Policy Applied
+                      </span>
+                    ) : (
+                      <span className="flex items-center">
+                        <Rocket className="h-4 w-4 mr-2" />
+                        Apply Policy
+                      </span>
+                    )}
                   </Button>
                 )}
 
@@ -147,33 +122,19 @@ const ResponseContainer: React.FC<ResponseProps> = ({ data, token, selectedProje
                   disabled={policyCopied}
                   className="custom-orange-hover"
                 >
-                  <AnimatePresence mode="popLayout">
-                    {policyCopied ? (
-                      <motion.span
-                        key="copied"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="flex items-center"
-                      >
-                        <PartyPopper className="h-4 w-4 mr-2" />
-                        Copied!
-                      </motion.span>
-                    ) : (
-                      <motion.span
-                        key="copy"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="flex items-center"
-                      >
-                        <Copy className="h-4 w-4 mr-2" />
-                        Copy Policy
-                      </motion.span>
-                    )}
-                  </AnimatePresence>
+                  {policyCopied ? (
+                    <span className="flex items-center">
+                      <PartyPopper className="h-4 w-4 mr-2" />
+                      Copied!
+                    </span>
+                  ) : (
+                    <span className="flex items-center">
+                      <Copy className="h-4 w-4 mr-2" />
+                      Copy Policy
+                    </span>
+                  )}
                 </Button>
-              </motion.div>
+              </div>
             </CardHeader>
 
             <CardContent>
@@ -199,16 +160,12 @@ const ResponseContainer: React.FC<ResponseProps> = ({ data, token, selectedProje
               </div>
             </CardContent>
           </Card>
-        </motion.div>
+        </div>
       )}
 
       {/* ––––––––––––––– Chat Response ––––––––––––––– */}
       {chatResponse && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.6, delay: showPolicyAnimation ? 0.3 : 0 }}
-        >
+        <div>
           <Card className="chat-output">
             <CardHeader className="output-header pb-2">
               <CardTitle className="font-semibold text-[#4285F4]">Chat Response</CardTitle>
@@ -221,7 +178,7 @@ const ResponseContainer: React.FC<ResponseProps> = ({ data, token, selectedProje
               </ScrollArea>
             </CardContent>
           </Card>
-        </motion.div>
+        </div>
       )}
     </div>
   );
