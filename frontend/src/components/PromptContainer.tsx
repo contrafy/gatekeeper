@@ -32,14 +32,6 @@ const PromptContainer: React.FC<PromptProps> = ({ onResult }) => {
   const [emptyPromptShake, setEmptyPromptShake] = useState(false);
   const [error, setError] = useState("");
 
-  /*
-  const handleReset = () => {
-    setPrompt("");
-    setPolicyGenerated(false);
-    setPolicyGenerationFailed(false);
-    setError("");
-  };
-  */
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -56,7 +48,7 @@ const PromptContainer: React.FC<PromptProps> = ({ onResult }) => {
       setError("");
 
       try {
-        const backendUrl = import.meta.env.BACKEND_BASE_URL || "http://localhost:8000";
+        const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:8000";
         const res = await fetch(`${backendUrl}/generate_policy`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
@@ -126,19 +118,18 @@ const PromptContainer: React.FC<PromptProps> = ({ onResult }) => {
                 }}
                 minRows={1}
                 maxRows={5}
-                className="prompt-input"
-                style={{ borderColor: "#4285F4" }}
+                className="w-full p-3 border border-blue-500 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none transition-all duration-200"
               />
             </div>
 
             {/* ------ big button / animations ------- */}
-            <div className="flex items-center justify-center" style={{ minHeight: "60px" }}>
+            <div className="flex items-center justify-center min-h-[60px]">
               {showLoadingAnimation ? (
                 <Button
                   variant="secondary"
                   type="submit"
                   disabled={true}
-                  className="bg-[#F4B400] text-black hover:bg-[#E5A800]"
+                  className="bg-yellow-500 text-white hover:bg-yellow-600"
                 >
                   <RefreshCw className="h-4 w-4 mr-2 animate-spin" /> Processing…
                 </Button>
@@ -165,7 +156,7 @@ const PromptContainer: React.FC<PromptProps> = ({ onResult }) => {
                   variant="secondary"
                   type="submit"
                   disabled={loading}
-                  className="custom-blue-hover"
+                  className="bg-blue-600 text-white hover:bg-blue-700"
                 >
                   <Sparkles className="h-4 w-4 mr-2" /> Generate Policy
                 </Button>
@@ -177,9 +168,9 @@ const PromptContainer: React.FC<PromptProps> = ({ onResult }) => {
 
       {/* Error banner (kept local) */}
       {error && (
-        <Alert variant="destructive" className="mt-4 mb-2 border-[#DB4437]">
+        <Alert variant="destructive" className="mt-4 mb-2">
           <AlertDescription className="flex items-center">
-            <AlertTriangle className="h-4 w-4 mr-2 text-[#DB4437]" />
+            <AlertTriangle className="h-4 w-4 mr-2" />
             {error}
           </AlertDescription>
         </Alert>

@@ -54,7 +54,8 @@ function App() {
     
     try {
       console.log("Fetching projects with token:", token.substring(0, 10) + "...");
-      const response = await fetch("http://localhost:8000/get_projects", {
+      const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:8000";
+      const response = await fetch(`${backendUrl}/get_projects`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -99,31 +100,35 @@ function App() {
           setToken={setToken}>
         </Header>
 
-        <div className="min-h-screen flex items-center justify-center bg-background">
-          <div className="w-full max-w-2xl shadow-lg mx-auto text-center px-6 py-[5%]">
+        <div className="min-h-screen bg-background">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             {/* Project Selector Section */}
-            <ProjectSelector
-              token={token}
-              projects={projects}
-              selectedProject={selectedProject}
-              setSelectedProject={setSelectedProject}
-              fetchingProjects={fetchingProjects}
-              projectError={projectError}
-              >
-            </ProjectSelector>
+            <div className="mb-8">
+              <ProjectSelector
+                token={token}
+                projects={projects}
+                selectedProject={selectedProject}
+                setSelectedProject={setSelectedProject}
+                fetchingProjects={fetchingProjects}
+                projectError={projectError}
+              />
+            </div>
 
-            {/* Prompt Input Card */}
-            <PromptContainer
-              onResult={setPayload}
-            ></PromptContainer>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* Left Column - Input */}
+              <div className="space-y-6">
+                <PromptContainer onResult={setPayload} />
+              </div>
 
-            {/* Response Container */}
-            <ResponseContainer
-              data={payload}
-              token={token}
-              selectedProject={selectedProject}
-            >
-            </ResponseContainer>
+              {/* Right Column - Output */}
+              <div className="space-y-6">
+                <ResponseContainer
+                  data={payload}
+                  token={token}
+                  selectedProject={selectedProject}
+                />
+              </div>
+            </div>
           </div>
         </div>
       </ThemeProvider>

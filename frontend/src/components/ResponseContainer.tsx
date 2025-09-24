@@ -20,7 +20,7 @@ interface ResponseProps {
 }
 
 const ResponseContainer: React.FC<ResponseProps> = ({ data, token, selectedProject }) => {
-  const { policy, chatResponse, previousPrompt, showPolicyAnimation } = data;
+  const { policy, chatResponse, previousPrompt } = data;
 
   /* ---- LOCAL state purely for UX toggles ---- */
   const [policyEditable, setPolicyEditable] = useState(policy);
@@ -53,7 +53,8 @@ const ResponseContainer: React.FC<ResponseProps> = ({ data, token, selectedProje
     if (!token || !selectedProject) return;
     try {
       setApplyLoading(true);
-      await fetch("http://localhost:8000/apply_policy", {
+      const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:8000";
+      await fetch(`${backendUrl}/apply_policy`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -70,7 +71,7 @@ const ResponseContainer: React.FC<ResponseProps> = ({ data, token, selectedProje
 
   /* ------------------------------ UI ------------------------------ */
   return (
-    <div className="response-container h-auto">
+    <div className="space-y-6">
       {previousPrompt && (
         <div className="mb-2 text-left">
           <strong>Prompt:</strong> {previousPrompt}
@@ -80,7 +81,7 @@ const ResponseContainer: React.FC<ResponseProps> = ({ data, token, selectedProje
       {/* –––––––––––––––––– Policy Card –––––––––––––––––– */}
       {policy && (
         <div>
-          <Card className="mb-4 policy-output">
+          <Card className="mb-6">
             <CardHeader className="output-header pb-2">
               <CardTitle className="font-semibold text-[#0F9D58]">Generated Policy</CardTitle>
 
@@ -93,8 +94,8 @@ const ResponseContainer: React.FC<ResponseProps> = ({ data, token, selectedProje
                     disabled={applyLoading || policyApplied}
                     className={
                       policyApplied
-                        ? "text-[#0F9D58] dark:text-[#0F9D58]"
-                        : "custom-red-hover disabled:bg-[#DB4437]/25"
+                        ? "bg-green-600 text-white hover:bg-green-700"
+                        : "bg-blue-600 text-white hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
                     }
                   >
                     {applyLoading ? (
@@ -120,7 +121,7 @@ const ResponseContainer: React.FC<ResponseProps> = ({ data, token, selectedProje
                   variant="secondary"
                   onClick={copyToClipboard}
                   disabled={policyCopied}
-                  className="custom-orange-hover"
+                  className="bg-gray-600 text-white hover:bg-gray-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
                 >
                   {policyCopied ? (
                     <span className="flex items-center">
@@ -142,7 +143,6 @@ const ResponseContainer: React.FC<ResponseProps> = ({ data, token, selectedProje
                 {isJsonString(policyEditable) ? (
                   <TextareaAutosize
                     ref={textareaRef}
-                    className="policy-textbox w-full font-mono"
                     value={policyEditable}
                     onChange={(e) => {
                       setPolicyEditable(e.target.value);
@@ -152,10 +152,10 @@ const ResponseContainer: React.FC<ResponseProps> = ({ data, token, selectedProje
                     minRows={4}
                     maxRows={20}
                     spellCheck={false}
-                    style={{ borderColor: "#4285F4", resize: "none", padding: "0.5rem" }}
+                    className="border-blue-500 resize-none p-2"
                   />
                 ) : (
-                  <pre className="policy-pre">{policyEditable}</pre>
+                  <pre className="whitespace-pre-wrap break-words bg-gray-900 text-gray-100 p-6 rounded font-mono text-sm leading-relaxed overflow-x-auto">{policyEditable}</pre>
                 )}
               </div>
             </CardContent>
@@ -166,13 +166,13 @@ const ResponseContainer: React.FC<ResponseProps> = ({ data, token, selectedProje
       {/* ––––––––––––––– Chat Response ––––––––––––––– */}
       {chatResponse && (
         <div>
-          <Card className="chat-output">
+          <Card>
             <CardHeader className="output-header pb-2">
               <CardTitle className="font-semibold text-[#4285F4]">Chat Response</CardTitle>
             </CardHeader>
             <CardContent>
               <ScrollArea className="h-60">
-                <pre className="chat-pre" style={{ borderColor: "#4285F4" }}>
+                <pre className="whitespace-pre-wrap break-words bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 p-6 rounded border border-blue-500 font-mono text-sm leading-relaxed overflow-x-auto">
                   {chatResponse}
                 </pre>
               </ScrollArea>
